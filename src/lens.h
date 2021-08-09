@@ -1,9 +1,10 @@
 #ifndef LENS_H
 #define LENS_H
 
-#include <visible.h>
-#include <material.h>
-#include <quadric.h>
+#include <cfloat>
+#include "visible.h"
+#include "material.h"
+#include "quadric.h"
 
 // Biconvex lens
 class Lens : public Visible

@@ -1,9 +1,9 @@
 #ifndef QUADRIC_H
 #define QUADRIC_H
 
-#include <visible.h>
-#include <material.h>
-#include <mat3.h>
+#include "visible.h"
+#include "material.h"
+#include "mat3.h"
 
 
 class Quadric : public Visible

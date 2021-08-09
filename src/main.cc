@@ -1,12 +1,13 @@
 #include <iostream>
 #include <functional>
+#include <algorithm>
 #include "rand.h"
 #include "ray.h"
 #include "..\include\palette.h"
 #include "visible_list.h"
 #include "sphere.h"
-#include <quadric.h>
-#include <lens.h>
+#include "quadric.h"
+#include "lens.h"
 #include "metal.h"
 #include "diffuse.h"
 #include "dielectric.h"
@@ -14,15 +15,15 @@
 
 
 // Resolution
-const int res_multiplier = 2;
+const int res_multiplier = 4;
 const int w = res_multiplier*160;
 const int h = res_multiplier*90;
 
 // Samples per pixel
-const int spp = 16;
+const int spp = 8;
 
 // Ray bounce limit
-const int max_bounce = 3;
+const int max_bounce = 8;
 int bounce_count = 0;
 
 // static here means internal linkage, rng is only visible to this file
@@ -80,7 +81,7 @@ vec3 shade_ray(const Ray& ray, VisibleList* const scene) {
 
   Intersection ixn;
 
-  if (scene->intersect(ray, 1e-12, MAXFLOAT, ixn)) {
+  if (scene->intersect(ray, 1e-12, FLT_MAX, ixn)) {
 
     Material* active_material = ixn.material;
 
@@ -117,7 +118,7 @@ vec3 exposure(const vec3 spectral_power_density) {
 
     for (int i=0; i<3; i++) {
         col[i] = spectral_power_density[i] / max_power;
-        col[i] = std::min(col[i], 1.f);
+        col[i] = (std::min)(col[i], 1.f);
     }
 
     return col;
@@ -125,7 +126,7 @@ vec3 exposure(const vec3 spectral_power_density) {
 
 void shade_buffer(char* buffer, const int h, const int w, VisibleList* const scene) {
 
-  vec3 camera_origin = vec3(0., 0., -3.0);
+  vec3 camera_origin = 2.*vec3(1., 2.0, -3.0);
   vec3 z_dir = normalise(-camera_origin);
 
   // lens test
@@ -258,7 +259,7 @@ VisibleList* grid_balls() {
           break;
                 }
         case 1: { // Dielectric
-          mat = new Dielectric(vec3(1.,1.,1.), 1.2);
+          mat = new Dielectric(0.5*vec3(1., 1., 1.) + 0.5*color, 1.6);
           break;
                 }
         case 2: { // Rough metal
@@ -279,6 +280,7 @@ VisibleList* grid_balls() {
   return new VisibleList(scenery, ball_count);
 }
 
+/*
 VisibleList* quadric_test() {
 
     vec3 offset;
@@ -349,6 +351,7 @@ VisibleList* lens() {
     return new VisibleList(scenery, 2);
 
 }
+*/
 
 int main() {
 
@@ -357,7 +360,7 @@ int main() {
   //const int ball_count = 9;
   //random_balls(ball_count);
 
-  VisibleList* scene = lens();
+  VisibleList* scene = grid_balls();
   //quadric_test();
   //grid_balls();
 

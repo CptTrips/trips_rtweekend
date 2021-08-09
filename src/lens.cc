@@ -48,8 +48,8 @@ bool Lens::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) co
 
     // Get intersection with cylinder
     if (!cylinder.intersect(r, tmin, tmax, ixn3)) {
-        ixn3.t = MAXFLOAT;
-        ixn3.p = vec3(MAXFLOAT, MAXFLOAT, MAXFLOAT);
+        ixn3.t = FLT_MAX;
+        ixn3.p = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
     }
 
     // There are at most two intersections which are within the other two quadrics

@@ -15,15 +15,15 @@
 
 
 // Resolution
-const int res_multiplier = 4;
+const int res_multiplier = 8;
 const int w = res_multiplier*160;
 const int h = res_multiplier*90;
 
 // Samples per pixel
-const int spp = 8;
+const int spp = 128;
 
 // Ray bounce limit
-const int max_bounce = 8;
+const int max_bounce = 4;
 int bounce_count = 0;
 
 // static here means internal linkage, rng is only visible to this file
@@ -35,6 +35,16 @@ struct Camera
   vec3 z_dir;
   vec3 x_dir;
   vec3 y_dir;
+};
+
+struct NewCamera
+{
+    vec3 origin;
+    mat3 orientation;
+    float vfov;
+    float aspect_ratio;
+    float focus_distance;
+    float aperture;
 };
 
 void gamma_correction(vec3& col) {
@@ -98,14 +108,21 @@ vec3 shade_ray(const Ray& ray, VisibleList* const scene) {
   return sky_color;
 }
 
-Ray cast_ray(float r, float c, float h, float w, Camera& cam) {
+Ray cast_ray(float u, float v, NewCamera& cam) {
 
-  float x = (c  - w / 2.0) / h; // x goes from -w/(2h) to w/(2h)
-  float y = r / h - 0.5; // y goes from -.5 to .5
+    // u and v run from 0 to 1
 
-  vec3 ray_dir = x * cam.x_dir + y * cam.y_dir + cam.z_dir;
+    // Right-handed so x is up :(
+	float x = (u - 0.5) * cam.vfov; // x goes from -vfov/2 to vfov/2
+	float y = (v - 0.5) * cam.vfov * cam.aspect_ratio; // y goes from -w/(2h) to w/(2h)
 
-  return Ray(cam.origin, ray_dir);
+    vec3 focus_offset = cam.aperture * vec3(rng.sample(), rng.sample(), 0);
+
+    vec3 cam_space_ray_dir = vec3(x, y, cam.focus_distance) - focus_offset;
+
+    vec3 ray_dir = cam.orientation.T() * cam_space_ray_dir;
+
+    return Ray(cam.origin + focus_offset, ray_dir);
 }
 
 vec3 exposure(const vec3 spectral_power_density) {
@@ -126,17 +143,32 @@ vec3 exposure(const vec3 spectral_power_density) {
 
 void shade_buffer(char* buffer, const int h, const int w, VisibleList* const scene) {
 
-  vec3 camera_origin = 2.*vec3(1., 2.0, -3.0);
-  vec3 z_dir = normalise(-camera_origin);
+  vec3 camera_origin = 2.*vec3(1., .5, -3.0);
+  vec3 camera_target = vec3(0., -.3, -2.);
+  vec3 z_dir = normalise(camera_target - camera_origin);
 
   // lens test
   //vec3 camera_origin = vec3(0, 0, -6.9);
   //vec3 z_dir = normalise(vec3(0, 0, 1));
-  vec3 x_dir = normalise(cross(z_dir, vec3(0.0, 1.0, 0.0)));
-  vec3 y_dir = normalise(cross(x_dir, z_dir));
-  float zoom = 0.75;
+  // Right-handed
+  vec3 y_dir = normalise(cross(z_dir, vec3(0.0, 1.0, 0.0)));
+  vec3 x_dir = normalise(cross(y_dir, z_dir));
 
-  Camera view_cam = {camera_origin, zoom*z_dir, x_dir, y_dir};
+  mat3 camera_orientation = mat3(
+      x_dir[0], x_dir[1], x_dir[2],
+      y_dir[0], y_dir[1], y_dir[2],
+      z_dir[0], z_dir[1], z_dir[2]
+  );
+
+  float vfov = 3.;
+
+  float aspect_ratio = float(w) / float(h);
+
+  float focus_distance = (camera_target - camera_origin).length();
+
+  float aperture = 0.001;
+
+  NewCamera view_cam = { camera_origin, camera_orientation, vfov, aspect_ratio, focus_distance, aperture};
 
   for (int r=0; r<h; r++)
   {
@@ -149,11 +181,11 @@ void shade_buffer(char* buffer, const int h, const int w, VisibleList* const sce
       for (int s=0; s<spp; s++) {
 
 
-        float u = float(r) + rng.sample();
-        float v = float(c) + rng.sample();
+        float u = (float(r) + rng.sample()) / float(h);
+        float v = (float(c) + rng.sample()) / float(w);
 
         bounce_count = 0;
-        Ray primary = cast_ray(float(u), float(v), float(h), float(w), view_cam);
+        Ray primary = cast_ray(u, v, view_cam);
 
         spectral_power_density += shade_ray(primary, scene);
       }
@@ -238,20 +270,26 @@ VisibleList* grid_balls() {
 
   float r = 0.3;
 
+  vec3 dx = vec3(1., 0., 0.);
+  vec3 dz = vec3(0., 0., -1.);
+  vec3 o = vec3(0., 0., -2.) - dx - dz;
+
+  vec3 white = vec3(1., 1., 1.);
+
+  float color_mix = 0.35;
+  float metal_color_mix = 0.75;
+  float index = 1.52;
+
+  Material* mat;
+
   for (int i=0; i<3; i++) {
     for (int j=0; j<3; j++) {
 
-      vec3 dx = vec3(1., 0., 0.);
-      vec3 dz = vec3(0., 0., -1.);
-      vec3 o = vec3(0., 0., -2.) - dx - dz;
 
       vec3 center = o + i*dx + j*dz;
 
-
-      vec3 color = vec3(0.15, 0.15, 0.15);
+      vec3 color = 0.15 * white;
       color[j] = 0.9;
-
-      Material* mat;
 
       switch (i) {
         case 0: { // Diffuse
@@ -259,11 +297,11 @@ VisibleList* grid_balls() {
           break;
                 }
         case 1: { // Dielectric
-          mat = new Dielectric(0.5*vec3(1., 1., 1.) + 0.5*color, 1.6);
+          mat = new Dielectric((1. - color_mix)*vec3(1., 1., 1.) + color_mix*color, index);
           break;
                 }
         case 2: { // Rough metal
-          mat = new Metal(color, 0.1);
+          mat = new Metal((1. - metal_color_mix)*white + metal_color_mix*color, 0.1);
           break;
                 }
       }
@@ -272,7 +310,8 @@ VisibleList* grid_balls() {
     }
   }
 
-  Metal* ground = new Metal(vec3(0.7, 0.7, 0.7), 0.8);
+  //Metal* ground = new Metal(vec3(0.7, 0.7, 0.7), 0.8);
+  Diffuse* ground = new Diffuse(vec3(0.6, 0.6, 0.6));
 
   float big_radius = 500.;
   scenery[9] = new Sphere(vec3(0, -big_radius-r, -1), big_radius, ground);

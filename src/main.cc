@@ -116,13 +116,13 @@ Ray cast_ray(float u, float v, NewCamera& cam) {
 	float x = (u - 0.5) * cam.vfov; // x goes from -vfov/2 to vfov/2
 	float y = (v - 0.5) * cam.vfov * cam.aspect_ratio; // y goes from -w/(2h) to w/(2h)
 
-    vec3 focus_offset = cam.aperture * vec3(rng.sample(), rng.sample(), 0);
+    vec3 focus_offset = cam.aperture * (2 * vec3(rng.sample(), rng.sample(), 0) - vec3(1., 1., 0.));
 
     vec3 cam_space_ray_dir = vec3(x, y, cam.focus_distance) - focus_offset;
 
     vec3 ray_dir = cam.orientation.T() * cam_space_ray_dir;
 
-    return Ray(cam.origin + focus_offset, ray_dir);
+    return Ray(cam.origin + cam.orientation.T()*focus_offset, ray_dir);
 }
 
 vec3 exposure(const vec3 spectral_power_density) {
@@ -166,7 +166,7 @@ void shade_buffer(char* buffer, const int h, const int w, VisibleList* const sce
 
   float focus_distance = (camera_target - camera_origin).length();
 
-  float aperture = 0.001;
+  float aperture = 0.1;
 
   NewCamera view_cam = { camera_origin, camera_orientation, vfov, aspect_ratio, focus_distance, aperture};
 

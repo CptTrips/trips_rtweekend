@@ -135,6 +135,7 @@
     <ClCompile Include="src\quadric.cc" />
     <ClCompile Include="src\rand.cc" />
     <ClCompile Include="src\ray.cc" />
+    <ClCompile Include="src\CPURayTracer.cpp" />
     <ClCompile Include="src\rod.cc" />
     <ClCompile Include="src\Scene.cpp" />
     <ClCompile Include="src\sphere.cc" />
@@ -154,6 +155,7 @@
     <ClInclude Include="src\quadric.h" />
     <ClInclude Include="src\rand.h" />
     <ClInclude Include="src\ray.h" />
+    <ClInclude Include="src\CPURayTracer.h" />
     <ClInclude Include="src\rod.h" />
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\sphere.h" />

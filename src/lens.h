@@ -13,7 +13,7 @@ class Lens : public Visible
         Lens();
         Lens(float R1, float R2, float d, vec3 x0, vec3 dir, Material* m);
         ~Lens();
-        virtual bool intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const;
+        virtual std::unique_ptr<Intersection> intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const;
         vec3 normal(vec3 x) const;
 
         Quadric sphere_1;

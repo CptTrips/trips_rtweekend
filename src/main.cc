@@ -7,19 +7,19 @@
 #include "visible_list.h"
 #include "sphere.h"
 #include "quadric.h"
-#include "lens.h"
 #include "metal.h"
 #include "diffuse.h"
 #include "dielectric.h"
 #include "float.h"
 #include "Camera.h"
 #include "FrameBuffer.h"
+#include "CPURayTracer.h"
 
 
 const bool CUDA_ENABLED = false;
 
 // Resolution
-const int res_multiplier = 2;
+const int res_multiplier = 4;
 const int w = res_multiplier*160;
 const int h = res_multiplier*90;
 
@@ -32,121 +32,9 @@ int bounce_count = 0;
 
 RNG rng = RNG();
 
+Scene random_balls(const int ball_count) {
 
-
-void gamma_correction(vec3& col) {
-
-  col = vec3(sqrt(col[0]), sqrt(col[1]), sqrt(col[2]));
-}
-
-vec3 draw_sky(const Ray& ray) {
-
-  vec3 unit_dir = normalise(ray.direction());
-  float t = 0.5*(unit_dir.y() + 1.0);
-  return (1.0 - t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
-}
-
-vec3 draw_night_sky(const Ray& ray) {
-    static vec3 sun_dir = normalise(vec3(0.1, 0.075, -1));
-    static vec3 sun_spd = 500*vec3(1.0, .98, .7);
-
-    if (dot(ray.direction(), sun_dir) > 0.999) {
-        return sun_spd;
-    } else {
-        return vec3(0, 0, 0.002);
-    }
-}
-
-vec3 draw_red_star(const Ray& ray) {
-    static vec3 star_dir = vec3(0,1,0);
-    static vec3 star_spd = 100*vec3(1,0,0);
-
-    if (dot(ray.direction(), star_dir) > 0.9) {
-        return star_spd;
-    } else {
-        return vec3(0.5, 0.7, 1.0);
-    }
-}
-
-vec3 shade_ray(const Ray& ray, const VisibleList& scene) {
-
-  if (bounce_count == max_bounce) {
-    return vec3(0., 0., 0.);
-  }
-
-  bounce_count += 1;
-
-  Intersection ixn;
-
-  if (scene.intersect(ray, 1e-12, FLT_MAX, ixn)) {
-
-    Material* active_material = ixn.material;
-
-    Ray scatter_ray;
-
-    active_material->bounce(ray, ixn, scatter_ray);
-
-    return active_material->albedo * shade_ray(scatter_ray, scene);
-
-  }
-
-  vec3 sky_color = draw_sky(ray);
-
-  return sky_color;
-}
-
-
-vec3 exposure(const vec3 spectral_power_density, const float max_power = 1) {
-    // Determines the RGB colour of the pixel given an incident spectral power
-    // density. (Perhaps make a member function of the camera.)
-
-    vec3 col = spectral_power_density;
-
-    for (int i=0; i<3; i++) {
-        col[i] /= max_power;
-        col[i] = (std::min)(col[i], 1.f);
-    }
-
-    return col;
-}
-
-void shade_buffer(FrameBuffer& fb, const VisibleList& scene, const Camera& view_cam) {
-
-
-  for (int r=0; r<fb.h; r++)
-  {
-    for (int c=0; c<fb.w; c++)
-    {
-
-      vec3 spectral_power_density = vec3(0., 0., 0.);
-      vec3 col = vec3(0.,0.,0.);
-
-      for (int s=0; s<spp; s++) {
-
-
-        float u = (float(r) + rng.sample()) / float(fb.h);
-        float v = (float(c) + rng.sample()) / float(fb.w);
-
-        bounce_count = 0;
-        Ray primary = view_cam.cast_ray(u, v);
-
-        spectral_power_density += shade_ray(primary, scene);
-      }
-
-      spectral_power_density /= float(spp);
-
-      col = exposure(spectral_power_density);
-
-      gamma_correction(col);
-
-      fb.set_pixel(r, c, col);
-    }
-  }
-}
-
-VisibleList* random_balls(const int ball_count) {
-
-  Visible** scenery = new Visible*[ball_count];
+    std::vector<Visible*> scenery;
 
   for (int i=0; i<ball_count; i++) {
 
@@ -177,37 +65,38 @@ VisibleList* random_balls(const int ball_count) {
 
     }
 
-    scenery[i] = new Sphere(center, r, m);
+    
+    scenery.push_back(new Sphere(center, r, m));
   }
 
-  return new VisibleList(scenery, ball_count);
+  return Scene(scenery);
 }
 
-VisibleList* single_ball() {
+Scene single_ball() {
 
   // Set up scene
   const int ball_count = 2;
 
-  Visible** scenery = new Visible*[ball_count];
+  std::vector<Visible*> scenery;
 
   Diffuse* grass = new Diffuse(vec3(.42, .62, 0.05));
   Metal* ground = new Metal(vec3(0.7, 0.7, 0.7), 0.);
   Metal* ball = new Metal(vec3(.9, .1, .1), 0.1);
 
-  scenery[0] = new Sphere(vec3(0, 0, -1), .5, ball);
+  scenery.push_back(new Sphere(vec3(0, 0, -1), .5, ball));
 
   float big_radius = 500.;
-  scenery[1] = new Sphere(vec3(0, -big_radius-.5, -1), big_radius, grass);
+  scenery.push_back(new Sphere(vec3(0, -big_radius-.5, -1), big_radius, grass));
 
-  return new VisibleList(scenery, ball_count);
+  return Scene(scenery);
 }
 
-VisibleList* grid_balls() {
-
+std::vector<std::unique_ptr<Visible>> grid_balls()
+{
   // Set up scene
   const int ball_count = 10;
 
-  Visible** scenery = new Visible*[ball_count];
+  std::vector<std::unique_ptr<Visible>> scenery;
 
   float r = 0.3;
 
@@ -247,7 +136,7 @@ VisibleList* grid_balls() {
                 }
       }
 
-      scenery[3*i+j] = new Sphere(center, r, mat);
+      scenery.push_back(std::make_unique<Sphere>(center, r, mat));
     }
   }
 
@@ -255,9 +144,9 @@ VisibleList* grid_balls() {
   Diffuse* ground = new Diffuse(vec3(0.6, 0.6, 0.6));
 
   float big_radius = 500.;
-  scenery[9] = new Sphere(vec3(0, -big_radius-r, -1), big_radius, ground);
+  scenery.push_back(std::make_unique<Sphere>(vec3(0, -big_radius-r, -1), big_radius, ground));
 
-  return new VisibleList(scenery, ball_count);
+  return scenery;
 }
 
 /*
@@ -337,24 +226,23 @@ int main() {
 
   // Arrange scene
   // 
+
   //single_ball();
 
   //const int ball_count = 9;
   //random_balls(ball_count);
 
-  VisibleList* scene = grid_balls();
   //quadric_test();
+
   //grid_balls();
 
+  std::vector<std::unique_ptr<Visible>> scene = grid_balls();
 
   // Place camera
   vec3 camera_origin = 2.*vec3(1., .5, -3.0);
   vec3 camera_target = vec3(0., -.3, -2.);
   vec3 camera_up = vec3(0.0, 1.0, 0.0);
 
-  // lens test
-  //vec3 camera_origin = vec3(0, 0, -6.9);
-  //vec3 z_dir = normalise(vec3(0, 0, 1));
   // Right-handed
 
   float vfov = 3.;
@@ -371,7 +259,10 @@ int main() {
   // Draw scene
   FrameBuffer* frame_buffer = new FrameBuffer(h, w);
 
-  shade_buffer(*frame_buffer, *scene, view_cam);
+
+  CPURayTracer cpu_ray_tracer(spp, max_bounce);
+
+  cpu_ray_tracer.render(*frame_buffer, scene, view_cam);
 
 
   // Write scene
@@ -379,8 +270,6 @@ int main() {
 
 
   // Exit
-  delete scene;
-
   delete frame_buffer;
 
   return 0;

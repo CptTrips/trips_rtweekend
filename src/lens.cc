@@ -30,36 +30,39 @@ Lens::~Lens() {
     //delete material;
 }
 
-bool Lens::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const {
+std::unique_ptr<Intersection> Lens::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const {
 
     std::cout << "hi";
 
-    Intersection ixn1, ixn2, ixn3;
+    std::unique_ptr<Intersection> ixn1, ixn2, ixn3;
 
     // Get intersections with sphere_1 (if none return false)
-    if (!sphere_1.intersect(r, tmin, tmax, ixn1)) {
+    ixn1 = sphere_1.intersect(r, tmin, tmax);
+    if (!ixn1) {
         return false;
     }
 
     // Get intersection with sphere_2 (if none return false)
-    if (!sphere_2.intersect(r, tmin, tmax, ixn2)) {
+    ixn2 = sphere_2.intersect(r, tmin, tmax);
+    if (!ixn2) {
         return false;
     }
 
     // Get intersection with cylinder
-    if (!cylinder.intersect(r, tmin, tmax, ixn3)) {
-        ixn3.t = FLT_MAX;
-        ixn3.p = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+    ixn3 = cylinder.intersect(r, tmin, tmax);
+    if (!ixn3) {
+        ixn3->t = FLT_MAX;
+        ixn3->p = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
     }
 
     // There are at most two intersections which are within the other two quadrics
-
-    Intersection* valid_ixns[2];
+/*
+    std::unique_ptr<Intersection>* valid_ixns[2];
     int counter = 0;
 
     if (enclosed_by(ixn1.p, sphere_2) && enclosed_by(ixn1.p, cylinder)) {
 
-        valid_ixns[counter] = &ixn1;
+        valid_ixns[counter] = ixn1;
         counter++;
     }
 
@@ -92,6 +95,7 @@ bool Lens::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) co
             std::cout << "lens hit";
             return true;
     }
+    */
 
     // Should throw and exception here really
     return false;

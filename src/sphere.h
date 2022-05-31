@@ -9,7 +9,7 @@ class Sphere: public Visible {
     Sphere();
     Sphere(vec3 O, float r, Material* m);
     ~Sphere();
-    virtual bool intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const;
+    virtual std::unique_ptr<Intersection> intersect(const Ray& r, float tmin, float tmax) const;
     vec3 center;
     float radius;
     Material* material;

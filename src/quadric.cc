@@ -17,7 +17,10 @@ Quadric::~Quadric() {
     delete material;
 }
 
-bool Quadric::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const {
+std::unique_ptr<Intersection> Quadric::intersect(const Ray& r, float tmin, float tmax) const {
+
+    // null unique_ptr
+    std::unique_ptr<Intersection> ixn_ptr{};
 
     vec3 d = r.direction();
     vec3 x0 = r.origin();
@@ -39,28 +42,20 @@ bool Quadric::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn)
         float t = (-b - sqrt_disc) / (2 * a);
 
         if (t < tmax && t > tmin) {
-          ixn.t = t;
-          ixn.p = r.point_at(t);
-          ixn.normal = this->normal(ixn.p);
-          ixn.material = material;
-          return true;
+          ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, r.point_at(t), this->normal(r.point_at(t)), material});
         }
 
         // If the material is transparent check the far solution
-        if (!material->is_opaque()) {
+        else if (!material->is_opaque()) {
 
           t += sqrt_disc/a;
 
           if (t < tmax && t > tmin) {
-            ixn.t = t;
-            ixn.p = r.point_at(t);
-            ixn.normal = this->normal(ixn.p);
-            ixn.material = material;
-            return true;
+			ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, r.point_at(t), this->normal(r.point_at(t)), material});
           }
         }
     }
-    return false;
+    return ixn_ptr;
 }
 
 vec3 Quadric::normal(vec3 x) const {

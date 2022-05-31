@@ -10,7 +10,7 @@ class Rod : public Visible
 		Rod();
 		Rod(vec3 c, float r, vec3 l, Material* m);
 		~Rod();
-		bool intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const;
+		std::unique_ptr<Intersection> intersect(const Ray& r, float tmin, float tmax) const;
 		vec3 center;
 		float radius;
 		vec3 half_length_;

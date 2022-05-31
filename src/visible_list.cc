@@ -22,6 +22,7 @@ bool VisibleList::intersect(const Ray& r, float tmin, float tmax, Intersection& 
   bool any_intersect = false;
   double current_closest = tmax;
 
+  /*
   for (int i = 0; i<list_size; i++) {
 
     if (scenery[i]->intersect(r, tmin, current_closest, temp_ixn)) {
@@ -31,6 +32,7 @@ bool VisibleList::intersect(const Ray& r, float tmin, float tmax, Intersection& 
       ixn = temp_ixn;
     }
   }
+  */
 
   return any_intersect;
 }

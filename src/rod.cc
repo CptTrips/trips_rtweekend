@@ -9,9 +9,9 @@ Rod::~Rod() {
   delete material;
 }
 
-bool Rod::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const
+std::unique_ptr<Intersection> Rod::intersect(const Ray& r, float tmin, float tmax) const
 {
 
 	// Find ray's point of closest approach to 
-	return false;
+	return NULL;
 }

@@ -12,7 +12,7 @@ class Quadric : public Visible
         Quadric();
         Quadric(mat3 Q, vec3 P, float R, Material* m, bool offset=false);
         ~Quadric();
-        virtual bool intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const;
+        virtual std::unique_ptr<Intersection> intersect(const Ray& r, float tmin, float tmax) const;
         vec3 normal(vec3 x) const;
 
         mat3 Q;

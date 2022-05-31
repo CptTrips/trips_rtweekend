@@ -8,7 +8,9 @@ Sphere::~Sphere() {
   delete material;
 }
 
-bool Sphere::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) const{
+std::unique_ptr<Intersection> Sphere::intersect(const Ray& r, float tmin, float tmax) const{
+
+  std::unique_ptr<Intersection> ixn_ptr{};
 
   // a is 1 because ray directions should be normalised
 
@@ -27,28 +29,22 @@ bool Sphere::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) 
 
     // Try to find earliest intersection
     if (t < tmax && t > tmin) {
-      ixn.t = t;
-      ixn.p = r.point_at(t);
-      ixn.normal = (ixn.p - center) / radius;
-      ixn.material = material;
-      return true;
+      vec3 ixn_point = r.point_at(t);
+	  ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, ixn_point, (ixn_point - center) / radius, material});
     }
 
     // We might be inside the sphere
     // (earliest intersection is behind ray origin, farthest is ahead of ray origin)
-    if (!material->is_opaque()) {
+    else if (!material->is_opaque()) {
 
       t += 2.*sqrt_disc_4;
 
       if (t < tmax && t > tmin) {
-        ixn.t = t;
-        ixn.p = r.point_at(t);
-        ixn.normal = (ixn.p - center) / radius;
-        ixn.material = material;
-        return true;
+		vec3 ixn_point = r.point_at(t);
+		ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, ixn_point, (ixn_point - center) / radius, material});
       }
     }
   }
 
-  return false;
+  return ixn_ptr;
 }

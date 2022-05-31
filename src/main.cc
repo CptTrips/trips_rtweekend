@@ -12,10 +12,14 @@
 #include "diffuse.h"
 #include "dielectric.h"
 #include "float.h"
+#include "Camera.h"
+#include "FrameBuffer.h"
 
+
+const bool CUDA_ENABLED = false;
 
 // Resolution
-const int res_multiplier = 8;
+const int res_multiplier = 2;
 const int w = res_multiplier*160;
 const int h = res_multiplier*90;
 
@@ -26,26 +30,9 @@ const int spp = 128;
 const int max_bounce = 4;
 int bounce_count = 0;
 
-// static here means internal linkage, rng is only visible to this file
 RNG rng = RNG();
 
-struct Camera
-{
-  vec3 origin;
-  vec3 z_dir;
-  vec3 x_dir;
-  vec3 y_dir;
-};
 
-struct NewCamera
-{
-    vec3 origin;
-    mat3 orientation;
-    float vfov;
-    float aspect_ratio;
-    float focus_distance;
-    float aperture;
-};
 
 void gamma_correction(vec3& col) {
 
@@ -81,7 +68,7 @@ vec3 draw_red_star(const Ray& ray) {
     }
 }
 
-vec3 shade_ray(const Ray& ray, VisibleList* const scene) {
+vec3 shade_ray(const Ray& ray, const VisibleList& scene) {
 
   if (bounce_count == max_bounce) {
     return vec3(0., 0., 0.);
@@ -91,7 +78,7 @@ vec3 shade_ray(const Ray& ray, VisibleList* const scene) {
 
   Intersection ixn;
 
-  if (scene->intersect(ray, 1e-12, FLT_MAX, ixn)) {
+  if (scene.intersect(ray, 1e-12, FLT_MAX, ixn)) {
 
     Material* active_material = ixn.material;
 
@@ -108,71 +95,27 @@ vec3 shade_ray(const Ray& ray, VisibleList* const scene) {
   return sky_color;
 }
 
-Ray cast_ray(float u, float v, NewCamera& cam) {
 
-    // u and v run from 0 to 1
-
-    // Right-handed so x is up :(
-	float x = (u - 0.5) * cam.vfov; // x goes from -vfov/2 to vfov/2
-	float y = (v - 0.5) * cam.vfov * cam.aspect_ratio; // y goes from -w/(2h) to w/(2h)
-
-    vec3 focus_offset = cam.aperture * (2 * vec3(rng.sample(), rng.sample(), 0) - vec3(1., 1., 0.));
-
-    vec3 cam_space_ray_dir = vec3(x, y, cam.focus_distance) - focus_offset;
-
-    vec3 ray_dir = cam.orientation.T() * cam_space_ray_dir;
-
-    return Ray(cam.origin + cam.orientation.T()*focus_offset, ray_dir);
-}
-
-vec3 exposure(const vec3 spectral_power_density) {
+vec3 exposure(const vec3 spectral_power_density, const float max_power = 1) {
     // Determines the RGB colour of the pixel given an incident spectral power
     // density. (Perhaps make a member function of the camera.)
 
-    vec3 col = vec3();
-
-    float max_power = 1;
+    vec3 col = spectral_power_density;
 
     for (int i=0; i<3; i++) {
-        col[i] = spectral_power_density[i] / max_power;
+        col[i] /= max_power;
         col[i] = (std::min)(col[i], 1.f);
     }
 
     return col;
 }
 
-void shade_buffer(char* buffer, const int h, const int w, VisibleList* const scene) {
+void shade_buffer(FrameBuffer& fb, const VisibleList& scene, const Camera& view_cam) {
 
-  vec3 camera_origin = 2.*vec3(1., .5, -3.0);
-  vec3 camera_target = vec3(0., -.3, -2.);
-  vec3 z_dir = normalise(camera_target - camera_origin);
 
-  // lens test
-  //vec3 camera_origin = vec3(0, 0, -6.9);
-  //vec3 z_dir = normalise(vec3(0, 0, 1));
-  // Right-handed
-  vec3 y_dir = normalise(cross(z_dir, vec3(0.0, 1.0, 0.0)));
-  vec3 x_dir = normalise(cross(y_dir, z_dir));
-
-  mat3 camera_orientation = mat3(
-      x_dir[0], x_dir[1], x_dir[2],
-      y_dir[0], y_dir[1], y_dir[2],
-      z_dir[0], z_dir[1], z_dir[2]
-  );
-
-  float vfov = 3.;
-
-  float aspect_ratio = float(w) / float(h);
-
-  float focus_distance = (camera_target - camera_origin).length();
-
-  float aperture = 0.1;
-
-  NewCamera view_cam = { camera_origin, camera_orientation, vfov, aspect_ratio, focus_distance, aperture};
-
-  for (int r=0; r<h; r++)
+  for (int r=0; r<fb.h; r++)
   {
-    for (int c=0; c<w; c++)
+    for (int c=0; c<fb.w; c++)
     {
 
       vec3 spectral_power_density = vec3(0., 0., 0.);
@@ -181,11 +124,11 @@ void shade_buffer(char* buffer, const int h, const int w, VisibleList* const sce
       for (int s=0; s<spp; s++) {
 
 
-        float u = (float(r) + rng.sample()) / float(h);
-        float v = (float(c) + rng.sample()) / float(w);
+        float u = (float(r) + rng.sample()) / float(fb.h);
+        float v = (float(c) + rng.sample()) / float(fb.w);
 
         bounce_count = 0;
-        Ray primary = cast_ray(u, v, view_cam);
+        Ray primary = view_cam.cast_ray(u, v);
 
         spectral_power_density += shade_ray(primary, scene);
       }
@@ -196,9 +139,7 @@ void shade_buffer(char* buffer, const int h, const int w, VisibleList* const sce
 
       gamma_correction(col);
 
-      buffer[r*w*3 + c*3 + 0] = int(255.99*col.r());
-      buffer[r*w*3 + c*3 + 1] = int(255.99*col.g());
-      buffer[r*w*3 + c*3 + 2] = int(255.99*col.b());
+      fb.set_pixel(r, c, col);
     }
   }
 }
@@ -394,6 +335,8 @@ VisibleList* lens() {
 
 int main() {
 
+  // Arrange scene
+  // 
   //single_ball();
 
   //const int ball_count = 9;
@@ -404,16 +347,41 @@ int main() {
   //grid_balls();
 
 
+  // Place camera
+  vec3 camera_origin = 2.*vec3(1., .5, -3.0);
+  vec3 camera_target = vec3(0., -.3, -2.);
+  vec3 camera_up = vec3(0.0, 1.0, 0.0);
+
+  // lens test
+  //vec3 camera_origin = vec3(0, 0, -6.9);
+  //vec3 z_dir = normalise(vec3(0, 0, 1));
+  // Right-handed
+
+  float vfov = 3.;
+
+  float aspect_ratio = float(w) / float(h);
+
+  float focus_distance = (camera_target - camera_origin).length();
+
+  float aperture = 0.1;
+
+  Camera view_cam(camera_origin, camera_target, camera_up, vfov, aspect_ratio, focus_distance, aperture);
+
+
   // Draw scene
-  char* buffer = new char[h*w*3];
+  FrameBuffer* frame_buffer = new FrameBuffer(h, w);
 
-  shade_buffer(buffer, h, w, scene);
+  shade_buffer(*frame_buffer, *scene, view_cam);
 
+
+  // Write scene
+  bmp_write(frame_buffer->buffer, h, w, "output.bmp");
+
+
+  // Exit
   delete scene;
 
-  bmp_write(buffer, h, w, "output.bmp");
-
-  delete [] buffer;
+  delete frame_buffer;
 
   return 0;
 

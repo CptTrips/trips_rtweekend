@@ -7,8 +7,8 @@
 class RNG {
   public:
     RNG();
-    float sample();
-    vec3 sample_uniform_sphere();
+    float sample() const;
+    vec3 sample_uniform_sphere() const;
 
 };
 

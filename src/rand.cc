@@ -6,13 +6,13 @@ std::uniform_real_distribution<float> rnd(0., 1.);
 
 RNG::RNG() {}
 
-float RNG::sample() {
+float RNG::sample() const {
 
   return rnd(gen);
 }
 
 // Return a point sampled uniformly from sphere of radius 1
-vec3 RNG::sample_uniform_sphere() {
+vec3 RNG::sample_uniform_sphere() const {
 
   vec3 p;
 

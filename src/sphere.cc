@@ -25,6 +25,7 @@ bool Sphere::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) 
 
     float t = -b - sqrt_disc_4;
 
+    // Try to find earliest intersection
     if (t < tmax && t > tmin) {
       ixn.t = t;
       ixn.p = r.point_at(t);
@@ -33,6 +34,8 @@ bool Sphere::intersect(const Ray& r, float tmin, float tmax, Intersection& ixn) 
       return true;
     }
 
+    // We might be inside the sphere
+    // (earliest intersection is behind ray origin, farthest is ahead of ray origin)
     if (!material->is_opaque()) {
 
       t += 2.*sqrt_disc_4;

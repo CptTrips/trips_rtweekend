@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
-#include "visible.h"
-#include "FrameBuffer.h"
+#include "visibles/visible.h"
+#include "FrameBuffer.cuh"
 #include "Camera.h"
-#include "vec3.h"
+#include "vec3.cuh"
 #include "rand.h"
-#include "material.h"
+#include "materials/material.h"
 #include "Scene.h"
 
 
@@ -17,6 +17,10 @@ class CPURayTracer
 	const int max_bounce;
 
 	int bounce_count;
+
+	const float tmin;
+
+	const float tmax;
 
 	RNG rng;
 
@@ -30,9 +34,9 @@ class CPURayTracer
 
 public:
 
-	CPURayTracer(const int spp, const int max_bounce) : spp(spp), max_bounce(max_bounce), rng(RNG()), bounce_count(0) {}
+	CPURayTracer(const int spp, const int max_bounce, const float tmin=1e-12, const float tmax=FLT_MAX) : spp(spp), max_bounce(max_bounce), rng(RNG()), bounce_count(0), tmin(tmin), tmax(tmax) {}
 
-	void render(FrameBuffer& fb, const std::vector<std::unique_ptr<Visible>>& scene, const Camera& camera);
+	FrameBuffer* render(const int h, const int w, const std::vector<std::unique_ptr<Visible>>& scene, const Camera& camera);
 
-	std::unique_ptr<Intersection> nearest_intersection(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene, const float tmin, const float tmax) const;
+	std::unique_ptr<Intersection> nearest_intersection(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene) const;
 };

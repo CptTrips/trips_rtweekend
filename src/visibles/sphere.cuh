@@ -1,8 +1,10 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 
+#include "CUDASphere.cuh"
+#include "CUDAVisible.cuh"
 #include "visible.h"
-#include "material.h"
+#include "../materials/material.h"
 
 class Sphere: public Visible {
   public:
@@ -10,6 +12,7 @@ class Sphere: public Visible {
     Sphere(vec3 O, float r, Material* m);
     ~Sphere();
     virtual std::unique_ptr<Intersection> intersect(const Ray& r, float tmin, float tmax) const;
+    virtual CUDAVisible* to_device() const;
     vec3 center;
     float radius;
     Material* material;

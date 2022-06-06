@@ -7,7 +7,7 @@ Dielectric::Dielectric(vec3 a, float n) : Material(a), refractive_index(n) {rng 
 
 Dielectric::~Dielectric() {}
 
-void Dielectric::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) {
+void Dielectric::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const{
 
   vec3 k_out;
 
@@ -57,7 +57,7 @@ void Dielectric::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) {
   r_out = Ray(ixn.p, k_out);
 }
 
-float Dielectric::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) {
+float Dielectric::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const{
 
   float n_in, n_out;
 
@@ -76,14 +76,14 @@ float Dielectric::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n
 
   float r_p = reflectance_formula(n_in * cos_o, n_out * cos_i);
 
-  return 0.5 * (r_s + r_p);
+  return 0.5f * (r_s + r_p);
 }
 
-float Dielectric::reflectance_formula(float a, float b) {
+float Dielectric::reflectance_formula(float a, float b) const{
 
   float c = (a - b)/(a + b);
 
   return c*c;
 }
 
-bool Dielectric::is_opaque() { return false; }
+bool Dielectric::is_opaque() const{ return false; }

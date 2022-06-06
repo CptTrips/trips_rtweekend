@@ -8,7 +8,7 @@ Metal::Metal(vec3 a, float r) : Material(a), roughness(r) {rng = RNG();}
 
 Metal::~Metal() {}
 
-void Metal::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) {
+__host__ __device__ void Metal::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const {
 
   vec3 scatter_dir = r_in.direction() - 2.*dot(r_in.direction(), ixn.normal)*ixn.normal;
 
@@ -22,4 +22,4 @@ void Metal::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) {
 
 }
 
-bool Metal::is_opaque() { return true; }
+__host__ __device__ bool Metal::is_opaque() const { return true; }

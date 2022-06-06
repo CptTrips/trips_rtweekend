@@ -1,7 +1,7 @@
 #ifndef RAND_H
 #define RAND_H
 
-#include "vec3.h"
+#include "vec3.cuh"
 #include <random>
 
 class RNG {

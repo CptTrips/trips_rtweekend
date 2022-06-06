@@ -2,18 +2,18 @@
 #include <functional>
 #include <algorithm>
 #include "rand.h"
-#include "ray.h"
+#include "ray.cuh"
 #include "..\include\palette.h"
-#include "visible_list.h"
-#include "sphere.h"
-#include "quadric.h"
-#include "metal.h"
-#include "diffuse.h"
-#include "dielectric.h"
+#include "visibles/sphere.cuh"
+#include "materials/metal.h"
+#include "materials/diffuse.h"
+#include "materials/dielectric.h"
 #include "float.h"
 #include "Camera.h"
-#include "FrameBuffer.h"
+#include "FrameBuffer.cuh"
 #include "CPURayTracer.h"
+#include "GPURayTracer.cuh"
+#include <typeinfo>
 
 
 const bool CUDA_ENABLED = false;
@@ -24,10 +24,10 @@ const int w = res_multiplier*160;
 const int h = res_multiplier*90;
 
 // Samples per pixel
-const int spp = 128;
+const int spp = 4;
 
 // Ray bounce limit
-const int max_bounce = 4;
+const int max_bounce = 2;
 int bounce_count = 0;
 
 RNG rng = RNG();
@@ -222,6 +222,17 @@ VisibleList* lens() {
 }
 */
 
+
+void test_visible_size(std::vector<std::unique_ptr<Visible>>& scene)
+{
+
+    for (auto& v : scene)
+    {
+        std::cout << "Size of " << typeid(*v).name() << " " << v->size() << std::endl;
+    }
+
+}
+
 int main() {
 
   // Arrange scene
@@ -236,7 +247,9 @@ int main() {
 
   //grid_balls();
 
+
   std::vector<std::unique_ptr<Visible>> scene = grid_balls();
+    test_visible_size(scene);
 
   // Place camera
   vec3 camera_origin = 2.*vec3(1., .5, -3.0);
@@ -257,12 +270,11 @@ int main() {
 
 
   // Draw scene
-  FrameBuffer* frame_buffer = new FrameBuffer(h, w);
 
+  //CPURayTracer cpu_ray_tracer(spp, max_bounce);
+  GPURayTracer gpu_ray_tracer(spp, max_bounce);
 
-  CPURayTracer cpu_ray_tracer(spp, max_bounce);
-
-  cpu_ray_tracer.render(*frame_buffer, scene, view_cam);
+  FrameBuffer* frame_buffer = gpu_ray_tracer.render(h, w, scene, view_cam);
 
 
   // Write scene

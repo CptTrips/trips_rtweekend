@@ -1,5 +1,5 @@
 #pragma once
-#include "vec3.h"
+#include "vec3.cuh"
 
 class FrameBuffer
 {
@@ -19,5 +19,5 @@ public:
 
 	~FrameBuffer();
 
-	void set_pixel(const int& r, const int& c, const vec3& col);
+	__host__ __device__ void set_pixel(const int& r, const int& c, const vec3& col);
 };

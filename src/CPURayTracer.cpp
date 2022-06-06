@@ -1,10 +1,11 @@
 #include "CPURayTracer.h"
 
-void CPURayTracer::render(FrameBuffer& fb, const std::vector<std::unique_ptr<Visible>>& scene, const Camera& camera)
+FrameBuffer* CPURayTracer::render(const int h, const int w, const std::vector<std::unique_ptr<Visible>>& scene, const Camera& camera)
 {
-  for (int r=0; r<fb.h; r++)
+    FrameBuffer* fb = new FrameBuffer(h, w);
+  for (int r=0; r<h; r++)
   {
-    for (int c=0; c<fb.w; c++)
+    for (int c=0; c<w; c++)
     {
 
       vec3 spectral_power_density = vec3(0., 0., 0.);
@@ -13,8 +14,8 @@ void CPURayTracer::render(FrameBuffer& fb, const std::vector<std::unique_ptr<Vis
       for (int s=0; s<spp; s++) {
 
 
-        float u = (float(r) + rng.sample()) / float(fb.h);
-        float v = (float(c) + rng.sample()) / float(fb.w);
+        float u = (float(r) + rng.sample()) / float(h);
+        float v = (float(c) + rng.sample()) / float(w);
 
         bounce_count = 0;
         Ray primary = camera.cast_ray(u, v);
@@ -28,9 +29,11 @@ void CPURayTracer::render(FrameBuffer& fb, const std::vector<std::unique_ptr<Vis
 
       gamma_correction(col);
 
-      fb.set_pixel(r, c, col);
+      fb->set_pixel(r, c, col);
     }
   }
+
+  return fb;
 }
 
 vec3 CPURayTracer::shade_ray(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene) {
@@ -41,11 +44,11 @@ vec3 CPURayTracer::shade_ray(const Ray& ray, const std::vector<std::unique_ptr<V
 
   bounce_count += 1;
 
-  std::unique_ptr<Intersection> ixn_ptr = nearest_intersection(ray, scene, 1e-12, FLT_MAX);
+  std::unique_ptr<Intersection> ixn_ptr = nearest_intersection(ray, scene);
 
   if (ixn_ptr) {
 
-    Material* active_material = ixn_ptr->material;
+    const Material* active_material = ixn_ptr->material;
 
     Ray scatter_ray;
 
@@ -80,21 +83,21 @@ vec3 CPURayTracer::exposure(const vec3 spectral_power_density, const float max_p
     return col;
 }
 
-std::unique_ptr<Intersection> CPURayTracer::nearest_intersection(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene, const float tmin, const float tmax) const
+std::unique_ptr<Intersection> CPURayTracer::nearest_intersection(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene)const
 {
 
-    std::unique_ptr<Intersection> ixn{};
+    std::unique_ptr<Intersection> ixn;
 
-    std::unique_ptr<Intersection> temp_ixn{};
+    std::unique_ptr<Intersection> temp_ixn;
 
 	bool any_intersect = false;
 
 	float current_closest = tmax;
 
-	for (auto it = scene.begin(); it < scene.end(); it++)
+	for (const auto& it : scene)
     {
 
-		temp_ixn = (*it)->intersect(ray, tmin, current_closest);
+		temp_ixn = it->intersect(ray, tmin, current_closest);
 
 		if (temp_ixn) {
 

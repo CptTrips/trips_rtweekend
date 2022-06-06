@@ -1,6 +1,5 @@
-#ifndef MAT3_H
-#define MAT3_H
-
+#pragma once
+#include "device_launch_parameters.h"
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
@@ -8,45 +7,45 @@
 class mat3
 {
     public:
-        mat3() {}
-        mat3(float a00, float a01, float a02,
+        __host__ __device__ mat3() {}
+        __host__ __device__ mat3(float a00, float a01, float a02,
              float a10, float a11, float a12,
              float a20, float a21, float a22) {
              a[0] = a00; a[1] = a01; a[2] = a02;
              a[3] = a10; a[4] = a11; a[5] = a12;
              a[6] = a20; a[7] = a21; a[8] = a22;}
-         mat3(float* a_in) { for (int i=0; i<9; i++) {a[i] = a_in[i];} }
-         mat3(float a_diag) {
+         __host__ __device__ mat3(float* a_in) { for (int i=0; i<9; i++) {a[i] = a_in[i];} }
+         __host__ __device__ mat3(float a_diag) {
             for (int i=0; i<9; i++) {a[i] = 0.;}
             a[0] = a_diag; a[4] = a_diag; a[8] = a_diag; }
 
-        inline float el(int i, int j) const { return a[3*i + j]; }
-        inline void set_el(int i, int j, float a_ij) { a[3*i + j] = a_ij;}
+        __host__ __device__ inline float el(int i, int j) const { return a[3*i + j]; }
+        __host__ __device__ inline void set_el(int i, int j, float a_ij) { a[3*i + j] = a_ij;}
 
-        inline const mat3& operator+() const { return *this; }
-        inline const mat3 operator-() const {
+        __host__ __device__ inline const mat3& operator+() const { return *this; }
+        __host__ __device__ inline const mat3 operator-() const {
             float a_minus[9];
             for (int i=0; i<9; i++) { a_minus[i] = -a[i]; }
             return a_minus;
         }
 
-        inline float operator[](int i) const { return a[i]; }
-        inline float& operator[](int i) { return a[i]; }
+        __host__ __device__ inline float operator[](int i) const { return a[i]; }
+        __host__ __device__ inline float& operator[](int i) { return a[i]; }
         /* Need to define a mat3_row class to make this work
         inline float& operator[](int i, int j) { return el(i,j);}
         inline float operator[](int i, int j) { return el(i,j);}
         */
 
-        inline mat3& operator+=(const mat3 &m2);
-        inline mat3& operator-=(const mat3 &m2);
-        inline mat3& operator*=(const mat3 &m2);
+        __host__ __device__ inline mat3& operator+=(const mat3 &m2);
+        __host__ __device__ inline mat3& operator-=(const mat3 &m2);
+        __host__ __device__ inline mat3& operator*=(const mat3 &m2);
 
-        inline mat3& operator+=(const float f);
-        inline mat3& operator-=(const float f);
-        inline mat3& operator*=(const float f);
-        inline mat3& operator/=(const float f);
+        __host__ __device__ inline mat3& operator+=(const float f);
+        __host__ __device__ inline mat3& operator-=(const float f);
+        __host__ __device__ inline mat3& operator*=(const float f);
+        __host__ __device__ inline mat3& operator/=(const float f);
 
-        inline mat3 T() const {
+        __host__ __device__ inline mat3 T() const {
             mat3 a_T = mat3(0.);
             for (int i=0; i<3; i++) {
                 for (int j=0; j<3; j++) {
@@ -56,7 +55,7 @@ class mat3
             return a_T;
         }
 
-        float trace() const {
+        __host__ __device__ float trace() const {
             float tr = 0.;
 
             for (int i=0; i<3; i++) {
@@ -83,7 +82,7 @@ inline std::ostream& operator<<(std::ostream &os, const mat3 &m) {
   return os;
 }
 
-inline mat3 operator+(const mat3 &m1, const mat3 &m2) {
+__host__ __device__ inline mat3 operator+(const mat3 &m1, const mat3 &m2) {
     mat3 m_out = mat3(0.);
     for (int i=0; i<9; i++) {
         m_out[i] = m1[i] + m2[i];
@@ -91,11 +90,11 @@ inline mat3 operator+(const mat3 &m1, const mat3 &m2) {
     return m_out;
 }
 
-inline mat3 operator-(const mat3 &m1, const mat3 &m2) {
+__host__ __device__ inline mat3 operator-(const mat3 &m1, const mat3 &m2) {
   return m1 + (-m2);
 }
 
-inline mat3 operator*(const mat3 &m1, const mat3 &m2) {
+__host__ __device__ inline mat3 operator*(const mat3 &m1, const mat3 &m2) {
     mat3 m_out = mat3(0.);
 
     for (int i=0; i<3; i++) {
@@ -110,7 +109,7 @@ inline mat3 operator*(const mat3 &m1, const mat3 &m2) {
     return m_out;
 }
 
-inline vec3 operator*(const mat3 &m, const vec3 &v) {
+__host__ __device__ inline vec3 operator*(const mat3 &m, const vec3 &v) {
     vec3 v_out = vec3(0., 0., 0.);
     for (int i=0; i<3; i++) {
         for (int j=0; j<3; j++) {
@@ -120,16 +119,14 @@ inline vec3 operator*(const mat3 &m, const vec3 &v) {
     return v_out;
 }
 
-inline mat3 operator*(float t, const mat3 &m1) {
+__host__ __device__ inline mat3 operator*(float t, const mat3 &m1) {
     return m1 * mat3(t);
 }
 
-inline mat3 operator/(const mat3 &m1, float t) {
+__host__ __device__ inline mat3 operator/(const mat3 &m1, float t) {
     return m1 * mat3(1./t);
 }
 
-inline mat3 operator*(const mat3 &m1, float t) {
+__host__ __device__ inline mat3 operator*(const mat3 &m1, float t) {
     return mat3(t) * m1;
 }
-
-#endif

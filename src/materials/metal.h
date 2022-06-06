@@ -1,7 +1,7 @@
 #ifndef METAL_H
 #define METAL_H
 
-#include "rand.h"
+#include "../rand.h"
 #include "material.h"
 
 class Metal : public Material
@@ -10,8 +10,8 @@ class Metal : public Material
     Metal();
     Metal(vec3 albedo, float roughness);
     ~Metal();
-    void bounce(Ray const& r_in, Intersection& ixn, Ray& r_out);
-    bool is_opaque();
+    __host__ __device__ void bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const;
+    __host__ __device__ bool is_opaque() const;
     float roughness;
 
   private:

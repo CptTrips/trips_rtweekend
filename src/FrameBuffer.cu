@@ -1,4 +1,4 @@
-#include "FrameBuffer.h"
+#include "FrameBuffer.cuh"
 
 
 FrameBuffer::FrameBuffer(const int& h, const int& w) : h(h), w(w)
@@ -8,7 +8,12 @@ FrameBuffer::FrameBuffer(const int& h, const int& w) : h(h), w(w)
 
 FrameBuffer::FrameBuffer(const FrameBuffer& fb)
 {
-	*this = fb;
+	h = fb.h;
+	w = fb.w;
+
+	buffer = new char[h * w * 3];
+
+	memcpy(buffer, fb.buffer, h * w * 3);
 }
 
 FrameBuffer& FrameBuffer::operator=(const FrameBuffer& fb)
@@ -47,7 +52,7 @@ FrameBuffer::~FrameBuffer()
 	delete[] buffer;
 }
 
-void FrameBuffer::set_pixel(const int& r, const int& c, const vec3& col)
+__host__ __device__ void FrameBuffer::set_pixel(const int& r, const int& c, const vec3& col)
 {
 	buffer[r * w * 3 + c * 3] = int(255.99*col.r());
 	buffer[r * w * 3 + c * 3 + 1] = int(255.99*col.g());

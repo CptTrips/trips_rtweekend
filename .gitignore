@@ -30,3 +30,12 @@
 *.exe
 *.out
 *.app
+/.vs/Trips' Ray Tracing in One Weekend/v16/ipch/AutoPCH
+/.vs
+/Debug
+/x64
+/.vscode
+/Ray Tracing in a Weekend.layout
+/Ray Tracing in a Weekend.dev
+/output.bmp
+/Makefile.win

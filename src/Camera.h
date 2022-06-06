@@ -1,7 +1,8 @@
 #pragma once
-#include "vec3.h"
+#include "device_launch_parameters.h"
+#include "vec3.cuh"
 #include "mat3.h"
-#include "ray.h"
+#include "ray.cuh"
 #include "rand.h"
 
 class Camera

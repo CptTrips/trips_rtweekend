@@ -1,10 +1,43 @@
-#include "sphere.h"
+#include "sphere.cuh"
 
 Sphere::Sphere() {}
 
 Sphere::Sphere(vec3 O, float r, Material* m) : center(O), radius(r), material(m) {}
 
-Sphere::~Sphere() {
+CUDAVisible* Sphere::to_device() const
+{
+    // Allocate CUDASphere on device
+    CUDASphere* d_sphere_ptr;
+
+    size_t s_size = sizeof(*this);
+
+    cudaMalloc(&d_sphere_ptr, s_size);
+
+    // Copy attributes
+
+    vec3* d_center_ptr = &(d_sphere_ptr->center);
+
+    cudaMemcpy(d_center_ptr, &(this->center), sizeof(*d_center_ptr), cudaMemcpyHostToDevice);
+
+    float* d_radius_ptr = &(d_sphere_ptr->radius);
+
+    cudaMemcpy(d_radius_ptr, &(this->radius), sizeof(float), cudaMemcpyHostToDevice);
+
+    // Copy material
+    Material* d_mat_ptr;
+    size_t mat_size = sizeof(*(this->material));
+    cudaMalloc(&d_mat_ptr, mat_size);
+
+    cudaMemcpy(d_mat_ptr, this->material, mat_size, cudaMemcpyHostToDevice);
+
+    // Copy ptr to material
+    cudaMemcpy(&(d_sphere_ptr->material), &(this->material), sizeof(d_mat_ptr), cudaMemcpyHostToDevice);
+
+    return d_sphere_ptr;
+}
+
+Sphere::~Sphere()
+{
   delete material;
 }
 

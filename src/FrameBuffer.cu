@@ -3,7 +3,7 @@
 
 FrameBuffer::FrameBuffer(const int& h, const int& w) : h(h), w(w)
 {
-	buffer = new char[h * w * 3];
+	cudaMallocManaged(&buffer, h * w * 3);
 }
 
 FrameBuffer::FrameBuffer(const FrameBuffer& fb)
@@ -49,12 +49,13 @@ FrameBuffer& FrameBuffer::operator=(const FrameBuffer& fb)
 
 FrameBuffer::~FrameBuffer()
 {
-	delete[] buffer;
+	cudaFree(buffer);
 }
 
 __host__ __device__ void FrameBuffer::set_pixel(const int& r, const int& c, const vec3& col)
 {
-	buffer[r * w * 3 + c * 3] = int(255.99*col.r());
-	buffer[r * w * 3 + c * 3 + 1] = int(255.99*col.g());
-	buffer[r * w * 3 + c * 3 + 2] = int(255.99*col.b());
+	size_t pixel_index = r * w * 3 + c * 3;
+	buffer[pixel_index] = uint8_t(255.99*col.r());
+	buffer[pixel_index + 1] = uint8_t(255.99*col.g());
+	buffer[pixel_index + 2] = uint8_t(255.99*col.b());
 }

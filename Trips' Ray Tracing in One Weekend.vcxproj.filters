@@ -15,31 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\materials\dielectric.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\materials\diffuse.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\materials\material.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\materials\metal.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\rand.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\visibles\sphere.cu">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CPURayTracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -47,28 +26,7 @@
     <ClInclude Include="include\palette.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\materials\dielectric.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\materials\diffuse.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\materials\emissive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\mat3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\materials\material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\materials\metal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\rand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\visibles\sphere.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\vec3.cuh">
@@ -80,15 +38,17 @@
     <ClInclude Include="src\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CPURayTracer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />
     <ClInclude Include="src\Intersection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Error.cuh" />
+    <ClInclude Include="src\Managed.cuh" />
+    <ClInclude Include="src\CUDAScenes.cuh" />
+    <ClInclude Include="src\Scenes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -111,5 +71,35 @@
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="src\Error.cu" />
+    <CudaCompile Include="src\CUDAScenes.cu" />
+    <CudaCompile Include="src\materials\metal.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\materials\material.h">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\materials\dielectric.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\materials\diffuse.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\rand.cc">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\rand.h">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\materials\dielectric.tu">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="src\materials\diffuse.tu">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="src\materials\metal.tu">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

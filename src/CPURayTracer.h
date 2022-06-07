@@ -22,8 +22,6 @@ class CPURayTracer
 
 	const float tmax;
 
-	RNG rng;
-
 	vec3 shade_ray(const Ray& ray, const std::vector<std::unique_ptr<Visible>>& scene);
 
 	vec3 exposure(const vec3 spectral_power_density, const float max_power = 1) const;
@@ -32,9 +30,11 @@ class CPURayTracer
 
 	vec3 draw_sky(const Ray& ray) const;
 
+	CPU_RNG rng;
+
 public:
 
-	CPURayTracer(const int spp, const int max_bounce, const float tmin=1e-12, const float tmax=FLT_MAX) : spp(spp), max_bounce(max_bounce), rng(RNG()), bounce_count(0), tmin(tmin), tmax(tmax) {}
+	CPURayTracer(const int spp, const int max_bounce, const float tmin=1e-12, const float tmax=FLT_MAX) : spp(spp), max_bounce(max_bounce), bounce_count(0), tmin(tmin), tmax(tmax), rng(CPU_RNG()) {}
 
 	FrameBuffer* render(const int h, const int w, const std::vector<std::unique_ptr<Visible>>& scene, const Camera& camera);
 

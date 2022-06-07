@@ -1,19 +1,13 @@
-#include "dielectric.h"
 
 
-Dielectric::Dielectric() {}
-
-Dielectric::Dielectric(vec3 a, float n) : Material(a), refractive_index(n) {rng = RNG();}
-
-Dielectric::~Dielectric() {}
-
-void Dielectric::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const{
+template<typename RNG_T>
+__host__ __device__ vec3 Dielectric<RNG_T>::bounce(const vec3& r_in, const vec3& normal, RNG_T* const rng) const{
 
   vec3 k_out;
 
-  vec3 k_in = r_in.direction();
+  vec3 k_in = r_in;
 
-  vec3 n = ixn.normal;
+  vec3 n = normal;
 
   // Figure out the index of the incoming/outcoming ray
   float in_index, out_index;
@@ -45,19 +39,20 @@ void Dielectric::bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const{
   if (norm2_k_out_tang > 1.) { // Total internal reflection
     k_out = k_reflected;
   } else { //Refraction
-    float r = reflectance(r_in.direction(), k_refracted, ixn.normal);
+    float r = reflectance(r_in, k_refracted, normal);
 
-    if (rng.sample() > r) { // Stochastically sample reflected/refracted rays
+    if (rng->sample() > r) { // Stochastically sample reflected/refracted rays
       k_out = k_refracted;
     } else { // reflect
       k_out = k_reflected;
     }
   }
 
-  r_out = Ray(ixn.p, k_out);
+  r_out = k_out;
 }
 
-float Dielectric::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const{
+template<typename RNG_T>
+__host__ __device__ float Dielectric<RNG_T>::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const{
 
   float n_in, n_out;
 
@@ -79,11 +74,10 @@ float Dielectric::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n
   return 0.5f * (r_s + r_p);
 }
 
-float Dielectric::reflectance_formula(float a, float b) const{
+template<typename RNG_T>
+__host__ __device__ float Dielectric<RNG_T>::reflectance_formula(float a, float b) const{
 
   float c = (a - b)/(a + b);
 
   return c*c;
 }
-
-bool Dielectric::is_opaque() const{ return false; }

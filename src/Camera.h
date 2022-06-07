@@ -17,8 +17,6 @@ public:
     float focus_distance;
     float aperture;
 
-    RNG rng;
-
     Camera(
         const vec3& origin
         , const vec3& target
@@ -29,5 +27,5 @@ public:
         , float aperture
     );
 
-    Ray cast_ray(const float& u, const float& v) const;
+    Ray cast_ray(const float& u, const float& v, CPU_RNG* rng) const;
 };

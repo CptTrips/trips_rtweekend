@@ -134,40 +134,44 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
-    <ClCompile Include="src\materials\dielectric.cc" />
-    <ClCompile Include="src\materials\diffuse.cc" />
+    <None Include="src\materials\dielectric.tu">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="src\materials\diffuse.tu">
+      <FileType>CppCode</FileType>
+    </None>
+    <CudaCompile Include="src\CUDAScenes.cu" />
     <CudaCompile Include="src\Error.cu" />
     <CudaCompile Include="src\FrameBuffer.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="src\main.cc" />
-    <ClCompile Include="src\materials\material.cc" />
-    <ClCompile Include="src\materials\metal.cc" />
-    <ClCompile Include="src\rand.cc" />
+    <None Include="src\materials\metal.tu">
+      <FileType>CppCode</FileType>
+    </None>
+    <CudaCompile Include="src\rand.cc" />
     <CudaCompile Include="src\ray.cu">
       <FileType>Document</FileType>
     </CudaCompile>
-    <ClCompile Include="src\CPURayTracer.cpp" />
-    <ClCompile Include="src\visibles\sphere.cu" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\palette.h" />
     <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\CUDAScenes.cuh" />
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
+    <ClInclude Include="src\Managed.cuh" />
+    <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />
-    <ClInclude Include="src\materials\dielectric.h" />
-    <ClInclude Include="src\materials\diffuse.h" />
-    <ClInclude Include="src\materials\emissive.h" />
+    <CudaCompile Include="src\materials\dielectric.cuh" />
+    <CudaCompile Include="src\materials\diffuse.cuh" />
     <CudaCompile Include="src\FrameBuffer.cuh" />
     <ClInclude Include="src\mat3.h" />
-    <ClInclude Include="src\materials\material.h" />
-    <ClInclude Include="src\materials\metal.h" />
-    <ClInclude Include="src\rand.h" />
+    <CudaCompile Include="src\materials\material.h" />
+    <CudaCompile Include="src\materials\metal.cuh" />
+    <CudaCompile Include="src\rand.h" />
     <CudaCompile Include="src\ray.cuh" />
-    <ClInclude Include="src\CPURayTracer.h" />
-    <ClInclude Include="src\visibles\sphere.cuh" />
     <ClInclude Include="src\vec3.cuh" />
     <ClInclude Include="src\visibles\visible.h" />
   </ItemGroup>

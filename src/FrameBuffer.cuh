@@ -1,7 +1,8 @@
 #pragma once
 #include "vec3.cuh"
+#include "Managed.cuh"
 
-class FrameBuffer
+class FrameBuffer : public Managed
 {
 
 

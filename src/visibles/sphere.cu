@@ -2,7 +2,7 @@
 
 Sphere::Sphere() {}
 
-Sphere::Sphere(vec3 O, float r, Material* m) : center(O), radius(r), material(m) {}
+Sphere::Sphere(vec3 O, float r, Material<CPU_RNG>* m) : center(O), radius(r), material(m) {}
 
 CUDAVisible* Sphere::to_device() const
 {
@@ -24,7 +24,7 @@ CUDAVisible* Sphere::to_device() const
     cudaMemcpy(d_radius_ptr, &(this->radius), sizeof(float), cudaMemcpyHostToDevice);
 
     // Copy material
-    Material* d_mat_ptr;
+    Material<CPU_RNG>* d_mat_ptr;
     size_t mat_size = sizeof(*(this->material));
     cudaMalloc(&d_mat_ptr, mat_size);
 
@@ -62,8 +62,7 @@ std::unique_ptr<Intersection> Sphere::intersect(const Ray& r, float tmin, float 
 
     // Try to find earliest intersection
     if (t < tmax && t > tmin) {
-      vec3 ixn_point = r.point_at(t);
-	  ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, ixn_point, (ixn_point - center) / radius, material});
+	  ixn_ptr = std::unique_ptr<Intersection>(new Intersection(t, this));
     }
 
     // We might be inside the sphere
@@ -73,8 +72,7 @@ std::unique_ptr<Intersection> Sphere::intersect(const Ray& r, float tmin, float 
       t += 2.*sqrt_disc_4;
 
       if (t < tmax && t > tmin) {
-		vec3 ixn_point = r.point_at(t);
-		ixn_ptr = std::unique_ptr<Intersection>(new Intersection{t, ixn_point, (ixn_point - center) / radius, material});
+		ixn_ptr = std::unique_ptr<Intersection>(new Intersection(t, this));
       }
     }
   }

@@ -4,15 +4,17 @@
 #include "../ray.cuh"
 #include "../Intersection.h"
 
+template<typename RNG_T>
 class Material
 {
   public:
-    Material();
-    Material(vec3 a);
-    virtual ~Material();
-    __host__ __device__ virtual void bounce(Ray const& r_in, Intersection& ixn, Ray& r_out) const = 0;
+    __host__ __device__ Material();
+    __host__ __device__ Material(vec3 a) : albedo(a) {}
+    //__host__ __device__ virtual ~Material();
+    __host__ __device__ virtual vec3 bounce(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const = 0;
     __host__ __device__ virtual bool is_opaque() const = 0;
     vec3 albedo;
+
 };
 
 #endif

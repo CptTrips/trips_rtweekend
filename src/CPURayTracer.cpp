@@ -18,7 +18,7 @@ FrameBuffer* CPURayTracer::render(const int h, const int w, const std::vector<st
         float v = (float(c) + rng.sample()) / float(w);
 
         bounce_count = 0;
-        Ray primary = camera.cast_ray(u, v);
+        Ray primary = camera.cast_ray(u, v, &rng);
 
         spectral_power_density += shade_ray(primary, scene);
       }
@@ -52,7 +52,7 @@ vec3 CPURayTracer::shade_ray(const Ray& ray, const std::vector<std::unique_ptr<V
 
     Ray scatter_ray;
 
-    active_material->bounce(ray, *ixn_ptr, scatter_ray);
+    active_material->bounce(ray, *ixn_ptr, scatter_ray, &rng);
 
     return active_material->albedo * shade_ray(scatter_ray, scene);
 

@@ -1,6 +1,13 @@
 #include "CUDASphere.cuh"
 
-CUDASphere::CUDASphere() {}
+__host__ __device__ CUDASphere::CUDASphere()
+{
+    center = vec3(0.f, 0.f, 0.f);
+
+    radius = 0.f;
+
+    material = NULL;
+}
 
 /*
 CUDASphere::CUDASphere(const Sphere& s)
@@ -28,14 +35,13 @@ CUDASphere::CUDASphere(const Sphere& s)
 }
 */
 
-CUDASphere::~CUDASphere() {
+__host__ __device__ CUDASphere::~CUDASphere() {
     delete material;
 }
 
 __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float tmax) const {
 
     // a is 1 because ray directions should be normalised
-
     Intersection* ixn_ptr = NULL;
 
     vec3 o_c = r.origin() - center;
@@ -53,8 +59,7 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
 
         // Try to find earliest intersection
         if (t < tmax && t > tmin) {
-            vec3 ixn_point = r.point_at(t);
-            ixn_ptr = new Intersection(t, ixn_point, (ixn_point - center) / radius, material);
+            ixn_ptr = new Intersection(t, this);
         }
 
         // We might be inside the sphere
@@ -64,11 +69,24 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
             t += 2. * sqrt_disc_4;
 
             if (t < tmax && t > tmin) {
-                vec3 ixn_point = r.point_at(t);
-                ixn_ptr = new Intersection( t, ixn_point, (ixn_point - center) / radius, material );
+				ixn_ptr = new Intersection(t, this);
             }
         }
     }
 
     return ixn_ptr;
+}
+
+__device__ Ray CUDASphere::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const
+{
+    vec3 normal = ixn_p - center;
+
+    vec3 out_dir = material->bounce(r_in, normal, rng);
+
+    return Ray(ixn_p, out_dir);
+}
+
+__device__ vec3 CUDASphere::albedo(const vec3& p) const
+{
+    return material->albedo;
 }

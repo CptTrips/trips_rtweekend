@@ -27,12 +27,10 @@ Camera::Camera(
 	  y_dir[0], y_dir[1], y_dir[2],
 	  z_dir[0], z_dir[1], z_dir[2]
 	);
-
-    rng = RNG();
 }
 
 
-Ray Camera::cast_ray(const float& u, const float& v) const
+Ray Camera::cast_ray(const float& u, const float& v, CPU_RNG* rng) const
 { 
     // u and v run from 0 to 1
 
@@ -40,7 +38,7 @@ Ray Camera::cast_ray(const float& u, const float& v) const
 	float x = (u - 0.5) * vfov; // x goes from -vfov/2 to vfov/2
 	float y = (v - 0.5) * vfov * aspect_ratio; // y goes from -w/(2h) to w/(2h)
 
-    vec3 focus_offset = aperture * (2 * vec3(rng.sample(), rng.sample(), 0) - vec3(1., 1., 0.));
+    vec3 focus_offset = aperture * (2 * vec3(rng->sample(), rng->sample(), 0) - vec3(1., 1., 0.));
 
     vec3 cam_space_ray_dir = vec3(x, y, focus_distance) - focus_offset;
 

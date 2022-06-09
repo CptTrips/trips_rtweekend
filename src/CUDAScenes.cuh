@@ -10,7 +10,7 @@
 #include "materials/dielectric.cuh"
 #include "rand.h"
 
-#define seed 1234
+#define my_cuda_seed 1234
 
 CUDAVisible** single_ball();
 

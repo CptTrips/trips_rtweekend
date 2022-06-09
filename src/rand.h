@@ -15,11 +15,11 @@ class CPU_RNG {
 
 class CUDA_RNG {
 
-    curandState* r;
+    curandState r;
 public:
     __device__ CUDA_RNG(const int seed, const int seq);
     __device__ float sample();
-    __device__ ~CUDA_RNG();
+    //__device__ ~CUDA_RNG();
     __device__ vec3 sample_uniform_sphere();
 };
 

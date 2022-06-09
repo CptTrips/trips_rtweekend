@@ -51,6 +51,7 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
     // discriminant / 4
     float disc_4 = b * b - (dot(o_c, o_c) - radius * radius);
 
+    // (Real) Intersection solutions exist
     if (disc_4 > 0) {
 
         float sqrt_disc_4 = sqrt(disc_4);
@@ -79,7 +80,7 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
 
 __device__ Ray CUDASphere::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const
 {
-    vec3 normal = ixn_p - center;
+    vec3 normal = normalise(ixn_p - center);
 
     vec3 out_dir = material->bounce(r_in, normal, rng);
 

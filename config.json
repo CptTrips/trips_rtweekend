@@ -1,0 +1,20 @@
+{
+  "x_res": 1280,
+  "y_res": 720,
+  "spp": 64,
+  "max_bounce": 16,
+
+  "random_balls": {
+    "ball_count":  96
+  },
+
+  "camera": {
+    "origin": [ 0.0, 0.0, -10.0 ],
+    "target": [ 0.0, 0.0, 0.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "vfov": 14.0,
+    "aspect_ratio": 1.778,
+    "focus_distance": 10,
+    "aperture": 0.35
+  }
+}

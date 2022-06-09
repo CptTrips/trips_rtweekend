@@ -9,14 +9,15 @@ template<typename RNG_T>
 vec3 sample_uniform_sphere(RNG_T& rng)
 {
 
-    vec3 p;
+	vec3 p;
 
-    do {
+	do {
 
-    p = 2.*vec3(rng.sample()-.5, rng.sample()-.5, rng.sample()-.5);
-  } while (dot(p,p) > 1.);
+		p = 2.*vec3(rng.sample()-.5, rng.sample()-.5, rng.sample()-.5);
 
-  return p;
+	} while (dot(p,p) > 1.);
+
+	return p;
 
 }
 
@@ -43,21 +44,21 @@ vec3 CPU_RNG::sample_uniform_sphere()
 
 __device__ CUDA_RNG::CUDA_RNG(const int seed, const int seq)
 {
-    r = new curandState;
-
-    curand_init(seed, seq, 0, r);
+    curand_init(seed, seq, 0, &r);
 
 }
 
 __device__ float CUDA_RNG::sample()
 {
-    return curand_uniform(r);
+    return curand_uniform(&r);
 }
 
+/*
 __device__ CUDA_RNG::~CUDA_RNG()
 {
     delete r;
 }
+*/
 
 vec3 CUDA_RNG::sample_uniform_sphere()
 {

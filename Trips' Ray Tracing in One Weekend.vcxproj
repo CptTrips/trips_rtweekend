@@ -155,6 +155,7 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CUDAScenes.cuh" />

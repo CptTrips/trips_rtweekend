@@ -45,6 +45,7 @@ class vec3
       return e[0]*e[0] + e[1]*e[1] + e[2]*e[2]; }
     __device__ __host__ inline void normalise();
 
+
     float e[3];
 };
 
@@ -59,7 +60,7 @@ inline std::ostream& operator<<(std::ostream &os, const vec3 &t) {
 }
 
 __device__ __host__ inline void vec3::normalise() {
-  float k = 1.0 / sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]);
+  float k = 1.f / sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]);
   e[0] *= k; e[1] *= k; e[2] *= k;
 }
 

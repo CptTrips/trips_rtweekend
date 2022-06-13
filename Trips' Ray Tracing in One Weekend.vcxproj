@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
+    <CudaCompile Include="src\visibles\Triangle.cu" />
     <None Include="src\materials\dielectric.tu">
       <FileType>CppCode</FileType>
     </None>
@@ -174,6 +175,7 @@
     <CudaCompile Include="src\rand.h" />
     <CudaCompile Include="src\ray.cuh" />
     <ClInclude Include="src\vec3.cuh" />
+    <ClInclude Include="src\visibles\Triangle.cuh" />
     <ClInclude Include="src\visibles\visible.h" />
   </ItemGroup>
   <ItemGroup>

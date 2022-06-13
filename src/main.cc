@@ -51,25 +51,17 @@ int main() {
 	// Arrange scene
 	// 
 
-	//single_ball();
-
-	//const int ball_count = 9;
-	//random_balls(ball_count);
-
-	//quadric_test();
-
-	//grid_balls();
-
-
-	//std::vector<std::unique_ptr<Visible>> scene = grid_balls();
-
+	/*
     const int ball_count = j["random_balls"]["ball_count"];
     CUDAVisible** const scene = random_balls(ball_count);
 	const int scene_size = ball_count;
+	*/
 
 	//CUDAVisible** const scene = single_ball();
 	//const int scene_size = 1;
 
+	CUDAVisible** const scene = single_triangle();
+	const int scene_size = 1;
 
 
 	// Place camera
@@ -114,9 +106,11 @@ int main() {
 	// Draw scene
 
 	//CPURayTracer cpu_ray_tracer(spp, max_bounce);
-	GPURayTracer gpu_ray_tracer(spp, max_bounce);
+	GPURayTracer gpu_ray_tracer;
 
-	FrameBuffer* frame_buffer = gpu_ray_tracer.render(h, w, scene, scene_size, view_cam);
+	GPURenderProperties render_properties{ h, w, spp, max_bounce };
+
+	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene, scene_size, view_cam);
 
 
 	// Write scene

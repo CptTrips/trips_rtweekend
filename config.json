@@ -1,7 +1,7 @@
 {
-  "x_res": 2560,
-  "y_res": 1440,
-  "spp": 512,
+  "x_res": 256,
+  "y_res": 256,
+  "spp": 2,
   "max_bounce": 4,
 
   "random_balls": {
@@ -9,12 +9,12 @@
   },
 
   "camera": {
-    "origin": [ 0.0, 0.0, -10.0 ],
-    "target": [ 0.0, 0.0, 0.0 ],
+    "origin": [ 0.5, 0.5, -10.0 ],
+    "target": [ 0.5, 0.5, 1.0 ],
     "up": [ 0.0, 1.0, 0.0 ],
-    "vfov": 14.0,
+    "vfov": 0.5,
     "aspect_ratio": 1.778,
-    "focus_distance": 10,
-    "aperture": 0.35
+    "focus_distance": 11,
+    "aperture": 0.0001
   }
 }

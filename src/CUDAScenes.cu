@@ -93,3 +93,40 @@ __global__ void gen_single_ball(CUDAVisible** const scenery)
 		scenery[id] = new CUDASphere(center, radius, mat);
 	}
 }
+
+
+
+CUDAVisible** single_triangle()
+{
+
+	CUDAVisible** scenery;
+
+	cudaMalloc(&scenery, sizeof(CUDAVisible*));
+
+	gen_single_triangle << <1, 1 >> > (scenery);
+
+	cudaDeviceSynchronize();
+
+	return scenery;
+}
+
+
+__global__ void gen_single_triangle(CUDAVisible** const scenery)
+{
+	int id = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (id == 0)
+	{
+		vec3 a = vec3(0.f, 0.f, 1.f);
+
+		vec3 b = vec3(0.f, 1.f, 1.f);
+
+		vec3 c = vec3(1.f, 0.f, 1.f);
+
+		vec3 points[3] = { a, b, c };
+
+		Material<CUDA_RNG>* mat = new Metal<CUDA_RNG>(vec3(.5f, .2f, .2f), 0.1f);
+
+		scenery[id] = new Triangle(points, mat);
+	}
+}

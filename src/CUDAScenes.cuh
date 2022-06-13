@@ -4,6 +4,7 @@
 #include <device_launch_parameters.h>
 #include "visibles/CUDAVisible.cuh"
 #include "visibles/CUDASphere.cuh"
+#include "visibles/Triangle.cuh"
 #include <curand_kernel.h>
 #include "materials/metal.cuh"
 #include "materials/diffuse.cuh"
@@ -12,6 +13,8 @@
 
 #define my_cuda_seed 1234
 
+
+
 CUDAVisible** single_ball();
 
 __global__ void gen_single_ball(CUDAVisible** const scenery);
@@ -19,3 +22,8 @@ __global__ void gen_single_ball(CUDAVisible** const scenery);
 CUDAVisible** random_balls(const int ball_count);
 
 __global__ void gen_random_balls(CUDAVisible** const scenery, const int ball_count);
+
+
+CUDAVisible** single_triangle();
+
+__global__ void gen_single_triangle(CUDAVisible** const scenery);

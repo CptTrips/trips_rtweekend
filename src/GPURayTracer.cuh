@@ -11,6 +11,13 @@
 #include "rand.h"
 #include <chrono>
 
+struct GPURenderProperties
+{
+	int h;
+	int w;
+	int spp;
+	int max_bounce;
+};
 
 class GPURayTracer
 {
@@ -20,11 +27,11 @@ class GPURayTracer
 	// Maximum number of rays to dispatch at once (GPU memory limited)
 	const uint32_t max_rays_per_batch = 22 * 1e6;
 
-	const uint32_t rays_per_batch;
+	uint32_t rays_per_batch;
 
-	const int spp;
+	int spp;
 
-	const int max_bounce;
+	int max_bounce;
 
 	uint64_t ray_count;
 
@@ -56,9 +63,7 @@ class GPURayTracer
 
 public:
 
-	GPURayTracer(const int spp, const int max_bounce) : spp(spp), max_bounce(max_bounce), rays_per_batch(spp * (max_rays_per_batch / spp)) {}
-
-	FrameBuffer* render(const int h, const int w, CUDAVisible** const scene, const int scene_size, const Camera& camera);
+	FrameBuffer* render(const GPURenderProperties& render_properies, CUDAVisible** const scene, const int scene_size, const Camera& camera);
 
 };
 

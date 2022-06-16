@@ -45,13 +45,18 @@
     </ClInclude>
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Managed.cuh" />
-    <ClInclude Include="src\CUDAScenes.cuh" />
+    <ClInclude Include="src\CUDASceneGenerators.cuh" />
     <ClInclude Include="src\Scenes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\visibles\Triangle.cuh" />
+    <ClInclude Include="src\visibles\Mesh.cuh" />
+    <ClInclude Include="src\Array.cuh" />
+    <ClInclude Include="src\visibles\TriangleView.cuh" />
+    <ClInclude Include="src\CUDAScene.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -74,7 +79,7 @@
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="src\Error.cu" />
-    <CudaCompile Include="src\CUDAScenes.cu" />
+    <CudaCompile Include="src\CUDASceneGenerators.cu" />
     <CudaCompile Include="src\materials\metal.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
@@ -93,6 +98,10 @@
     <CudaCompile Include="src\rand.h">
       <Filter>Header Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="src\visibles\Triangle.cu" />
+    <CudaCompile Include="src\visibles\Mesh.cu" />
+    <CudaCompile Include="src\visibles\TriangleView.cu" />
+    <CudaCompile Include="src\CUDAScene.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\materials\dielectric.tu">
@@ -104,5 +113,6 @@
     <None Include="src\materials\metal.tu">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="src\Array.tu" />
   </ItemGroup>
 </Project>

@@ -233,7 +233,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 		while (bounce < max_bounce)
 		{
 
-			printf("Scene visibles %u, scene materials %u\n", scene->visibles->size(), scene->materials->size());
+			if (DEBUG) printf("Scene visibles %u, scene materials %u\n", scene->visibles->size(), scene->materials->size());
 
 			ixn_ptr = nearest_intersection(ray, scene, 1.e-12f, FLT_MAX);
 

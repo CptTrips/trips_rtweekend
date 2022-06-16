@@ -64,7 +64,7 @@ __device__ CUDAScene& CUDAScene::operator=(CUDAScene&& cs)
 	return *this;
 }
 
-__device__ CUDAScene::~CUDAScene()
+__host__ __device__ CUDAScene::~CUDAScene()
 {
 
 	delete_visibles();

@@ -40,3 +40,5 @@
 /output.bmp
 /Makefile.win
 /nsight_compute_output.ncu-rep
+/release build log.txt
+/debug build log.txt

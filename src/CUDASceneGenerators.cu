@@ -25,22 +25,32 @@ __global__ void cuda_teardown_scene(CUDAScene* scene)
 	}
 }
 
+
+CUDAScene* scene_factory(const int visible_count, const int material_count)
+{
+
+	CUDAScene* scene;
+
+    CUDAScene host_scene = CUDAScene();
+
+	checkCudaErrors(cudaMalloc(&scene, sizeof(CUDAScene)));
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	checkCudaErrors(cudaMemcpy(scene, &host_scene, sizeof(CUDAScene), cudaMemcpyHostToDevice));
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	create_scene_buffers << <1, 1 >> > (scene, visible_count, material_count);
+
+	return scene;
+}
+
+
 CUDAScene* random_balls(const int ball_count)
 {
 
-	CUDAScene* scenery;
-
-    CUDAScene* host_scene = new CUDAScene();
-
-	checkCudaErrors(cudaMalloc(&scenery, sizeof(CUDAScene)));
-
-	checkCudaErrors(cudaMemcpy(scenery, host_scene, sizeof(CUDAScene), cudaMemcpyHostToDevice));
-
-	checkCudaErrors(cudaDeviceSynchronize());
-
-	create_scene_buffers << <1, 1 >> > (scenery, ball_count, ball_count);
-
-	checkCudaErrors(cudaDeviceSynchronize());
+	CUDAScene* scenery = scene_factory(ball_count, ball_count);
 
 	int threads = 512;
 
@@ -119,23 +129,21 @@ __global__ void gen_random_balls(CUDAScene* const scene, const int ball_count)
 	}
 
 }
-/*
+
 
 CUDAScene* single_ball()
 {
-	Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(1);
-	Array<Material<CUDA_RNG>*>* materials = new Array<Material<CUDA_RNG>*>(1);
+	CUDAScene* scenery = scene_factory(1, 1);
 
-	gen_single_ball << <1, 1>> > (visibles, materials);
+	gen_single_ball << <1, 1>> > (scenery);
 
-	cudaDeviceSynchronize();
-
-    CUDAScene* scenery = new CUDAScene(visibles, materials);
+	checkCudaErrors(cudaDeviceSynchronize());
 
 	return scenery;
 }
 
-__global__ void gen_single_ball(Array<CUDAVisible*>* visibles, Array<Material<CUDA_RNG>*>* materials)
+
+__global__ void gen_single_ball(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -144,8 +152,9 @@ __global__ void gen_single_ball(Array<CUDAVisible*>* visibles, Array<Material<CU
 		vec3 center = vec3(3.f, 0.f, 0.f);
 		float radius = 1.f;
 		Material<CUDA_RNG>* mat = new Diffuse<CUDA_RNG>(vec3(1.f, 0.f, 0.f));
-		(*visibles)[id] = new CUDASphere(center, radius, mat);
-		(*materials)[id] = mat;
+
+		(*scene->visibles)[id] = new CUDASphere(center, radius, mat);
+		(*scene->materials)[id] = mat;
 	}
 }
 
@@ -154,19 +163,17 @@ __global__ void gen_single_ball(Array<CUDAVisible*>* visibles, Array<Material<CU
 CUDAScene* single_triangle()
 {
 
-	CUDAScene* scenery;
-
-	cudaMalloc(&scenery, sizeof(CUDAScene));
+	CUDAScene* scenery = scene_factory(1, 1);
 
 	gen_single_triangle << <1, 1 >> > (scenery);
 
-	cudaDeviceSynchronize();
+	checkCudaErrors(cudaDeviceSynchronize());
 
 	return scenery;
 }
 
 
-__global__ void gen_single_triangle(CUDAScene* const scenery)
+__global__ void gen_single_triangle(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -182,10 +189,14 @@ __global__ void gen_single_triangle(CUDAScene* const scenery)
 
 		Material<CUDA_RNG>* mat = new Metal<CUDA_RNG>(vec3(.5f, .2f, .2f), 0.1f);
 
-		scenery[id] = new Triangle(points, mat);
+		(*scene->visibles)[id] = new Triangle(points, mat);
+		(*scene->materials)[id] = mat;
+
 	}
 }
 
+
+/*
 CUDAScene* single_cube()
 {
 
@@ -199,6 +210,7 @@ CUDAScene* single_cube()
 
 	return scenery;
 }
+
 
 __global__ void gen_single_cube(CUDAScene* const scenery)
 {

@@ -52,15 +52,11 @@ int main() {
 	// 
 
     const int ball_count = j["random_balls"]["ball_count"];
-	CUDAScene* const scene = random_balls(ball_count);
+	// CUDAScene* const scene = random_balls(ball_count);
 
-	//CUDAVisible** const scene = single_ball();
-	//const int scene_size = 1;
+	CUDAScene* const scene = single_ball();
 
-	/*
-	CUDAVisible** const scene = single_triangle();
-	const int scene_size = 1;
-	*/
+	//CUDAScene* const scene = single_triangle();
 
 
 	// Place camera
@@ -68,13 +64,6 @@ int main() {
 	/*
 	vec3 camera_origin = 2.*vec3(1., .5, -3.0);
 	vec3 camera_target = vec3(0., -.3, -2.);
-	vec3 camera_up = vec3(0.0, 1.0, 0.0);
-	*/
-
-	// Single Ball
-	/*
-	vec3 camera_origin = vec3(0.f, 0.f, 0.f);
-	vec3 camera_target = vec3(1., 0., 0.);
 	vec3 camera_up = vec3(0.0, 1.0, 0.0);
 	*/
 

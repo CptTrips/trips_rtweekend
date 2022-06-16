@@ -20,7 +20,7 @@ public:
 	__device__ CUDAScene& operator=(const CUDAScene& cs);
 	__device__ CUDAScene& operator=(CUDAScene&& cs);
 
-	__device__ ~CUDAScene();
+	__host__ __device__ ~CUDAScene();
 
 	__device__ CUDAVisible* operator[](const uint32_t i);
 	__device__ const CUDAVisible* operator[](const uint32_t i) const;
@@ -35,7 +35,7 @@ public:
 
 private:
 
-	__device__ void delete_visibles();
-	__device__ void delete_materials();
+	__host__ __device__ void delete_visibles();
+	__host__ __device__ void delete_materials();
 
 };

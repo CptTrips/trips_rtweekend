@@ -19,10 +19,11 @@
 
 __global__ void create_scene_buffers(CUDAScene* scenery, const int visible_count, const int material_count);
 
+CUDAScene* scene_factory(const int visible_count, const int material_count);
 
 CUDAScene* single_ball();
 
-__global__ void gen_single_ball(Array<CUDAVisible*>* visibles, Array<Material<CUDA_RNG>*>* materials);
+__global__ void gen_single_ball(CUDAScene* const scene);
 
 
 CUDAScene* random_balls(const int ball_count);
@@ -32,12 +33,12 @@ __global__ void gen_random_balls(CUDAScene* const scene, const int ball_count);
 
 CUDAScene* single_triangle();
 
-__global__ void gen_single_triangle(CUDAScene* const scenery);
+__global__ void gen_single_triangle(CUDAScene* const scene);
 
 
 CUDAScene* single_cube();
 
-__global__ void gen_single_cube(CUDAScene* const scenery);
+__global__ void gen_single_cube(CUDAScene* const scene);
 
 
 void teardown_scene(CUDAScene* scene);

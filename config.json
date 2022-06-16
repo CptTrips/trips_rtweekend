@@ -1,11 +1,11 @@
 {
-  "x_res": 256,
-  "y_res": 256,
+  "x_res": 2,
+  "y_res": 2,
   "spp": 2,
   "max_bounce": 4,
 
   "random_balls": {
-    "ball_count":  64
+    "ball_count":  4
   },
 
   "camera": {

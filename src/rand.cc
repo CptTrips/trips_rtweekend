@@ -60,7 +60,7 @@ __device__ CUDA_RNG::~CUDA_RNG()
 }
 */
 
-vec3 CUDA_RNG::sample_uniform_sphere()
+__device__ vec3 CUDA_RNG::sample_uniform_sphere()
 {
 
     return ::sample_uniform_sphere<CUDA_RNG>(*this);

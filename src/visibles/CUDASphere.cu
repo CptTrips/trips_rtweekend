@@ -36,7 +36,6 @@ CUDASphere::CUDASphere(const Sphere& s)
 */
 
 __host__ __device__ CUDASphere::~CUDASphere() {
-    delete material;
 }
 
 __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float tmax) const {

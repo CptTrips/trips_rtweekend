@@ -7,7 +7,7 @@
 class mat3
 {
     public:
-        __host__ __device__ mat3() {}
+        __host__ __device__ mat3() { for (int i = 0; i < 9; i++) a[i] = 0.f; }
         __host__ __device__ mat3(float a00, float a01, float a02,
              float a10, float a11, float a12,
              float a20, float a21, float a22) {

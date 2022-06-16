@@ -9,9 +9,7 @@ __host__ __device__ Triangle::Triangle()
 	material = NULL;
 }
 
-//CUDASphere(const Sphere& s);
-
-__host__ __device__ Triangle::Triangle(const vec3 points[3], Material<CUDA_RNG>* m) : material(m)
+__host__ __device__ Triangle::Triangle(const vec3 points[3], const Material<CUDA_RNG>* m) : material(m)
 {
 	for (int i = 0; i < 3; i++)
 		this->points[i] = points[i];
@@ -21,9 +19,41 @@ __host__ __device__ Triangle::Triangle(const vec3 points[3], Material<CUDA_RNG>*
 	normal.normalise();
 }
 
+__host__ __device__ Triangle::Triangle(const Triangle& t)
+{
+
+	material = t.material;
+
+	for (int i = 0; i < 3; i++)
+	{
+		points[i] = t.points[i];
+	}
+
+	normal = t.normal;
+
+}
+
+__host__ __device__ Triangle& Triangle::operator=(const Triangle& t)
+{
+
+	if (this == &t)
+		return *this;
+
+	material = t.material;
+
+	for (int i = 0; i < 3; i++)
+	{
+		points[i] = t.points[i];
+	}
+
+	normal = t.normal;
+
+	return *this;
+
+}
+
 __host__ __device__ Triangle::~Triangle()
 {
-	delete material;
 }
 
 __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tmax) const
@@ -35,17 +65,25 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 	if (material->is_opaque() && dot(r.d, normal) > 0.f)
 		return NULL;
 
-	// Find point ray intersects triangle's plane
-
+	// Find the point the ray intersects triangle's plane
 	const float t = dot((points[0] - r.o), normal) / dot(r.d, normal);
 
 	if (t < tmin || t > tmax)
 		return NULL;
 
 	// Determine if this point lies inside the triangle
-
 	const vec3 p = r.point_at(t);
 
+	if (point_inside(p))
+	{
+		ixn = new Intersection(t, this);
+	}
+
+	return ixn;
+}
+
+__device__ bool Triangle::point_inside(const vec3& p) const
+{
 	const vec3 outside_point = points[0] - (points[1] - points[0]) - (points[2] - points[0]);
 
 	int crosses = 0;
@@ -56,13 +94,8 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 		if (this->lines_cross(p, outside_point, points[i], points[j]))
 			crosses++;
 	}
-	
-	if (crosses % 2 == 1)
-	{
-		ixn = new Intersection(t, this);
-	}
 
-	return ixn;
+	return (crosses % 2 == 1);
 }
 
 __device__ bool Triangle::lines_cross(const vec3& a0, const vec3& a1, const vec3& b0, const vec3& b1) const

@@ -134,14 +134,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
+    <CudaCompile Include="src\CUDAScene.cu" />
+    <CudaCompile Include="src\visibles\TriangleView.cu" />
+    <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
+    <None Include="src\Array.tu" />
     <None Include="src\materials\dielectric.tu">
       <FileType>CppCode</FileType>
     </None>
     <None Include="src\materials\diffuse.tu">
       <FileType>CppCode</FileType>
     </None>
-    <CudaCompile Include="src\CUDAScenes.cu" />
+    <CudaCompile Include="src\CUDASceneGenerators.cu" />
     <CudaCompile Include="src\Error.cu" />
     <CudaCompile Include="src\FrameBuffer.cu">
       <FileType>CppCode</FileType>
@@ -158,8 +162,10 @@
   <ItemGroup>
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
+    <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\Camera.h" />
-    <ClInclude Include="src\CUDAScenes.cuh" />
+    <ClInclude Include="src\CUDAScene.cuh" />
+    <ClInclude Include="src\CUDASceneGenerators.cuh" />
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\Managed.cuh" />
@@ -175,7 +181,9 @@
     <CudaCompile Include="src\rand.h" />
     <CudaCompile Include="src\ray.cuh" />
     <ClInclude Include="src\vec3.cuh" />
+    <ClInclude Include="src\visibles\Mesh.cuh" />
     <ClInclude Include="src\visibles\Triangle.cuh" />
+    <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\visibles\visible.h" />
   </ItemGroup>
   <ItemGroup>

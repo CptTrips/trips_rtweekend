@@ -12,8 +12,8 @@
 //#include "CPURayTracer.h"
 #include "GPURayTracer.cuh"
 #include <typeinfo>
-#include "CUDAScenes.cuh"
-//#include "Scenes.h"
+#include "CUDASceneGenerators.cuh"
+#include "CUDAScene.cuh"
 #include "..\include\json.hpp"
 
 const bool CUDA_ENABLED = false;
@@ -51,17 +51,16 @@ int main() {
 	// Arrange scene
 	// 
 
-	/*
     const int ball_count = j["random_balls"]["ball_count"];
-    CUDAVisible** const scene = random_balls(ball_count);
-	const int scene_size = ball_count;
-	*/
+	CUDAScene* const scene = random_balls(ball_count);
 
 	//CUDAVisible** const scene = single_ball();
 	//const int scene_size = 1;
 
+	/*
 	CUDAVisible** const scene = single_triangle();
 	const int scene_size = 1;
+	*/
 
 
 	// Place camera
@@ -110,7 +109,7 @@ int main() {
 
 	GPURenderProperties render_properties{ h, w, spp, max_bounce };
 
-	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene, scene_size, view_cam);
+	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene, view_cam);
 
 
 	// Write scene
@@ -121,7 +120,10 @@ int main() {
 	// Exit
 	delete frame_buffer;
 
-	cudaFree(scene);
+	// Delete visibles and materials
+	// cudaFree/Delete arrays
+	// cudaFree scene
+	teardown_scene(scene);
 
 	return 0;
 

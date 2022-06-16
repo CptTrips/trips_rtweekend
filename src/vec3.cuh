@@ -46,7 +46,7 @@ class vec3
     __device__ __host__ inline void normalise();
 
 
-    float e[3];
+    float e[3] = { 0.f, 0.f, 0.f };
 };
 
 inline std::istream& operator>>(std::istream &is, vec3 &t) {

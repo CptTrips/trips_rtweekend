@@ -4,19 +4,21 @@ TriangleView::TriangleView()
 {
 	vertex_array = NULL;
 	material = NULL;
-	index = 0;
+	index_array = NULL;
+	index_array_offset = 0;
 }
 
 TriangleView::TriangleView(
 	const Array<vec3>* const vertex_array
+	,const Array<uint32_t>* const index_array
 	,const uint32_t& index_0
 	,const Material<CUDA_RNG>* const material
-) : vertex_array(vertex_array), index(index_0), material(material) 
+) : vertex_array(vertex_array), index_array(index_array), index_array_offset(index_0), material(material) 
 {
 }
 
 __host__ __device__ TriangleView::TriangleView(const TriangleView& tv)
-	: vertex_array(tv.vertex_array), index(tv.index), material(tv.material) 
+	: vertex_array(tv.vertex_array), index_array(index_array), index_array_offset(tv.index_array_offset), material(tv.material) 
 {
 }
 
@@ -28,7 +30,9 @@ __host__ __device__ TriangleView& TriangleView::operator=(const TriangleView& tv
 
 	vertex_array = tv.vertex_array;
 
-	index = tv.index;
+	index_array = tv.index_array;
+
+	index_array_offset = tv.index_array_offset;
 
 	material = tv.material;
 
@@ -77,8 +81,9 @@ __device__ vec3 TriangleView::albedo(const vec3& p) const
 
 __device__ Triangle TriangleView::construct_triangle() const
 {
+	const uint32_t indices[3] = { (*index_array)[index_array_offset], (*index_array)[index_array_offset + 1], (*index_array)[index_array_offset + 2] };
 
-	const vec3 points[3] = { (*vertex_array)[index], (*vertex_array)[index + 1], (*vertex_array)[index + 2] };
+	const vec3 points[3] = { (*vertex_array)[indices[0]], (*vertex_array)[indices[1]], (*vertex_array)[indices[2]] };
 
 	return Triangle(points, material);
 }

@@ -1,7 +1,7 @@
 {
   "x_res": 2560,
   "y_res": 1440,
-  "spp": 512,
+  "spp": 16,
   "max_bounce": 4,
 
   "random_balls": {
@@ -9,14 +9,17 @@
   },
 
   "camera": {
-    "origin": [ 0.5, 0.5, -10.0 ],
-    "target": [ 0.0, 0.0, 1.0 ],
+    "old_origin": [ 0.5, 0.5, -10.0 ],
+    "old_target": [ 0.0, 0.0, 1.0 ],
+    "origin": [ 2.0, 3.0, -5.0 ],
+    "target": [ 0.5, 0.5, 0.5 ],
     "up": [ 0.0, 1.0, 0.0 ],
-    "vfov": 14.0,
+    "old_vfov": 14.0,
+    "vfov": 4.0,
     "aspect_ratio": 1.778,
     "focus_distance": 11,
     "aperture": 0.0001
   },
 
-  "scene_name": "random_balls"
+  "scene_name": "single_cube"
 }

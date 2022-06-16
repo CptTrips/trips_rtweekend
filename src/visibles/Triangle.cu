@@ -2,7 +2,6 @@
 
 __host__ __device__ Triangle::Triangle()
 {
-	printf("Uninitialised triangle");
 	for (int i = 0; i < 3; i++)
 		points[i] = vec3(0.f, 0.f, 0.f);
 

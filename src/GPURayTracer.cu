@@ -273,7 +273,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 	}
 }
 
-__device__ Intersection* nearest_intersection(const Ray& ray, CUDAScene* scene, const float tmin, const float tmax)
+__device__ Intersection* nearest_intersection(const Ray& ray, const CUDAScene* const scene, const float tmin, const float tmax)
 {
 	Intersection* temp_ixn;
 

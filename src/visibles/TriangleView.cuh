@@ -10,7 +10,7 @@ class TriangleView : public CUDAVisible
 {
 public:
 	__host__ __device__ TriangleView();
-	__host__ __device__ TriangleView(const Array<vec3>* const vertex_array, const uint32_t& index_0, const Material<CUDA_RNG>* const material);
+	__host__ __device__ TriangleView(const Array<vec3>* const vertex_array, const Array<uint32_t>* const index_array, const uint32_t& index_0, const Material<CUDA_RNG>* const material);
 
 	__host__ __device__ TriangleView(const TriangleView& tv);
 	__host__ __device__ TriangleView& operator=(const TriangleView& tv);
@@ -28,7 +28,9 @@ private:
 
 	const Array<vec3>* vertex_array;
 
-	uint32_t index;
+	const Array<uint32_t>* index_array;
+
+	uint32_t index_array_offset;
 
 	const Material<CUDA_RNG>* material;
 

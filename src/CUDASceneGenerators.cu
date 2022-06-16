@@ -199,6 +199,18 @@ __global__ void gen_single_triangle(CUDAScene* const scene)
 CUDAScene* single_cube()
 {
 
+	size_t stack_limit;
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
+
+	checkCudaErrors(cudaDeviceSetLimit(cudaLimitStackSize, 8*stack_limit));
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
+
 	CUDAScene* scenery = scene_factory(1,1);
 
 	gen_single_cube << <1, 1 >> > (scenery);
@@ -234,7 +246,7 @@ __global__ void gen_single_cube(CUDAScene* const scene)
 			1, 5, 4, 0, 1, 4,
 			4, 5, 7, 4, 7, 6,
 			6, 7, 3, 3, 2, 6,
-			1, 3, 5, 1, 7, 5,
+			1, 3, 5, 3, 7, 5,
 			0, 4, 6, 0, 6, 2
 		};
 

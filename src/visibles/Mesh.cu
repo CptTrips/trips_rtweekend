@@ -30,7 +30,7 @@ __host__ __device__ Mesh::Mesh(const Array<vec3>* const vertices, const Array<ui
 	triangles = Array<TriangleView>(size);
 
 	for (int i = 0; i < size; i++)
-		triangles[i] = TriangleView(vertices, (*indices)[i*3], material);
+		triangles[i] = TriangleView(vertices, indices, i*3, material);
 }
 
 __host__ __device__ Mesh::~Mesh()
@@ -128,27 +128,28 @@ __device__ void Mesh::construct_bbox(const vec3& min, const vec3& max)
 		}
 	}
 
-	vec3 bbox_tri_vertices[12][3] =
+	vec3* bbox_tri_vertices[12] = 
 	{
-		{ bbox_vertices[0], bbox_vertices[2], bbox_vertices[1] }
-		,{ bbox_vertices[2], bbox_vertices[3], bbox_vertices[1] }
-		,{ bbox_vertices[1], bbox_vertices[5], bbox_vertices[4] }
-		,{ bbox_vertices[0], bbox_vertices[1], bbox_vertices[4] }
-		,{ bbox_vertices[4], bbox_vertices[5], bbox_vertices[7] }
-		,{ bbox_vertices[4], bbox_vertices[7], bbox_vertices[6] }
-		,{ bbox_vertices[6], bbox_vertices[7], bbox_vertices[3] }
-		,{ bbox_vertices[3], bbox_vertices[2], bbox_vertices[6] }
-		,{ bbox_vertices[1], bbox_vertices[3], bbox_vertices[5] }
-		,{ bbox_vertices[1], bbox_vertices[7], bbox_vertices[5] }
-		,{ bbox_vertices[0], bbox_vertices[4], bbox_vertices[6] }
-		,{ bbox_vertices[0], bbox_vertices[6], bbox_vertices[2] }
+		new vec3[3]{ bbox_vertices[0], bbox_vertices[2], bbox_vertices[1] }
+		,new vec3[3]{ bbox_vertices[2], bbox_vertices[3], bbox_vertices[1] }
+		,new vec3[3]{ bbox_vertices[1], bbox_vertices[5], bbox_vertices[4] }
+		,new vec3[3]{ bbox_vertices[0], bbox_vertices[1], bbox_vertices[4] }
+		,new vec3[3]{ bbox_vertices[4], bbox_vertices[5], bbox_vertices[7] }
+		,new vec3[3]{ bbox_vertices[4], bbox_vertices[7], bbox_vertices[6] }
+		,new vec3[3]{ bbox_vertices[6], bbox_vertices[7], bbox_vertices[3] }
+		,new vec3[3]{ bbox_vertices[3], bbox_vertices[2], bbox_vertices[6] }
+		,new vec3[3]{ bbox_vertices[1], bbox_vertices[3], bbox_vertices[5] }
+		,new vec3[3]{ bbox_vertices[1], bbox_vertices[7], bbox_vertices[5] }
+		,new vec3[3]{ bbox_vertices[0], bbox_vertices[4], bbox_vertices[6] }
+		,new vec3[3]{ bbox_vertices[0], bbox_vertices[6], bbox_vertices[2] }
 	};
 
+	bbox_triangles = Array<Triangle>(12);
 
-	bbox_triangles[12];
 	for (int i = 0; i < 12; i++)
 	{
-		bbox_triangles[i] = Triangle(bbox_tri_vertices[i], NULL);
+		bbox_triangles[i] = Triangle(bbox_tri_vertices[i], material);
+		delete[] bbox_tri_vertices[i];
 	}
 
 }

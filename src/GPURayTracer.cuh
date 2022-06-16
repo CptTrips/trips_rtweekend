@@ -74,7 +74,7 @@ __global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_
 
 __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, CUDAScene* scene, const int max_bounce, CUDA_RNG* const rngs);
 
-__device__ Intersection* nearest_intersection(const Ray& ray, CUDAScene* scene, const float tmin, const float tmax);
+__device__ Intersection* nearest_intersection(const Ray& ray, const CUDAScene* const scene, const float tmin, const float tmax);
 
 __device__ vec3 draw_sky(const Ray& ray);
 

@@ -192,15 +192,7 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 
 	checkCudaErrors(cudaThreadGetLimit(&stack_size, cudaLimitStackSize));
 
-	std::cout << "Stack size " << stack_size << std::endl;
-
-	std::cout << "Ray* size " << sizeof(rays) << std::endl;
-	std::cout << "vec3* size " << sizeof(ray_colours) << std::endl;
-	std::cout << "uint64_t size " << sizeof(ray_count) << std::endl;
-	std::cout << "CUDAScene* size " << sizeof(gpu_scene) << std::endl;
-	std::cout << "CUDA_RNG* size " << sizeof(rngs) << std::endl;
-
-	cuda_shade_ray << <blocks, threads>> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, gpu_scene, max_bounce, rngs);
+	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, gpu_scene, max_bounce, rngs);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 

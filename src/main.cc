@@ -15,6 +15,7 @@
 #include "CUDASceneGenerators.cuh"
 #include "CUDAScene.cuh"
 #include "..\include\json.hpp"
+#include <unordered_map>
 
 const bool CUDA_ENABLED = false;
 
@@ -28,6 +29,46 @@ void test_visible_size(std::vector<std::unique_ptr<Visible>>& scene)
         std::cout << "Size of " << typeid(*v).name() << " " << v->size() << std::endl;
     }
 
+}
+
+enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id };
+
+std::unordered_map<std::string, SceneID> scene_name_to_id = {
+	{"random_balls", random_balls_id}
+	,{"single_ball", single_ball_id}
+	,{"single_triangle", single_triangle_id}
+	,{"single_cube", single_cube_id}
+};
+
+CUDAScene* load_scene(std::string scene_name, const int ball_count)
+{
+	
+	auto it = scene_name_to_id.find(scene_name);
+
+	if (it == scene_name_to_id.end())
+		throw std::runtime_error("Invalid scene name");
+
+	SceneID scene_id = it->second;
+
+	CUDAScene* scene;
+
+	switch (scene_id)
+	{
+	case random_balls_id:
+		scene = random_balls(ball_count);
+		break;
+	case single_ball_id:
+		scene = single_ball();
+		break;
+	case single_triangle_id:
+		scene = single_triangle();
+		break;
+	case single_cube_id:
+		scene = single_cube();
+		break;
+	}
+
+	return scene;
 }
 
 int main() {
@@ -52,11 +93,13 @@ int main() {
 	// 
 
     const int ball_count = j["random_balls"]["ball_count"];
+
+	std::string scene_name = j["scene_name"];
+
+	CUDAScene* const scene = load_scene(scene_name, ball_count);
+
 	// CUDAScene* const scene = random_balls(ball_count);
-
-	CUDAScene* const scene = single_ball();
-
-	//CUDAScene* const scene = single_triangle();
+	// CUDAScene* const scene = single_triangle();
 
 
 	// Place camera

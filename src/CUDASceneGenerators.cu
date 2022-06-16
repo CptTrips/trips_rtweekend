@@ -196,13 +196,10 @@ __global__ void gen_single_triangle(CUDAScene* const scene)
 }
 
 
-/*
 CUDAScene* single_cube()
 {
 
-	CUDAScene* scenery;
-
-	checkCudaErrors(cudaMalloc(&scenery, sizeof(CUDAScene)));
+	CUDAScene* scenery = scene_factory(1,1);
 
 	gen_single_cube << <1, 1 >> > (scenery);
 
@@ -212,7 +209,7 @@ CUDAScene* single_cube()
 }
 
 
-__global__ void gen_single_cube(CUDAScene* const scenery)
+__global__ void gen_single_cube(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -247,7 +244,7 @@ __global__ void gen_single_cube(CUDAScene* const scenery)
 
 		Material<CUDA_RNG>* mat = new Diffuse<CUDA_RNG>(vec3(0.7f, 0.1f, 0.2f));
 
-		scenery[id] = new Mesh(vertex_array, index_array, mat);
+		(*scene->visibles)[id] = new Mesh(vertex_array, index_array, mat);
+		(*scene->materials)[id] = mat;
 	}
 }
-*/

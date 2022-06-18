@@ -1,39 +1,28 @@
-#include <iostream>
-#include <fstream>
-#include <functional>
-#include <algorithm>
-#include "rand.h"
-#include "ray.cuh"
-#include <palette.h>
-//#include "visibles/sphere.cuh"
-#include "float.h"
 #include "Camera.h"
 #include "FrameBuffer.cuh"
 //#include "CPURayTracer.h"
 #include "GPURayTracer.cuh"
-#include <typeinfo>
 #include "CUDASceneGenerators.cuh"
 #include "CUDAScene.cuh"
-#include <json.hpp>
-#include <unordered_map>
+#include "Scene.cuh"
 
-#include <assimp/Importer.hpp>      // C++ importer interface
-#include <assimp/scene.h>           // Output data structure
-#include <assimp/postprocess.h>     // Post processing flags
+#include "float.h"
+
+#include <json.hpp>
+#include <palette.h>
+
+#include <unordered_map>
+#include <typeinfo>
+#include <iostream>
+#include <fstream>
+#include <functional>
+#include <algorithm>
+
+
+
 
 const bool CUDA_ENABLED = false;
 
-
-
-void test_visible_size(std::vector<std::unique_ptr<Visible>>& scene)
-{
-
-    for (auto& v : scene)
-    {
-        std::cout << "Size of " << typeid(*v).name() << " " << v->size() << std::endl;
-    }
-
-}
 
 enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id };
 
@@ -44,32 +33,38 @@ std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	,{"single_cube", single_cube_id}
 };
 
+
 CUDAScene* load_scene(std::string scene_name, const int ball_count)
 {
+	CUDAScene* scene;
 	
 	auto it = scene_name_to_id.find(scene_name);
 
 	if (it == scene_name_to_id.end())
-		throw std::runtime_error("Invalid scene name");
-
-	SceneID scene_id = it->second;
-
-	CUDAScene* scene;
-
-	switch (scene_id)
 	{
-	case random_balls_id:
-		scene = random_balls(ball_count);
-		break;
-	case single_ball_id:
-		scene = single_ball();
-		break;
-	case single_triangle_id:
-		scene = single_triangle();
-		break;
-	case single_cube_id:
-		scene = single_cube();
-		break;
+		SceneID scene_id = it->second;
+
+
+		switch (scene_id)
+		{
+		case random_balls_id:
+			scene = random_balls(ball_count);
+			break;
+		case single_ball_id:
+			scene = single_ball();
+			break;
+		case single_triangle_id:
+			scene = single_triangle();
+			break;
+		case single_cube_id:
+			scene = single_cube();
+			break;
+		}
+
+	}
+	else // try to load scene as a file 
+	{
+		scene = Scene(scene_name).to_device();
 	}
 
 	return scene;

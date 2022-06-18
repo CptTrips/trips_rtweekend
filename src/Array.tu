@@ -79,3 +79,37 @@ __host__ __device__ uint32_t Array<T>::size() const
 {
 	return _size;
 }
+
+template<typename T>
+__host__ const T* Array<T>::get_data() const
+{
+	return data;
+}
+
+template<typename T>
+__host__ Array<T>* Array<T>::to_device() const
+{
+	T* device_data;
+
+	uint64_t bytes = _size * sizeof(T);
+
+	cudaMalloc(&device_data, bytes);
+
+	cudaMemcpy(&device_data, data, bytes, cudaMemcpyHostToDevice);
+
+	Array<T> device_array = Array<T>();
+
+	device_array._size = _size;
+
+	device_array.data = device_data;
+
+	Array<T>* p_device_array;
+
+	cudaMalloc(&p_device_array, sizeof(Array<T>));
+
+	cudaMemcpy(p_device_array, &device_array, sizeof(Array<T>), cudaMemcpyHostToDevice);
+
+	device_array.data = NULL;
+
+	return p_device_array;
+}

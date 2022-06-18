@@ -73,7 +73,7 @@ __global__ void create_scene_buffers(CUDAScene* scenery, const int visible_count
 	{
 		Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(visible_count);
 
-		Array<Material<CUDA_RNG>*>* materials = new Array<Material<CUDA_RNG>*>(visible_count);
+		Array<const Material<CUDA_RNG>*>* materials = new Array<const Material<CUDA_RNG>*>(visible_count);
 
 		scenery->set_visibles(visibles);
 

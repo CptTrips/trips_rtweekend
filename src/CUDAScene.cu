@@ -7,7 +7,7 @@ __host__ __device__ CUDAScene::CUDAScene()
 	materials = NULL;
 }
 
-__device__ CUDAScene::CUDAScene(Array<CUDAVisible*>* const visibles, Array<Material<CUDA_RNG>*>* const materials)
+__device__ CUDAScene::CUDAScene(Array<CUDAVisible*>* const visibles, Array<const Material<CUDA_RNG>*>* const materials)
 	//: visibles(visibles), materials(materials)
 {
 	this->visibles = visibles;
@@ -90,7 +90,7 @@ __device__ void CUDAScene::set_visibles(Array<CUDAVisible*>* const new_visibles)
 	visibles = new_visibles;
 }
 
-__device__ void CUDAScene::set_materials(Array<Material<CUDA_RNG>*>* const new_materials)
+__device__ void CUDAScene::set_materials(Array<const Material<CUDA_RNG>*>* const new_materials)
 {
 
 	delete_materials();

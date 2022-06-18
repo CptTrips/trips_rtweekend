@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "rand.h"
 #include "ray.cuh"
-#include "..\include\palette.h"
+#include <palette.h>
 //#include "visibles/sphere.cuh"
 #include "float.h"
 #include "Camera.h"
@@ -14,8 +14,12 @@
 #include <typeinfo>
 #include "CUDASceneGenerators.cuh"
 #include "CUDAScene.cuh"
-#include "..\include\json.hpp"
+#include <json.hpp>
 #include <unordered_map>
+
+#include <assimp/Importer.hpp>      // C++ importer interface
+#include <assimp/scene.h>           // Output data structure
+#include <assimp/postprocess.h>     // Post processing flags
 
 const bool CUDA_ENABLED = false;
 

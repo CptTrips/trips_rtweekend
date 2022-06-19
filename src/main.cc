@@ -17,6 +17,7 @@
 #include <fstream>
 #include <functional>
 #include <algorithm>
+#include <filesystem>
 
 
 
@@ -40,7 +41,7 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 	
 	auto it = scene_name_to_id.find(scene_name);
 
-	if (it == scene_name_to_id.end())
+	if (it != scene_name_to_id.end())
 	{
 		SceneID scene_id = it->second;
 

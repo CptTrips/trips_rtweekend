@@ -125,8 +125,8 @@
       <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\C Drive Backup\Users\sodai\Projects\palette\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Palette.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\C Drive Backup\Users\sodai\Projects\palette\x64\Release;$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Palette.lib;cudart_static.lib;assimp-vc142-mtd.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -137,6 +137,7 @@
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
     <CudaCompile Include="src\CUDAScene.cu" />
+    <CudaCompile Include="src\Scene.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
@@ -171,6 +172,7 @@
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\Managed.cuh" />
+    <CudaCompile Include="src\Scene.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />

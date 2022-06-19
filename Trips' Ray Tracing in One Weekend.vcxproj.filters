@@ -102,6 +102,8 @@
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\CUDAScene.cu" />
+    <CudaCompile Include="src\Scene.cu" />
+    <CudaCompile Include="src\Scene.cuh" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\materials\dielectric.tu">

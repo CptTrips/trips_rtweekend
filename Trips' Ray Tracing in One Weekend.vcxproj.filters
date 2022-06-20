@@ -106,15 +106,7 @@
     <CudaCompile Include="src\Scene.cuh" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\materials\dielectric.tu">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\materials\diffuse.tu">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="src\materials\metal.tu">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="src\Array.tu" />
+    <None Include="src\materials\material.tpp" />
   </ItemGroup>
 </Project>

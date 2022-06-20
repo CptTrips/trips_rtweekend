@@ -21,5 +21,5 @@
     "aperture": 0.0001
   },
 
-  "scene_name": "models\backpack\backpack.obj"
+  "scene_name": "models\\backpack\\backpack.obj"
 }

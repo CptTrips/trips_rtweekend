@@ -21,6 +21,8 @@ class Scene
 
 	std::vector<aiMesh*> ai_meshes;
 
+	const aiScene* ai_scene = NULL;
+
 	Diffuse<CUDA_RNG> default_material;
 
 	Array<vec3>** vertex_library = NULL;
@@ -30,6 +32,8 @@ class Scene
 	const Array<uint32_t>** device_index_library = NULL;
 
 	uint32_t* device_material_library = NULL;
+
+    Material<CUDA_RNG>* device_mat;
 
 	void process_node(aiNode* node, const aiScene* scene);
 

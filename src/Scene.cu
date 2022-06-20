@@ -6,7 +6,7 @@ Scene::Scene(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0
 
 	Assimp::Importer ai_importer;
 
-	const aiScene* ai_scene = ai_importer.ReadFile(scene_path, aiProcess_Triangulate);
+	ai_scene = ai_importer.ReadFile(scene_path, aiProcess_Triangulate);
 
 	if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !ai_scene->mRootNode)
 	{
@@ -96,11 +96,31 @@ Scene::~Scene()
 
     if (device_vertex_library) cudaFree(device_vertex_library);
     if (device_index_library) cudaFree(device_index_library);
+    if (device_material_library) cudaFree(device_material_library);
+
+    for (int i = 0; i < ai_meshes.size(); i++)
+    {
+        if (vertex_library)
+        {
+            checkCudaErrors(cudaFree(vertex_library[i]->get_data()));
+            checkCudaErrors(cudaFree(vertex_library[i]));
+        }
+        if (index_library)
+        {
+            checkCudaErrors(cudaFree(index_library[i]->get_data()));
+            checkCudaErrors(cudaFree(index_library[i]));
+        }
+    }
 
     if (vertex_library) delete vertex_library;
     if (index_library) delete index_library;
 
+    if (device_mat)
+        checkCudaErrors(cudaFree(device_mat));
+
     if (cuda_scene) teardown_scene(cuda_scene);
+
+    if (ai_scene) delete ai_scene;
 }
 
 void Scene::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
@@ -167,7 +187,6 @@ void Scene::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
 
 void Scene::send_material()
 {
-    Material<CUDA_RNG>* device_mat;
 
     cudaMallocManaged(&device_mat, sizeof(Diffuse<CUDA_RNG>));
 
@@ -183,7 +202,7 @@ __global__ void register_material(CUDAScene* const scene, const Material<CUDA_RN
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
     if (id == 0)
-        (*scene->materials)[0] = material;
+        (*scene->materials)[id] = material;
 
 }
 

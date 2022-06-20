@@ -142,25 +142,17 @@
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
     <None Include="src\Array.tu" />
-    <None Include="src\materials\dielectric.tu">
-      <FileType>CppCode</FileType>
-    </None>
-    <None Include="src\materials\diffuse.tu">
-      <FileType>CppCode</FileType>
-    </None>
     <CudaCompile Include="src\CUDASceneGenerators.cu" />
     <CudaCompile Include="src\Error.cu" />
     <CudaCompile Include="src\FrameBuffer.cu">
       <FileType>CppCode</FileType>
     </CudaCompile>
     <ClCompile Include="src\main.cc" />
-    <None Include="src\materials\metal.tu">
-      <FileType>CppCode</FileType>
-    </None>
     <CudaCompile Include="src\rand.cc" />
     <CudaCompile Include="src\ray.cu">
       <FileType>Document</FileType>
     </CudaCompile>
+    <None Include="src\materials\material.tpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\json.hpp" />

@@ -17,8 +17,6 @@
 #include <fstream>
 #include <functional>
 #include <algorithm>
-#include <filesystem>
-
 
 
 
@@ -71,7 +69,8 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 	return scene;
 }
 
-int main() {
+int main()
+{
 
 	// read a JSON file
 	using json = nlohmann::json;

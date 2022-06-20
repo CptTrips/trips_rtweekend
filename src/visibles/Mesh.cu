@@ -35,11 +35,13 @@ __host__ __device__ Mesh::Mesh(const Array<vec3>* const vertices, const Array<ui
 
 __host__ __device__ Mesh::~Mesh()
 {
+	/*
 	if (vertices)
 		delete vertices;
 
 	if (indices)
 		delete indices;
+		*/
 
 }
 

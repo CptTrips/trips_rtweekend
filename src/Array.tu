@@ -81,7 +81,7 @@ __host__ __device__ uint32_t Array<T>::size() const
 }
 
 template<typename T>
-__host__ const T* Array<T>::get_data() const
+__host__ T* Array<T>::get_data() const
 {
 	return data;
 }
@@ -95,7 +95,7 @@ __host__ Array<T>* Array<T>::to_device() const
 
 	cudaMalloc(&device_data, bytes);
 
-	cudaMemcpy(&device_data, data, bytes, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_data, data, bytes, cudaMemcpyHostToDevice);
 
 	Array<T> device_array = Array<T>();
 
@@ -113,3 +113,4 @@ __host__ Array<T>* Array<T>::to_device() const
 
 	return p_device_array;
 }
+

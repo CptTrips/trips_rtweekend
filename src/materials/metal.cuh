@@ -7,12 +7,12 @@ template<typename RNG_T>
 class Metal : public Material<RNG_T>
 {
   public:
-	__host__ __device__ Metal(vec3 albedo, float roughness) : Material<RNG_T>(albedo), roughness(roughness) {}
+	__host__ __device__ Metal(vec3 albedo, float roughness) : Material<RNG_T>(albedo, 0.f, 1.f, 0.f, roughness, 0.f) {}
     //__host__ __device__ virtual ~Metal() = default;
-    __host__ __device__ vec3 bounce(const vec3& r_in, const vec3& normal, RNG_T* const rng) const;
-    __host__ __device__ bool is_opaque() const { return true; }
-    float roughness;
+    //__host__ __device__ vec3 bounce(const vec3& r_in, const vec3& normal, RNG_T* const rng) const;
+    //__host__ __device__ bool is_opaque() const { return true; }
+    //float roughness;
 };
 
-#include "metal.tu"
+//#include "metal.tu"
 #endif

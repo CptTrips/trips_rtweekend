@@ -7,16 +7,34 @@
 template<typename RNG_T>
 class Material
 {
+
+    __host__ __device__ vec3 bounce_diffuse(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ vec3 bounce_metallic(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ vec3 bounce_dielectric(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ float reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const;
+    __host__ __device__ float reflectance_formula(float a, float b) const;
+
   public:
     __host__ __device__ Material();
-    __host__ __device__ Material(vec3 a) : albedo(a) {}
+    __host__ __device__ Material(const vec3& a, const float& diffuse, const float& metallic, const float& dielectric, const float& roughness, const float& refractive_index);
 
-    //__host__ __device__ virtual ~Material();
+    __host__ __device__ vec3 bounce(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ bool is_opaque() const;
 
-    __host__ __device__ virtual vec3 bounce(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const = 0;
-    __host__ __device__ virtual bool is_opaque() const = 0;
+
     vec3 albedo;
 
+    float diffuse;
+
+    float metallic;
+    
+    float dielectric;
+
+    float roughness;
+
+    float refractive_index;
 };
+
+#include "material.tpp"
 
 #endif

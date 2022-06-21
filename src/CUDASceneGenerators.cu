@@ -271,4 +271,84 @@ __global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const
 	}
 }
 
+template<typename T>
+__host__ T* move_to_device(T* const obj)
+{
+	T* device_ptr = obj->to_device();
+
+	delete obj;
+
+	return device_ptr;
+}
+
+
+CUDAScene* n_cubes(const int& n)
+{
+
+	Array<const Array<vec3>*>* vertex_arrays = new Array<const Array<vec3>*>(n);
+	const Array<uint32_t>** index_arrays = new const Array<uint32_t>*[n];
+	const Material<CUDA_RNG>** material_array = new const Material<CUDA_RNG>*[n];
+
+	for (int i = 0; i < n; i++)
+	{
+		const Array<vec3>* vertex_array = cube_vertices(vec3(0.f, 0.f, 1.5f*i));
+
+		(*vertex_arrays)[i] = vertex_array->to_device();
+
+		delete vertex_array;
+
+		Array<uint32_t>* index_array = cube_indices();
+
+		index_arrays[i] = index_array->to_device();
+
+		delete index_array;
+
+		const Material<CUDA_RNG>* material = new Diffuse<CUDA_RNG>(vec3((float)i / (float)(n - 1), .5f, 1.f - (float)i / (float)(n - 1)));
+
+		material_array[i] = material->to_device();
+
+		delete material;
+	}
+
+	
+	Array<const Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
+
+	const Array<uint32_t>** device_index_arrays;
+	checkCudaErrors(cudaMalloc(&device_index_arrays, n * sizeof(Array<uint32_t>*)));
+	checkCudaErrors(cudaMemcpy(device_index_arrays, index_arrays, n * sizeof(Array<uint32_t>*), cudaMemcpyHostToDevice));
+
+	const Material<CUDA_RNG>** device_material_array;
+	checkCudaErrors(cudaMalloc(&device_material_array, n * sizeof(Material<CUDA_RNG>*)));
+	checkCudaErrors(cudaMemcpy(device_material_array, material_array, n * sizeof(Material<CUDA_RNG>*), cudaMemcpyHostToDevice));
+
+	CUDAScene* scene = scene_factory(n,n);
+
+	gen_n_cubes << <1, n >> > (scene, device_vertex_arrays, device_index_arrays, device_material_array);
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	delete vertex_arrays;
+
+	delete index_arrays;
+
+	delete material_array;
+
+	return scene;
+
+}
+
+__global__ void gen_n_cubes(CUDAScene* const scene, Array<const Array<vec3>*>* const vertex_arrays, const Array<uint32_t>** const index_arrays, const Material<CUDA_RNG>** const materials_array)
+{
+	int id = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (id < scene->size())
+	{
+		
+		(*scene->visibles)[id] = new Mesh((*vertex_arrays)[id], index_arrays[id], materials_array[id]);
+
+		(*scene->materials)[id] = materials_array[id];
+	}
+}
+
+
 

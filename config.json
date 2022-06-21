@@ -8,6 +8,10 @@
     "ball_count":  64
   },
 
+  "n_cubes": {
+    "n":  3
+  },
+
   "camera": {
     "old_origin": [ 0.5, 0.5, -10.0 ],
     "old_target": [ 0.0, 0.0, 1.0 ],
@@ -21,6 +25,6 @@
     "aperture": 0.0001
   },
 
-  "scene_name":  "single_cube",
+  "scene_name":  "n_cubes",
   "backpack_scene_name": "models\\backpack\\backpack.obj"
 }

@@ -19,22 +19,24 @@
 #include <algorithm>
 
 
+using json = nlohmann::json;
 
 const bool CUDA_ENABLED = false;
 
 Scene host_scene;
 
-enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id };
+enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id };
 
 std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	{"random_balls", random_balls_id}
 	,{"single_ball", single_ball_id}
 	,{"single_triangle", single_triangle_id}
 	,{"single_cube", single_cube_id}
+	,{"n_cubes", n_cubes_id}
 };
 
 
-CUDAScene* load_scene(std::string scene_name, const int ball_count)
+CUDAScene* load_scene(std::string scene_name, const json& j)
 {
 	CUDAScene* scene;
 	
@@ -48,7 +50,7 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 		switch (scene_id)
 		{
 		case random_balls_id:
-			scene = random_balls(ball_count);
+			scene = random_balls(j["random_balls"]["ball_count"]);
 			break;
 		case single_ball_id:
 			scene = single_ball();
@@ -58,6 +60,9 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 			break;
 		case single_cube_id:
 			scene = single_cube();
+			break;
+		case n_cubes_id:
+			scene = n_cubes(j["n_cubes"]["n"]);
 			break;
 		}
 
@@ -86,7 +91,6 @@ int main()
 	std::cout << "Stack limit: " << stack_limit << std::endl;
 
 	// read a JSON file
-	using json = nlohmann::json;
 	std::ifstream i("config.json");
 	json j;
 	i >> j;
@@ -108,7 +112,7 @@ int main()
 
 	std::string scene_name = j["scene_name"];
 
-	CUDAScene* const scene = load_scene(scene_name, ball_count);
+	CUDAScene* const scene = load_scene(scene_name, j);
 
 	// CUDAScene* const scene = random_balls(ball_count);
 	// CUDAScene* const scene = single_triangle();

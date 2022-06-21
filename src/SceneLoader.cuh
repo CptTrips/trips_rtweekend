@@ -14,7 +14,7 @@
 
 #include <device_launch_parameters.h>
 
-class Scene
+class SceneLoader
 {
 	static Assimp::Importer ai_importer;
 
@@ -46,12 +46,12 @@ class Scene
 
 
 public:
-	Scene() : default_material(vec3(.5f, .5f, .5f)) {}
-	Scene(const Scene& s) = delete;
-	Scene& Scene::operator=(Scene&& s);
-	Scene& operator=(const Scene& s) = delete;
-	~Scene();
-	Scene(std::string scene_path);
+	SceneLoader() : default_material(vec3(.5f, .5f, .5f)) {}
+	SceneLoader(const SceneLoader& s) = delete;
+	SceneLoader& SceneLoader::operator=(SceneLoader&& s);
+	SceneLoader& operator=(const SceneLoader& s) = delete;
+	~SceneLoader();
+	SceneLoader(std::string scene_path);
 	CUDAScene* to_device();
 };
 

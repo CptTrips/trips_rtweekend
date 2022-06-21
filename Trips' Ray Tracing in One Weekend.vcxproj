@@ -137,7 +137,7 @@
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
     <CudaCompile Include="src\CUDAScene.cu" />
-    <CudaCompile Include="src\Scene.cu" />
+    <CudaCompile Include="src\SceneLoader.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
@@ -164,7 +164,7 @@
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\Managed.cuh" />
-    <CudaCompile Include="src\Scene.cuh" />
+    <CudaCompile Include="src\SceneLoader.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />

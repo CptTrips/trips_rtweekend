@@ -4,7 +4,7 @@
 #include "GPURayTracer.cuh"
 #include "CUDASceneGenerators.cuh"
 #include "CUDAScene.cuh"
-#include "Scene.cuh"
+#include "SceneLoader.cuh"
 
 #include "float.h"
 
@@ -23,7 +23,7 @@ using json = nlohmann::json;
 
 const bool CUDA_ENABLED = false;
 
-Scene host_scene;
+SceneLoader host_scene;
 
 enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id };
 
@@ -69,7 +69,7 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 	}
 	else // try to load scene as a file 
 	{
-		host_scene = Scene(scene_name);
+		host_scene = SceneLoader(scene_name);
 		scene = host_scene.to_device();
 	}
 

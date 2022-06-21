@@ -1,8 +1,8 @@
-#include "Scene.cuh"
+#include "SceneLoader.cuh"
 
-Assimp::Importer Scene::ai_importer;
+Assimp::Importer SceneLoader::ai_importer;
 
-Scene::Scene(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0.5f, 0.5f, 0.5f)))
+SceneLoader::SceneLoader(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0.5f, 0.5f, 0.5f)))
 {
 
 	ai_scene = ai_importer.ReadFile(scene_path, aiProcess_Triangulate);
@@ -18,7 +18,7 @@ Scene::Scene(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0
 
 }
 
-Scene& Scene::operator=(Scene&& s)
+SceneLoader& SceneLoader::operator=(SceneLoader&& s)
 {
 	cuda_scene = s.cuda_scene;
 	s.cuda_scene = NULL;
@@ -51,7 +51,7 @@ Scene& Scene::operator=(Scene&& s)
     return *this;
 }
 
-CUDAScene* Scene::to_device()
+CUDAScene* SceneLoader::to_device()
 {
 
 
@@ -74,7 +74,7 @@ CUDAScene* Scene::to_device()
 	return cuda_scene;
 }
 
-void Scene::process_node(aiNode* node, const aiScene* scene)
+void SceneLoader::process_node(aiNode* node, const aiScene* scene)
 {
     // process each mesh located at the current node
     for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -93,7 +93,7 @@ void Scene::process_node(aiNode* node, const aiScene* scene)
 
 }
 
-void Scene::send_meshes()
+void SceneLoader::send_meshes()
 {
 
     vertex_library = new Array<vec3>*[ai_meshes.size()];
@@ -124,7 +124,7 @@ void Scene::send_meshes()
 }
 
 
-Scene::~Scene()
+SceneLoader::~SceneLoader()
 {
 
     if (device_vertex_library) cudaFree(device_vertex_library);
@@ -156,7 +156,7 @@ Scene::~Scene()
     if (ai_scene) delete ai_scene;
 }
 
-void Scene::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
+void SceneLoader::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
 {
 
     unsigned int vertex_count = m->mNumVertices;
@@ -218,7 +218,7 @@ void Scene::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
 }
 
 
-void Scene::send_material()
+void SceneLoader::send_material()
 {
 
     cudaMallocManaged(&device_mat, sizeof(Diffuse<CUDA_RNG>));

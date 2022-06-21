@@ -1,17 +1,18 @@
 #pragma once
 #include <cuda_runtime.h>
+#include "Error.cuh"
 
 class Managed {
 public:
     void* operator new(size_t len) {
         void* ptr;
-        cudaMallocManaged(&ptr, len);
+        checkCudaErrors(cudaMallocManaged(&ptr, len));
         cudaDeviceSynchronize();
         return ptr;
     }
 
     void operator delete(void* ptr) {
         cudaDeviceSynchronize();
-        cudaFree(ptr);
+        checkCudaErrors(cudaFree(ptr));
     }
 };

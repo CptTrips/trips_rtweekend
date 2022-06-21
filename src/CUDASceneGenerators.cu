@@ -29,19 +29,15 @@ __global__ void cuda_teardown_scene(CUDAScene* scene)
 CUDAScene* scene_factory(const int visible_count, const int material_count)
 {
 
-	CUDAScene* scene;
+	CUDAScene* scene = new CUDAScene();
 
-    CUDAScene host_scene = CUDAScene();
+	Array<CUDAVisible*>* visibles = Array<CUDAVisible*>(visible_count).to_device();
 
-	checkCudaErrors(cudaMalloc(&scene, sizeof(CUDAScene)));
+	Array<const Material<CUDA_RNG>*>* materials = Array<const Material<CUDA_RNG>*>(visible_count).to_device();
 
-	checkCudaErrors(cudaDeviceSynchronize());
+	scene->visibles = visibles;
 
-	checkCudaErrors(cudaMemcpy(scene, &host_scene, sizeof(CUDAScene), cudaMemcpyHostToDevice));
-
-	checkCudaErrors(cudaDeviceSynchronize());
-
-	create_scene_buffers << <1, 1 >> > (scene, visible_count, material_count);
+	scene->materials = materials;
 
 	return scene;
 }
@@ -285,6 +281,7 @@ __host__ T* move_to_device(T* const obj)
 CUDAScene* n_cubes(const int& n)
 {
 
+	Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(n);
 	Array<const Array<vec3>*>* vertex_arrays = new Array<const Array<vec3>*>(n);
 	Array<const Array<uint32_t>*>* index_arrays = new Array<const Array<uint32_t>*>(n);
 	Array<const Material<CUDA_RNG>*>* material_array = new Array<const Material<CUDA_RNG>*>(n);
@@ -303,12 +300,11 @@ CUDAScene* n_cubes(const int& n)
 
 		delete index_array;
 
-		const Material<CUDA_RNG>* material = new Diffuse<CUDA_RNG>(vec3((float)i / (float)(n - 1), .5f, 1.f - (float)i / (float)(n - 1)));
+		(*material_array)[i] = Diffuse<CUDA_RNG>(vec3((float)i / (float)(n - 1), .5f, 1.f - (float)i / (float)(n - 1))).to_device();
 
-		(*material_array)[i] = material->to_device();
-
-		delete material;
 	}
+
+	Array<CUDAVisible*>* device_visibles = visibles->to_device();
 
 	Array<const Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
 
@@ -316,9 +312,17 @@ CUDAScene* n_cubes(const int& n)
 
 	Array<const Material<CUDA_RNG>*>* device_material_array = material_array->to_device();
 
-	CUDAScene* scene = scene_factory(n,n);
+	CUDAScene* scene = new CUDAScene();
 
-	gen_n_cubes << <1, n >> > (scene, device_vertex_arrays, device_index_arrays, device_material_array);
+	scene->visibles = device_visibles;
+
+	scene->materials = device_material_array;
+
+	scene->vertex_arrays = device_vertex_arrays;
+
+	scene->index_arrays = device_index_arrays;
+
+	gen_n_cubes << <1, n >> > (scene);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -332,24 +336,16 @@ CUDAScene* n_cubes(const int& n)
 
 }
 
-__global__ void gen_n_cubes(CUDAScene* const scene, Array<const Array<vec3>*>* const vertex_arrays, Array<const Array<uint32_t>*>* const index_arrays, Array<const Material<CUDA_RNG>*>* const materials_array)
+__global__ void gen_n_cubes(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (id < scene->size())
 	{
 
-		(*scene->visibles)[id] = new Mesh((*vertex_arrays)[id], (*index_arrays)[id], (*materials_array)[id]);
+		(*scene->visibles)[id] = new Mesh((*scene->vertex_arrays)[id], (*scene->index_arrays)[id], (*scene->materials)[id]);
 	}
 
-	if (id == 0)
-	{
-		scene->materials = materials_array;
-
-		scene->vertex_arrays = vertex_arrays;
-
-		scene->index_arrays = index_arrays;
-	}
 }
 
 

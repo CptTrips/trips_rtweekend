@@ -46,7 +46,7 @@ __global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const
 
 CUDAScene* n_cubes(const int& n);
 
-__global__ void gen_n_cubes(CUDAScene* const scene, Array<const Array<vec3>*>* const vertex_arrays, Array<const Array<uint32_t>*>* const index_arrays, Array<const Material<CUDA_RNG>*>* const materials_array);
+__global__ void gen_n_cubes(CUDAScene* const scene);
 
 void teardown_scene(CUDAScene* scene);
 

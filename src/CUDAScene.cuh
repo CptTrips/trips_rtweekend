@@ -9,7 +9,7 @@
 #include "Error.cuh"
 
 
-class CUDAScene
+class CUDAScene : public Managed
 {
 public:
 	__host__ __device__ CUDAScene();

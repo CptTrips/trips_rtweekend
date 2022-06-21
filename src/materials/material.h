@@ -3,6 +3,7 @@
 
 #include "../ray.cuh"
 #include "../Intersection.h"
+#include "../Error.cuh"
 
 template<typename RNG_T>
 class Material
@@ -20,6 +21,8 @@ class Material
 
     __host__ __device__ vec3 bounce(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
     __host__ __device__ bool is_opaque() const;
+
+    __host__ Material<RNG_T>* to_device() const;
 
 
     vec3 albedo;

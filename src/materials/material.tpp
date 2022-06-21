@@ -1,3 +1,4 @@
+#include "material.h"
 
 template<typename RNG_T>
 Material<RNG_T>::Material()
@@ -28,6 +29,18 @@ template<typename RNG_T>
 __host__ __device__ bool Material<RNG_T>::is_opaque() const
 {
 	return dielectric == 0;
+}
+
+template<typename RNG_T>
+__host__ Material<RNG_T>* Material<RNG_T>::to_device() const
+{
+	Material<RNG_T>* device_material;
+
+	checkCudaErrors(cudaMalloc(&device_material, sizeof(*this)));
+
+	checkCudaErrors(cudaMemcpy(device_material, this, sizeof(*this), cudaMemcpyHostToDevice));
+
+	return device_material;
 }
 
 template<typename RNG_T>
@@ -151,3 +164,6 @@ __host__ __device__ float Material<RNG_T>::reflectance_formula(float a, float b)
 
   return c*c;
 }
+
+
+

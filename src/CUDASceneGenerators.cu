@@ -196,67 +196,79 @@ __global__ void gen_single_triangle(CUDAScene* const scene)
 }
 
 
+Array<vec3>* cube_vertices(const vec3& translation = vec3(0.f, 0.f, 0.f))
+{
+
+	Array<vec3>* vertex_array = new Array<vec3>(8);
+
+	for (int i = 0; i < 2; i++)
+		for (int j = 0; j < 2; j++)
+			for (int k = 0; k < 2; k++)
+			{
+				(*vertex_array)[i + 2 * j + 4 * k] = vec3(i, j, k) + translation;
+			}
+
+	return vertex_array;
+}
+
+Array<uint32_t>* cube_indices()
+{
+	Array<uint32_t>* index_array = new Array<uint32_t>(36);
+
+	int indices[36] = {
+		0, 2, 1, 2, 3, 1,
+		1, 5, 4, 0, 1, 4,
+		4, 5, 7, 4, 7, 6,
+		6, 7, 3, 3, 2, 6,
+		1, 3, 5, 3, 7, 5,
+		0, 4, 6, 0, 6, 2
+	};
+
+	for (int i = 0; i < 36; i++)
+		(*index_array)[i] = indices[i];
+
+	return index_array;
+}
+
 CUDAScene* single_cube()
 {
 
-	size_t stack_limit;
+	Array<vec3>* vertex_array = cube_vertices();
 
-	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+	Array<vec3>* const device_vertex_array = vertex_array->to_device();
 
-	std::cout << "Stack limit: " << stack_limit << std::endl;
+	Array<uint32_t>* index_array = cube_indices();
 
-	checkCudaErrors(cudaDeviceSetLimit(cudaLimitStackSize, 8*stack_limit));
+	Array<uint32_t>* const device_index_array = index_array->to_device();
 
-	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+	Material<CUDA_RNG>* mat = new Diffuse<CUDA_RNG>(vec3(0.7f, 0.1f, 0.2f));
 
-	std::cout << "Stack limit: " << stack_limit << std::endl;
+	Material<CUDA_RNG>* const device_mat = mat->to_device();
 
 	CUDAScene* scenery = scene_factory(1,1);
 
-	gen_single_cube << <1, 1 >> > (scenery);
+	gen_single_cube << <1, 1 >> > (scenery, device_vertex_array, device_index_array, device_mat);
 
 	checkCudaErrors(cudaDeviceSynchronize());
+
+	delete vertex_array;
+	delete index_array;
+	delete mat;
 
 	return scenery;
 }
 
 
-__global__ void gen_single_cube(CUDAScene* const scene)
+__global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const vertex_array, const Array<uint32_t>* const index_array, const Material<CUDA_RNG>* const mat)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (id == 0)
 	{
 
-		vec3 translation = vec3(0.f, 0.f, 0.f);
-
-		Array<vec3>* vertex_array = new Array<vec3>(8);
-
-		for (int i = 0; i < 2; i++)
-			for (int j = 0; j < 2; j++)
-				for (int k = 0; k < 2; k++)
-				{
-					(*vertex_array)[i + 2 * j + 4 * k] = vec3(i, j, k);
-				}
-
-		Array<uint32_t>* index_array = new Array<uint32_t>(36);
-
-		int indices[36] = {
-			0, 2, 1, 2, 3, 1,
-			1, 5, 4, 0, 1, 4,
-			4, 5, 7, 4, 7, 6,
-			6, 7, 3, 3, 2, 6,
-			1, 3, 5, 3, 7, 5,
-			0, 4, 6, 0, 6, 2
-		};
-
-		for (int i = 0; i < 36; i++)
-			(*index_array)[i] = indices[i];
-
-
-		Material<CUDA_RNG>* mat = new Diffuse<CUDA_RNG>(vec3(0.7f, 0.1f, 0.2f));
-
 		(*scene->visibles)[id] = new Mesh(vertex_array, index_array, mat);
 		(*scene->materials)[id] = mat;
 	}
 }
+
+

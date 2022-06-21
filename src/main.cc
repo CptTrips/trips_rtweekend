@@ -22,6 +22,7 @@
 
 const bool CUDA_ENABLED = false;
 
+Scene host_scene;
 
 enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id };
 
@@ -63,7 +64,8 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 	}
 	else // try to load scene as a file 
 	{
-		scene = Scene(scene_name).to_device();
+		host_scene = Scene(scene_name);
+		scene = host_scene.to_device();
 	}
 
 	return scene;
@@ -71,6 +73,17 @@ CUDAScene* load_scene(std::string scene_name, const int ball_count)
 
 int main()
 {
+	size_t stack_limit;
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
+
+	checkCudaErrors(cudaDeviceSetLimit(cudaLimitStackSize, 8*stack_limit));
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
 
 	// read a JSON file
 	using json = nlohmann::json;

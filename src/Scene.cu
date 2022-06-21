@@ -1,10 +1,9 @@
 #include "Scene.cuh"
 
+Assimp::Importer Scene::ai_importer;
 
 Scene::Scene(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0.5f, 0.5f, 0.5f)))
 {
-
-	Assimp::Importer ai_importer;
 
 	ai_scene = ai_importer.ReadFile(scene_path, aiProcess_Triangulate);
 
@@ -17,6 +16,39 @@ Scene::Scene(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0
     process_node(ai_scene->mRootNode, ai_scene);
 
 
+}
+
+Scene& Scene::operator=(Scene&& s)
+{
+	cuda_scene = s.cuda_scene;
+	s.cuda_scene = NULL;
+
+	ai_meshes = s.ai_meshes;
+
+	ai_scene = s.ai_scene;
+    s.ai_scene = NULL;
+
+    default_material = s.default_material;
+
+    vertex_library = s.vertex_library;
+    s.vertex_library = NULL;
+
+    device_vertex_library = s.device_vertex_library;
+    s.device_vertex_library = NULL;
+
+    index_library = s.index_library;
+    s.index_library = NULL;
+
+    device_index_library = s.device_index_library;
+    s.device_index_library = NULL;
+
+    device_material_library = s.device_material_library;
+	s.device_material_library = NULL;
+
+    device_mat = s.device_mat;
+    s.device_mat = NULL;
+
+    return *this;
 }
 
 CUDAScene* Scene::to_device()
@@ -37,6 +69,7 @@ CUDAScene* Scene::to_device()
 
     fill_scene << <blocks, threads >> > (cuda_scene, device_material_library, device_vertex_library, device_index_library);
 
+    checkCudaErrors(cudaPeekAtLastError());
 
 	return cuda_scene;
 }

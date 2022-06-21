@@ -60,6 +60,12 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 
 	Intersection* ixn = NULL;
 
+	/*
+	const Material<CUDA_RNG>* local_mat_ptr = material;
+
+	Material<CUDA_RNG> local_material = *local_mat_ptr;
+	*/
+
 	// Do not scatter from the back side if the material is opaque
 	if (material->is_opaque() && dot(r.d, normal) > 0.f)
 		return NULL;

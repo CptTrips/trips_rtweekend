@@ -1,7 +1,7 @@
 {
-  "x_res": 2560,
-  "y_res": 1440,
-  "spp": 16,
+  "x_res": 256,
+  "y_res": 144,
+  "spp": 1,
   "max_bounce": 4,
 
   "random_balls": {
@@ -21,5 +21,6 @@
     "aperture": 0.0001
   },
 
-  "scene_name": "models\\backpack\\backpack.obj"
+  "scene_name":  "single_cube",
+  "backpack_scene_name": "models\\backpack\\backpack.obj"
 }

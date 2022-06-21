@@ -16,6 +16,7 @@
 
 class Scene
 {
+	static Assimp::Importer ai_importer;
 
 	CUDAScene* cuda_scene = NULL;
 
@@ -47,6 +48,7 @@ class Scene
 public:
 	Scene() : default_material(vec3(.5f, .5f, .5f)) {}
 	Scene(const Scene& s) = delete;
+	Scene& Scene::operator=(Scene&& s);
 	Scene& operator=(const Scene& s) = delete;
 	~Scene();
 	Scene(std::string scene_path);

@@ -1,6 +1,7 @@
 #pragma once
 #include "vec3.cuh"
 #include "Managed.cuh"
+#include "Error.cuh"
 
 class FrameBuffer : public Managed
 {

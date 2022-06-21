@@ -86,6 +86,7 @@ __host__ T* Array<T>::get_data() const
 	return data;
 }
 
+// Copy to device
 template<typename T>
 __host__ Array<T>* Array<T>::to_device() const
 {

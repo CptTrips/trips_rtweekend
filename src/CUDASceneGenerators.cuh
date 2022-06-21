@@ -35,11 +35,14 @@ CUDAScene* single_triangle();
 
 __global__ void gen_single_triangle(CUDAScene* const scene);
 
+Array<vec3>* cube_vertices(const vec3& translation);
+
+Array<uint32_t>* cube_indices();
+
 
 CUDAScene* single_cube();
 
-__global__ void gen_single_cube(CUDAScene* const scene);
-
+__global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const vertex_array, const Array<uint32_t>* const index_array, const Material<CUDA_RNG>* const mat);
 
 void teardown_scene(CUDAScene* scene);
 

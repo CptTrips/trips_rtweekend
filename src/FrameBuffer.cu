@@ -3,7 +3,7 @@
 
 FrameBuffer::FrameBuffer(const int& h, const int& w) : h(h), w(w)
 {
-	cudaMallocManaged(&buffer, h * w * 3);
+	checkCudaErrors(cudaMallocManaged(&buffer, h * w * 3));
 }
 
 FrameBuffer::FrameBuffer(const FrameBuffer& fb)

@@ -32,8 +32,8 @@ public:
 
 	Array<CUDAVisible*>* visibles;
 	Array<const Material<CUDA_RNG>*>* materials;
-	Array<Array<vec3>*>* vertices;
-	Array<Array<uint32_t>*>* indices;
+	Array<const Array<vec3>*>* vertex_arrays;
+	Array<const Array<uint32_t>*>* index_arrays;
 
 private:
 

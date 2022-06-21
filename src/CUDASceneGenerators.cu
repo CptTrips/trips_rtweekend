@@ -338,10 +338,17 @@ __global__ void gen_n_cubes(CUDAScene* const scene, Array<const Array<vec3>*>* c
 
 	if (id < scene->size())
 	{
-		
-		(*scene->visibles)[id] = new Mesh((*vertex_arrays)[id], (*index_arrays)[id], (*materials_array)[id]);
 
-		(*scene->materials)[id] = (*materials_array)[id];
+		(*scene->visibles)[id] = new Mesh((*vertex_arrays)[id], (*index_arrays)[id], (*materials_array)[id]);
+	}
+
+	if (id == 0)
+	{
+		scene->materials = materials_array;
+
+		scene->vertex_arrays = vertex_arrays;
+
+		scene->index_arrays = index_arrays;
 	}
 }
 

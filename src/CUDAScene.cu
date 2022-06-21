@@ -1,24 +1,35 @@
 #include "CUDAScene.cuh"
 
-__host__ __device__ CUDAScene::CUDAScene()
+__host__ CUDAScene::CUDAScene()
 {
 	visibles = NULL;
 
 	materials = NULL;
+
+	index_arrays = NULL;
+
+	vertex_arrays = NULL;
 }
 
-__device__ CUDAScene::CUDAScene(Array<CUDAVisible*>* const visibles, Array<const Material<CUDA_RNG>*>* const materials)
+__host__ CUDAScene::CUDAScene(Array<CUDAVisible*>* const visibles, Array<Material<CUDA_RNG>*>* const materials)
 	//: visibles(visibles), materials(materials)
 {
 	this->visibles = visibles;
 	this->materials = materials;
 
+	index_arrays = NULL;
+
+	vertex_arrays = NULL;
+
 }
 
+/*
 __device__ CUDAScene::CUDAScene(const CUDAScene& cs)
 {
 	visibles = cs.visibles;
 	materials = cs.materials;
+	index_arrays = cs.index_arrays;
+	vertex_arrays = cs.vertex_arrays;
 }
 
 __device__ CUDAScene& CUDAScene::operator=(const CUDAScene& cs)
@@ -63,63 +74,88 @@ __device__ CUDAScene& CUDAScene::operator=(CUDAScene&& cs)
 
 	return *this;
 }
+*/
 
-__host__ __device__ CUDAScene::~CUDAScene()
+__host__ CUDAScene::~CUDAScene()
 {
 
 	delete_visibles();
 
 	delete_materials();
+
+	delete_vertex_arrays();
+
+	delete_index_arrays();
+
 }
 
-
-__device__ CUDAVisible* CUDAScene::operator[](const uint32_t i)
-{
-	return (*visibles)[i];
-}
-
-__device__ const CUDAVisible* CUDAScene::operator[](const uint32_t i) const
-{
-	return (*visibles)[i];
-}
-
-__device__ void CUDAScene::set_visibles(Array<CUDAVisible*>* const new_visibles)
+__host__ void CUDAScene::set_visibles(Array<CUDAVisible*>* const new_visibles)
 {
 	delete_visibles();
 
 	visibles = new_visibles;
 }
 
-__device__ void CUDAScene::set_materials(Array<const Material<CUDA_RNG>*>* const new_materials)
+__host__ void CUDAScene::set_materials(Array<Material<CUDA_RNG>*>* const new_materials)
 {
 
 	delete_materials();
 
 	materials = new_materials;
 }
-__device__ void CUDAScene::delete_visibles()
-{
-	if (visibles)
-	{
-		for (uint32_t i = 0; i < visibles->size(); i++)
-			delete (*visibles)[i];
 
-		delete visibles;
+__global__ void cuda_delete_visibles(CUDAScene* scene)
+{
+	int id = threadIdx.x + blockDim.x * blockIdx.x;
+	if (scene->visibles)
+	{
+		if (id < scene->visibles->size())
+			delete (*scene->visibles)[id];
+
 	}
 
 }
-__device__ void CUDAScene::delete_materials()
+
+__host__ void CUDAScene::delete_visibles()
+{
+	int threads = 512;
+
+	int blocks = visibles->size() / threads + 1;
+
+	cuda_delete_visibles << <blocks, threads >> > (this);
+
+	cudaFree(visibles);
+
+}
+
+__host__ void CUDAScene::delete_materials()
 {
 	if (materials)
 	{
 		for (uint32_t i = 0; i < materials->size(); i++)
-			delete (*materials)[i];
+			cudaFree((*materials)[i]);
 
-		delete materials;
+		cudaFree(materials);
 	}
 }
 
-__device__ uint32_t CUDAScene::size() const
+
+__host__ void CUDAScene::delete_vertex_arrays()
 {
-	return (*visibles).size();
+
+	for (int i = 0; i < vertex_arrays->size(); i++)
+		cudaFree((*vertex_arrays)[i]);
+
+	cudaFree(vertex_arrays);
+
 }
+
+__host__ void CUDAScene::delete_index_arrays()
+{
+	for (int i = 0; i < index_arrays->size(); i++)
+		cudaFree((*index_arrays)[i]);
+
+	cudaFree(index_arrays);
+
+}
+

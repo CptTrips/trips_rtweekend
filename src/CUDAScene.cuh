@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuda_runtime.h>
+#include <device_launch_parameters.h>
 #include "materials\material.h"
 #include "visibles\CUDAVisible.cuh"
 #include "rand.h"
@@ -12,32 +13,34 @@
 class CUDAScene : public Managed
 {
 public:
-	__host__ __device__ CUDAScene();
-	__device__ CUDAScene(Array<CUDAVisible*>* const visibles, Array<const Material<CUDA_RNG>*>* const materials);
+	__host__ CUDAScene();
+	__host__ CUDAScene(Array<CUDAVisible*>* const visibles, Array<Material<CUDA_RNG>*>* const materials);
 
-	__device__ CUDAScene(const CUDAScene& cs);
-	__device__ CUDAScene(CUDAScene&& cs);
-	__device__ CUDAScene& operator=(const CUDAScene& cs);
-	__device__ CUDAScene& operator=(CUDAScene&& cs);
+	__device__ CUDAScene(const CUDAScene& cs) = delete;
+	__device__ CUDAScene(CUDAScene&& cs) = delete;
+	__device__ CUDAScene& operator=(const CUDAScene& cs) = delete;
+	__device__ CUDAScene& operator=(CUDAScene&& cs) = delete;
 
-	__host__ __device__ ~CUDAScene();
+	__host__ ~CUDAScene();
 
-	__device__ CUDAVisible* operator[](const uint32_t i);
-	__device__ const CUDAVisible* operator[](const uint32_t i) const;
-
-	__device__ void set_visibles(Array<CUDAVisible*>* const new_visibles);
-	__device__ void set_materials(Array<const Material<CUDA_RNG>*>* const new_materials);
-
-	__device__ uint32_t size() const;
+	__host__ void set_visibles(Array<CUDAVisible*>* const new_visibles);
+	__host__ void set_materials(Array<Material<CUDA_RNG>*>* const new_materials);
 
 	Array<CUDAVisible*>* visibles;
-	Array<const Material<CUDA_RNG>*>* materials;
-	Array<const Array<vec3>*>* vertex_arrays;
-	Array<const Array<uint32_t>*>* index_arrays;
+	Array<Material<CUDA_RNG>*>* materials;
+	Array<Array<vec3>*>* vertex_arrays;
+	Array<Array<uint32_t>*>* index_arrays;
 
 private:
 
-	__host__ __device__ void delete_visibles();
-	__host__ __device__ void delete_materials();
+	__host__ void delete_visibles();
+
+	__host__ void delete_materials();
+
+	__host__ void delete_vertex_arrays();
+
+	__host__ void delete_index_arrays();
 
 };
+
+__global__ void cuda_delete_visibles(CUDAScene* scene);

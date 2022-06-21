@@ -157,7 +157,7 @@ int main()
 
 	GPURenderProperties render_properties{ h, w, spp, max_bounce };
 
-	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene, view_cam);
+	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene->visibles, view_cam);
 
 
 	// Write scene
@@ -171,7 +171,7 @@ int main()
 	// Delete visibles and materials
 	// cudaFree/Delete arrays
 	// cudaFree scene
-	teardown_scene(scene);
+	delete scene;
 
 	return 0;
 

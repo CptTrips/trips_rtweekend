@@ -61,6 +61,6 @@ __device__ const Array<uint32_t>* get_mesh_indices(const Array<uint32_t>** const
 
 __device__ const Material<CUDA_RNG>* get_mesh_material(const CUDAScene* const scene, const uint32_t& mesh_id, const uint32_t* const material_library);
 
-__global__ void register_material(CUDAScene* const scene, const Material<CUDA_RNG>* const material);
+__global__ void register_material(CUDAScene* const scene, Material<CUDA_RNG>* const material);
 
 __global__ void fill_scene(CUDAScene* const scene, const uint32_t* const material_library, const Array<vec3>** const vertex_library, const Array<uint32_t>** const index_library);

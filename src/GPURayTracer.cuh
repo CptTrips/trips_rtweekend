@@ -36,7 +36,7 @@ class GPURayTracer
 
 	uint64_t ray_count = 0;
 
-	CUDAScene* gpu_scene = NULL;
+	Array<CUDAVisible*>* visibles = NULL;
 
 	FrameBuffer* h_fb = NULL;
 
@@ -62,7 +62,7 @@ class GPURayTracer
 
 public:
 
-	FrameBuffer* render(const GPURenderProperties& render_properies, CUDAScene* scene, const Camera& camera);
+	FrameBuffer* render(const GPURenderProperties& render_properies, Array<CUDAVisible*>* visibles, const Camera& camera);
 
 };
 
@@ -72,9 +72,9 @@ __global__ void cuda_create_rngs(CUDA_RNG* const rngs, const uint32_t ray_count)
 
 __global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_t ray_offset_index, const uint64_t rays_per_batch, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const int spp);
 
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, CUDAScene* scene, const int max_bounce, CUDA_RNG* const rngs);
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const Array<CUDAVisible*>* const scene, const int max_bounce, CUDA_RNG* const rngs);
 
-__device__ Intersection* nearest_intersection(const Ray& ray, const CUDAScene* const scene, const float tmin, const float tmax);
+__device__ Intersection* nearest_intersection(const Ray& ray, const Array<CUDAVisible*>* const scene, const float tmin, const float tmax);
 
 __device__ vec3 draw_sky(const Ray& ray);
 

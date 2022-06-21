@@ -151,7 +151,7 @@ SceneLoader::~SceneLoader()
     if (device_mat)
         checkCudaErrors(cudaFree(device_mat));
 
-    if (cuda_scene) teardown_scene(cuda_scene);
+    if (cuda_scene) delete cuda_scene;
 
     if (ai_scene) delete ai_scene;
 }
@@ -229,7 +229,7 @@ void SceneLoader::send_material()
 }
 
 
-__global__ void register_material(CUDAScene* const scene, const Material<CUDA_RNG>* const material)
+__global__ void register_material(CUDAScene* const scene, Material<CUDA_RNG>* const material)
 {
 
 	int id = threadIdx.x + blockIdx.x * blockDim.x;

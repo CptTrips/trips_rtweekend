@@ -3,7 +3,7 @@
 #include "Managed.cuh"
 
 template<typename T>
-class Array
+class Array : public Managed
 {
 public:
 	__host__ __device__ Array();

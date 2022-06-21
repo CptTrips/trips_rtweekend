@@ -1,31 +1,6 @@
 #include "CUDASceneGenerators.cuh"
 
 
-void teardown_scene(CUDAScene* scene)
-{
-
-	cuda_teardown_scene << <1, 1 >> > (scene);
-
-	checkCudaErrors(cudaFree(scene));
-
-	checkCudaErrors(cudaDeviceSynchronize());
-
-}
-
-
-__global__ void cuda_teardown_scene(CUDAScene* scene)
-{
-
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	if (id == 0)
-	{
-		printf("Visibles %u, Materials %u", scene->visibles->size(), scene->materials->size());
-		scene->~CUDAScene();
-	}
-}
-
-
 CUDAScene* scene_factory(const int visible_count, const int material_count)
 {
 
@@ -33,7 +8,7 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 
 	Array<CUDAVisible*>* visibles = Array<CUDAVisible*>(visible_count).to_device();
 
-	Array<const Material<CUDA_RNG>*>* materials = Array<const Material<CUDA_RNG>*>(visible_count).to_device();
+	Array<Material<CUDA_RNG>*>* materials = Array<Material<CUDA_RNG>*>(visible_count).to_device();
 
 	scene->visibles = visibles;
 
@@ -59,23 +34,6 @@ CUDAScene* random_balls(const int ball_count)
 	return scenery;
 }
 
-
-__global__ void create_scene_buffers(CUDAScene* scenery, const int visible_count, const int material_count)
-{
-
-	int id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	if (id == 0)
-	{
-		Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(visible_count);
-
-		Array<const Material<CUDA_RNG>*>* materials = new Array<const Material<CUDA_RNG>*>(visible_count);
-
-		scenery->set_visibles(visibles);
-
-		scenery->set_materials(materials);
-	}
-}
 
 __global__ void gen_random_balls(CUDAScene* const scene, const int ball_count)
 {
@@ -255,7 +213,7 @@ CUDAScene* single_cube()
 }
 
 
-__global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const vertex_array, const Array<uint32_t>* const index_array, const Material<CUDA_RNG>* const mat)
+__global__ void gen_single_cube(CUDAScene* const scene, const Array<vec3>* const vertex_array, const Array<uint32_t>* const index_array, Material<CUDA_RNG>* const mat)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -282,9 +240,9 @@ CUDAScene* n_cubes(const int& n)
 {
 
 	Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(n);
-	Array<const Array<vec3>*>* vertex_arrays = new Array<const Array<vec3>*>(n);
-	Array<const Array<uint32_t>*>* index_arrays = new Array<const Array<uint32_t>*>(n);
-	Array<const Material<CUDA_RNG>*>* material_array = new Array<const Material<CUDA_RNG>*>(n);
+	Array<Array<vec3>*>* vertex_arrays = new Array<Array<vec3>*>(n);
+	Array<Array<uint32_t>*>* index_arrays = new Array<Array<uint32_t>*>(n);
+	Array<Material<CUDA_RNG>*>* material_array = new Array<Material<CUDA_RNG>*>(n);
 
 	for (int i = 0; i < n; i++)
 	{
@@ -306,11 +264,11 @@ CUDAScene* n_cubes(const int& n)
 
 	Array<CUDAVisible*>* device_visibles = visibles->to_device();
 
-	Array<const Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
+	Array<Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
 
-	Array<const Array<uint32_t>*>* device_index_arrays = index_arrays->to_device();
+	Array<Array<uint32_t>*>* device_index_arrays = index_arrays->to_device();
 
-	Array<const Material<CUDA_RNG>*>* device_material_array = material_array->to_device();
+	Array<Material<CUDA_RNG>*>* device_material_array = material_array->to_device();
 
 	CUDAScene* scene = new CUDAScene();
 
@@ -326,6 +284,8 @@ CUDAScene* n_cubes(const int& n)
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
+	delete visibles;
+
 	delete vertex_arrays;
 
 	delete index_arrays;
@@ -340,7 +300,7 @@ __global__ void gen_n_cubes(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockDim.x * blockIdx.x;
 
-	if (id < scene->size())
+	if (id < scene->visibles->size())
 	{
 
 		(*scene->visibles)[id] = new Mesh((*scene->vertex_arrays)[id], (*scene->index_arrays)[id], (*scene->materials)[id]);

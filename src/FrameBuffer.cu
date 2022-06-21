@@ -49,7 +49,9 @@ FrameBuffer& FrameBuffer::operator=(const FrameBuffer& fb)
 
 FrameBuffer::~FrameBuffer()
 {
-	cudaFree(buffer);
+	checkCudaErrors(cudaFree(buffer));
+
+	checkCudaErrors(cudaDeviceSynchronize());
 }
 
 __host__ __device__ void FrameBuffer::set_pixel(const int& r, const int& c, const vec3& col)

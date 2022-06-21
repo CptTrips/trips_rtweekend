@@ -2,9 +2,9 @@
 #define my_cuda_seed 1234
 #define DEBUG false
 
-FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, CUDAScene* scene, const Camera& camera)
+FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, Array<CUDAVisible*>* visibles, const Camera& camera)
 {
-	gpu_scene = scene;
+	this->visibles = visibles;
 
 	spp = render_properties.spp;
 
@@ -51,7 +51,7 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 
 	/*
 	int threads = 1024;
-	int blocks = h * w / threads + 1;
+	int blocks = h * w / threads + 1; 
 	colour_space << <blocks, threads >> > (h_fb);
 	*/
 
@@ -192,7 +192,7 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 
 	checkCudaErrors(cudaThreadGetLimit(&stack_size, cudaLimitStackSize));
 
-	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, gpu_scene, max_bounce, rngs);
+	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, visibles, max_bounce, rngs);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -200,7 +200,7 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 	//cudaDeviceSynchronize();
 }
 
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, CUDAScene* scene, const int max_bounce, CUDA_RNG* const rngs)
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const Array<CUDAVisible*>* const visibles, const int max_bounce, CUDA_RNG* const rngs)
 {
 
 	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -225,9 +225,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 		while (bounce < max_bounce)
 		{
 
-			if (DEBUG) printf("Scene visibles %u, scene materials %u\n", scene->visibles->size(), scene->materials->size());
-
-			ixn_ptr = nearest_intersection(ray, scene, 1.e-12f, FLT_MAX);
+			ixn_ptr = nearest_intersection(ray, visibles, 1.e-12f, FLT_MAX);
 
 			if (DEBUG) printf("%u: bounce %i intersections computed\n", ray_id, bounce);
 			
@@ -273,7 +271,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 	}
 }
 
-__device__ Intersection* nearest_intersection(const Ray& ray, const CUDAScene* const scene, const float tmin, const float tmax)
+__device__ Intersection* nearest_intersection(const Ray& ray, const Array<CUDAVisible*>* const visibles, const float tmin, const float tmax)
 {
 	Intersection* temp_ixn;
 
@@ -281,10 +279,10 @@ __device__ Intersection* nearest_intersection(const Ray& ray, const CUDAScene* c
 
 	float current_closest = tmax;
 
-	for (int i = 0; i < scene->size(); i++)
+	for (int i = 0; i < visibles->size(); i++)
 	{
 		
-		temp_ixn = (*scene)[i]->intersect(ray, tmin, current_closest);
+		temp_ixn = (*visibles)[i]->intersect(ray, tmin, current_closest);
 
 		if (temp_ixn)
 		{

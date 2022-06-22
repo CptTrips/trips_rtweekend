@@ -13,6 +13,7 @@
 #include "rand.h"
 #include "Error.cuh"
 #include "CUDAScene.cuh"
+#include "UnifiedArray.cuh"
 
 #define my_cuda_seed 1234
 

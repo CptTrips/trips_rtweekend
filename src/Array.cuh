@@ -1,9 +1,8 @@
 #pragma once
 #include "cuda_runtime.h"
-#include "Managed.cuh"
 
 template<typename T>
-class Array : public Managed
+class Array
 {
 public:
 	__host__ __device__ Array();
@@ -14,8 +13,6 @@ public:
 	__host__ __device__ T& operator[](const uint32_t i);
 	__host__ __device__ const T& operator[](const uint32_t i) const;
 	__host__ __device__ uint32_t size() const;
-
-	__host__ __device__ T* get_data() const;
 
 	__host__ Array<T>* to_device() const;
 

@@ -2,7 +2,7 @@
 #define my_cuda_seed 1234
 #define DEBUG false
 
-FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, Array<CUDAVisible*>* visibles, const Camera& camera)
+FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, UnifiedArray<CUDAVisible*>* visibles, const Camera& camera)
 {
 	this->visibles = visibles;
 
@@ -200,7 +200,7 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 	//cudaDeviceSynchronize();
 }
 
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const Array<CUDAVisible*>* const visibles, const int max_bounce, CUDA_RNG* const rngs)
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const visibles, const int max_bounce, CUDA_RNG* const rngs)
 {
 
 	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -271,7 +271,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 	}
 }
 
-__device__ Intersection* nearest_intersection(const Ray& ray, const Array<CUDAVisible*>* const visibles, const float tmin, const float tmax)
+__device__ Intersection* nearest_intersection(const Ray& ray, const UnifiedArray<CUDAVisible*>* const visibles, const float tmin, const float tmax)
 {
 	Intersection* temp_ixn;
 

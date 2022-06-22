@@ -6,9 +6,9 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 
 	CUDAScene* scene = new CUDAScene();
 
-	Array<CUDAVisible*>* visibles = Array<CUDAVisible*>(visible_count).to_device();
+	UnifiedArray<CUDAVisible*>* visibles = new UnifiedArray<CUDAVisible*>(visible_count);
 
-	Array<Material<CUDA_RNG>*>* materials = Array<Material<CUDA_RNG>*>(visible_count).to_device();
+	UnifiedArray<Material<CUDA_RNG>*>* materials = new UnifiedArray<Material<CUDA_RNG>*>(visible_count);
 
 	scene->visibles = visibles;
 
@@ -239,10 +239,10 @@ __host__ T* move_to_device(T* const obj)
 CUDAScene* n_cubes(const int& n)
 {
 
-	Array<CUDAVisible*>* visibles = new Array<CUDAVisible*>(n);
-	Array<Array<vec3>*>* vertex_arrays = new Array<Array<vec3>*>(n);
-	Array<Array<uint32_t>*>* index_arrays = new Array<Array<uint32_t>*>(n);
-	Array<Material<CUDA_RNG>*>* material_array = new Array<Material<CUDA_RNG>*>(n);
+	UnifiedArray<CUDAVisible*>* visibles = new UnifiedArray<CUDAVisible*>(n);
+	UnifiedArray<Array<vec3>*>* vertex_arrays = new UnifiedArray<Array<vec3>*>(n);
+	UnifiedArray<Array<uint32_t>*>* index_arrays = new UnifiedArray<Array<uint32_t>*>(n);
+	UnifiedArray<Material<CUDA_RNG>*>* material_array = new UnifiedArray<Material<CUDA_RNG>*>(n);
 
 	for (int i = 0; i < n; i++)
 	{
@@ -262,6 +262,7 @@ CUDAScene* n_cubes(const int& n)
 
 	}
 
+	/*
 	Array<CUDAVisible*>* device_visibles = visibles->to_device();
 
 	Array<Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
@@ -269,21 +270,27 @@ CUDAScene* n_cubes(const int& n)
 	Array<Array<uint32_t>*>* device_index_arrays = index_arrays->to_device();
 
 	Array<Material<CUDA_RNG>*>* device_material_array = material_array->to_device();
+	*/
 
 	CUDAScene* scene = new CUDAScene();
 
-	scene->visibles = device_visibles;
+	//scene->visibles = device_visibles;
+	scene->visibles = visibles;
 
-	scene->materials = device_material_array;
+	//scene->materials = device_material_array;
+	scene->materials = material_array;
 
-	scene->vertex_arrays = device_vertex_arrays;
+	//scene->vertex_arrays = device_vertex_arrays;
+	scene->vertex_arrays = vertex_arrays;
 
-	scene->index_arrays = device_index_arrays;
+	//scene->index_arrays = device_index_arrays;
+	scene->index_arrays = index_arrays;
 
 	gen_n_cubes << <1, n >> > (scene);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
+	/*
 	delete visibles;
 
 	delete vertex_arrays;
@@ -291,6 +298,7 @@ CUDAScene* n_cubes(const int& n)
 	delete index_arrays;
 
 	delete material_array;
+	*/
 
 	return scene;
 

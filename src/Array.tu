@@ -80,11 +80,6 @@ __host__ __device__ uint32_t Array<T>::size() const
 	return _size;
 }
 
-template<typename T>
-__host__ T* Array<T>::get_data() const
-{
-	return data;
-}
 
 // Copy to device
 template<typename T>

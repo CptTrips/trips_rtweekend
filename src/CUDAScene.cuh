@@ -8,13 +8,14 @@
 #include "Array.cuh"
 #include "Managed.cuh"
 #include "Error.cuh"
+#include "UnifiedArray.cuh"
 
 
 class CUDAScene : public Managed
 {
 public:
 	__host__ CUDAScene();
-	__host__ CUDAScene(Array<CUDAVisible*>* const visibles, Array<Material<CUDA_RNG>*>* const materials);
+	__host__ CUDAScene(UnifiedArray<CUDAVisible*>* const visibles, UnifiedArray<Material<CUDA_RNG>*>* const materials);
 
 	__device__ CUDAScene(const CUDAScene& cs) = delete;
 	__device__ CUDAScene(CUDAScene&& cs) = delete;
@@ -23,13 +24,13 @@ public:
 
 	__host__ ~CUDAScene();
 
-	__host__ void set_visibles(Array<CUDAVisible*>* const new_visibles);
-	__host__ void set_materials(Array<Material<CUDA_RNG>*>* const new_materials);
+	__host__ void set_visibles(UnifiedArray<CUDAVisible*>* const new_visibles);
+	__host__ void set_materials(UnifiedArray<Material<CUDA_RNG>*>* const new_materials);
 
-	Array<CUDAVisible*>* visibles;
-	Array<Material<CUDA_RNG>*>* materials;
-	Array<Array<vec3>*>* vertex_arrays;
-	Array<Array<uint32_t>*>* index_arrays;
+	UnifiedArray<CUDAVisible*>* visibles;
+	UnifiedArray<Material<CUDA_RNG>*>* materials;
+	UnifiedArray<Array<vec3>*>* vertex_arrays;
+	UnifiedArray<Array<uint32_t>*>* index_arrays;
 
 private:
 
@@ -43,4 +44,4 @@ private:
 
 };
 
-__global__ void cuda_delete_visibles(CUDAScene* scene);
+__global__ void cuda_delete_visibles(UnifiedArray<CUDAVisible*>* visibles);

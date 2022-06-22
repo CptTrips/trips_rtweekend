@@ -11,7 +11,7 @@ __host__ CUDAScene::CUDAScene()
 	vertex_arrays = NULL;
 }
 
-__host__ CUDAScene::CUDAScene(Array<CUDAVisible*>* const visibles, Array<Material<CUDA_RNG>*>* const materials)
+__host__ CUDAScene::CUDAScene(UnifiedArray<CUDAVisible*>* const visibles, UnifiedArray<Material<CUDA_RNG>*>* const materials)
 	//: visibles(visibles), materials(materials)
 {
 	this->visibles = visibles;
@@ -89,14 +89,14 @@ __host__ CUDAScene::~CUDAScene()
 
 }
 
-__host__ void CUDAScene::set_visibles(Array<CUDAVisible*>* const new_visibles)
+__host__ void CUDAScene::set_visibles(UnifiedArray<CUDAVisible*>* const new_visibles)
 {
 	delete_visibles();
 
 	visibles = new_visibles;
 }
 
-__host__ void CUDAScene::set_materials(Array<Material<CUDA_RNG>*>* const new_materials)
+__host__ void CUDAScene::set_materials(UnifiedArray<Material<CUDA_RNG>*>* const new_materials)
 {
 
 	delete_materials();
@@ -104,13 +104,13 @@ __host__ void CUDAScene::set_materials(Array<Material<CUDA_RNG>*>* const new_mat
 	materials = new_materials;
 }
 
-__global__ void cuda_delete_visibles(CUDAScene* scene)
+__global__ void cuda_delete_visibles(UnifiedArray<CUDAVisible*>* visibles)
 {
-	int id = threadIdx.x + blockDim.x * blockIdx.x;
-	if (scene->visibles)
+	if (visibles)
 	{
-		if (id < scene->visibles->size())
-			delete (*scene->visibles)[id];
+		int id = threadIdx.x + blockDim.x * blockIdx.x;
+		if (id < visibles->size())
+			delete (*visibles)[id];
 
 	}
 
@@ -122,9 +122,11 @@ __host__ void CUDAScene::delete_visibles()
 
 	int blocks = visibles->size() / threads + 1;
 
-	cuda_delete_visibles << <blocks, threads >> > (this);
+	cuda_delete_visibles << <blocks, threads >> > (visibles);
 
-	cudaFree(visibles);
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	delete visibles;
 
 }
 

@@ -57,6 +57,7 @@
     <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\CUDAScene.cuh" />
+    <ClInclude Include="src\UnifiedArray.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -108,5 +109,6 @@
   <ItemGroup>
     <None Include="src\Array.tu" />
     <None Include="src\materials\material.tpp" />
+    <None Include="src\UnifiedArray.tu" />
   </ItemGroup>
 </Project>

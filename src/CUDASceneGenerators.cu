@@ -8,7 +8,7 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 
 	UnifiedArray<CUDAVisible*>* visibles = new UnifiedArray<CUDAVisible*>(visible_count);
 
-	UnifiedArray<Material<CUDA_RNG>*>* materials = new UnifiedArray<Material<CUDA_RNG>*>(visible_count);
+	UnifiedArray<Material<CUDA_RNG>*>* materials = new UnifiedArray<Material<CUDA_RNG>*>(material_count);
 
 	scene->visibles = visibles;
 
@@ -21,7 +21,10 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 CUDAScene* random_balls(const int ball_count)
 {
 
-	CUDAScene* scenery = scene_factory(ball_count, ball_count);
+	CUDAScene* scenery = new CUDAScene(ball_count, 2);
+
+	for (unsigned int i = 0; i < ball_count; i++)
+		(*scenery->materials)[i] = Material<CUDA_RNG>().to_device();
 
 	int threads = 512;
 
@@ -65,20 +68,19 @@ __global__ void gen_random_balls(CUDAScene* const scene, const int ball_count)
 		float roughness = 3.f*rng.sample();
 
 		// Randomize the material
-		Material<CUDA_RNG>* m;
+		Material<CUDA_RNG>* m = (*scene->materials)[id];
 
 		if (rng.sample() > .5f) {
 
-			m = new Metal<CUDA_RNG>(color, roughness);
+			*m = Metal<CUDA_RNG>(color, roughness);
 
 		} else {
 
-			m = new Diffuse<CUDA_RNG>(color);
+			*m = Diffuse<CUDA_RNG>(color);
 
 		}
 
 		(*scene->visibles)[id] = new CUDASphere(center, r, m);
-		(*scene->materials)[id] = m;
 
 	}
 

@@ -16,6 +16,7 @@ class CUDAScene : public Managed
 public:
 	__host__ CUDAScene();
 	__host__ CUDAScene(UnifiedArray<CUDAVisible*>* const visibles, UnifiedArray<Material<CUDA_RNG>*>* const materials);
+	__host__ CUDAScene(const unsigned int visible_count, const unsigned int material_count);
 
 	__device__ CUDAScene(const CUDAScene& cs) = delete;
 	__device__ CUDAScene(CUDAScene&& cs) = delete;

@@ -58,19 +58,22 @@ template<typename T>
 __host__ __device__ Array<T>::~Array()
 {
 
-	delete[] data;
+	if (data)
+		delete[] data;
 	
 }
 
 template<typename T>
 __host__ __device__ T& Array<T>::operator[](const uint32_t i)
 {
+	assert(i < _size);
 	return data[i];
 }
 
 template<typename T>
 __host__ __device__ const T& Array<T>::operator[](const uint32_t i) const
 {
+	assert(i < _size);
 	return data[i];
 }
 

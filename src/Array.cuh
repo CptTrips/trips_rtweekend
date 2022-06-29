@@ -1,5 +1,6 @@
 #pragma once
 #include "cuda_runtime.h"
+#include <assert.h>
 
 template<typename T>
 class Array

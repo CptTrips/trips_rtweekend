@@ -33,20 +33,9 @@ SceneLoader& SceneLoader::operator=(SceneLoader&& s)
     vertex_library = s.vertex_library;
     s.vertex_library = NULL;
 
-    device_vertex_library = s.device_vertex_library;
-    s.device_vertex_library = NULL;
-
     index_library = s.index_library;
     s.index_library = NULL;
 
-    device_index_library = s.device_index_library;
-    s.device_index_library = NULL;
-
-    device_material_library = s.device_material_library;
-	s.device_material_library = NULL;
-
-    device_mat = s.device_mat;
-    s.device_mat = NULL;
 
     return *this;
 }
@@ -54,20 +43,23 @@ SceneLoader& SceneLoader::operator=(SceneLoader&& s)
 CUDAScene* SceneLoader::to_device()
 {
 
+    cuda_scene = new CUDAScene();
 
-	cuda_scene = scene_factory(ai_meshes.size(), 1);
-
-    // Send material
-
-    send_material();
+    cuda_scene->materials = send_material();
 
     send_meshes();
+
+    cuda_scene->visibles = new UnifiedArray<CUDAVisible*>(ai_meshes.size());
+
+    // UnifiedArray with pointers to vertex_arrays, index_arrays and materials, one for each visible
 
     int threads = 512;
 
     int blocks = ai_meshes.size() / threads + 1;
 
-    fill_scene << <blocks, threads >> > (cuda_scene, device_material_library, device_vertex_library, device_index_library);
+    fill_scene << <blocks, threads >> > (cuda_scene);
+
+    cudaDeviceSynchronize();
 
     checkCudaErrors(cudaPeekAtLastError());
 
@@ -96,9 +88,9 @@ void SceneLoader::process_node(aiNode* node, const aiScene* scene)
 void SceneLoader::send_meshes()
 {
 
-    vertex_library = new Array<vec3>*[ai_meshes.size()];
+    vertex_library = new UnifiedArray<Array<vec3>*>(ai_meshes.size());
 
-    index_library = new Array<uint32_t>*[ai_meshes.size()];
+    index_library = new UnifiedArray<Array<uint32_t>*>(ai_meshes.size());
 
     for (unsigned int i = 0; i < ai_meshes.size(); i++)
     {
@@ -107,17 +99,9 @@ void SceneLoader::send_meshes()
 
     }
 
-    cudaMalloc(&device_vertex_library, sizeof(Array<vec3>*) * ai_meshes.size());
+    cuda_scene->vertex_arrays = vertex_library;
 
-    cudaMalloc(&device_index_library, sizeof(Array<uint32_t>*) * ai_meshes.size());
-
-    cudaMalloc(&device_material_library, sizeof(uint32_t) * ai_meshes.size());
-
-    cudaMemcpy(device_vertex_library, vertex_library, sizeof(Array<vec3>*) * ai_meshes.size(), cudaMemcpyHostToDevice);
-
-    cudaMemcpy(device_index_library, index_library, sizeof(Array<uint32_t>*) * ai_meshes.size(), cudaMemcpyHostToDevice);
-
-    cudaMemset(device_material_library, 0, sizeof(uint32_t) * ai_meshes.size());
+    cuda_scene->index_arrays = index_library;
 
     cudaDeviceSynchronize();
 
@@ -127,33 +111,7 @@ void SceneLoader::send_meshes()
 SceneLoader::~SceneLoader()
 {
 
-    if (device_vertex_library) cudaFree(device_vertex_library);
-    if (device_index_library) cudaFree(device_index_library);
-    if (device_material_library) cudaFree(device_material_library);
-
-    for (int i = 0; i < ai_meshes.size(); i++)
-    {
-        if (vertex_library)
-        {
-            checkCudaErrors(cudaFree(vertex_library[i]->get_data()));
-            checkCudaErrors(cudaFree(vertex_library[i]));
-        }
-        if (index_library)
-        {
-            checkCudaErrors(cudaFree(index_library[i]->get_data()));
-            checkCudaErrors(cudaFree(index_library[i]));
-        }
-    }
-
-    if (vertex_library) delete vertex_library;
-    if (index_library) delete index_library;
-
-    if (device_mat)
-        checkCudaErrors(cudaFree(device_mat));
-
-    if (cuda_scene) delete cuda_scene;
-
-    if (ai_scene) delete ai_scene;
+    //if (ai_scene) delete ai_scene;
 }
 
 void SceneLoader::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
@@ -176,9 +134,11 @@ void SceneLoader::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
 
     // Register vertex array pointer with vertex library
 
-    vertex_library[mesh_id] = device_vertex_array;
+    (*vertex_library)[mesh_id] = device_vertex_array;
 
     delete vertex_array;
+
+    cudaDeviceSynchronize();
 
 
     unsigned int index_count = m->mNumFaces * 3;
@@ -198,7 +158,7 @@ void SceneLoader::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
         }
 
         for (int j = 0; j < 3; j++)
-            (*index_array)[i + j] = ai_face.mIndices[j];
+            (*index_array)[3*i + j] = ai_face.mIndices[j];
 
     }
 
@@ -208,24 +168,23 @@ void SceneLoader::send_mesh_data(const aiMesh* const m, const uint32_t& mesh_id)
 
     // Register vertex array pointer with index library
 
-    index_library[mesh_id] = device_index_array;
+    (*index_library)[mesh_id] = device_index_array;
 
     delete index_array;
 
-
-    // Material 
-
+    cudaDeviceSynchronize();
 }
 
 
-void SceneLoader::send_material()
+UnifiedArray<Material<CUDA_RNG>*>* SceneLoader::send_material()
 {
 
-    cudaMallocManaged(&device_mat, sizeof(Diffuse<CUDA_RNG>));
+    UnifiedArray<Material<CUDA_RNG>*>* material_array = new UnifiedArray<Material<CUDA_RNG>*>(1);
 
-    memcpy(device_mat, &default_material, sizeof(Diffuse<CUDA_RNG>));
+    (*material_array)[0] = default_material.to_device();
 
-    register_material << <1, 1 >> > (cuda_scene, device_mat);
+    return material_array;
+
 }
 
 
@@ -264,20 +223,14 @@ __device__ const Material<CUDA_RNG>* get_mesh_material(const CUDAScene* const sc
 }
 
 
-__global__ void fill_scene(CUDAScene* const scene, const uint32_t* const material_library, const Array<vec3>** const vertex_library, const Array<uint32_t>** const index_library)
+__global__ void fill_scene(CUDAScene* const scene)
 {
 	int id = threadIdx.x + blockIdx.x * blockDim.x;
 
     if (id < scene->visibles->size())
     {
 
-        const Array<vec3>* vertex_array = get_mesh_vertices(vertex_library, id);
-
-        const Array<uint32_t>* index_array = get_mesh_indices(index_library, id);
-
-        const Material<CUDA_RNG>* const material = get_mesh_material(scene, id, material_library);
-
-        (*scene->visibles)[id] = new Mesh(vertex_array, index_array, material);
+        (*scene->visibles)[id] = new Mesh((*scene->vertex_arrays)[id], (*scene->index_arrays)[id], (*scene->materials)[0]);
 
     }
 

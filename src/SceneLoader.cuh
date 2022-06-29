@@ -26,15 +26,9 @@ class SceneLoader
 
 	Diffuse<CUDA_RNG> default_material;
 
-	Array<vec3>** vertex_library = NULL;
-    const Array<vec3>** device_vertex_library = NULL;
+	UnifiedArray<Array<vec3>*>* vertex_library = NULL;
 
-	Array<uint32_t>** index_library = NULL;
-	const Array<uint32_t>** device_index_library = NULL;
-
-	uint32_t* device_material_library = NULL;
-
-    Material<CUDA_RNG>* device_mat;
+	UnifiedArray<Array<uint32_t>*>* index_library = NULL;
 
 	void process_node(aiNode* node, const aiScene* scene);
 
@@ -42,7 +36,7 @@ class SceneLoader
 
 	void send_mesh_data(const aiMesh* const m, const uint32_t& i);
 
-	void send_material();
+	UnifiedArray<Material<CUDA_RNG>*>* send_material();
 
 
 public:
@@ -63,4 +57,4 @@ __device__ const Material<CUDA_RNG>* get_mesh_material(const CUDAScene* const sc
 
 __global__ void register_material(CUDAScene* const scene, Material<CUDA_RNG>* const material);
 
-__global__ void fill_scene(CUDAScene* const scene, const uint32_t* const material_library, const Array<vec3>** const vertex_library, const Array<uint32_t>** const index_library);
+__global__ void fill_scene(CUDAScene* const scene);

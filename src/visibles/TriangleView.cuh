@@ -21,6 +21,8 @@ public:
     __device__ virtual Ray bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const;
     __device__ virtual vec3 albedo(const vec3& p) const;
 
+	__device__ void print();
+
 private:
 
 	__device__ Triangle construct_triangle() const;

@@ -78,6 +78,12 @@ __device__ vec3 TriangleView::albedo(const vec3& p) const
 	return material->albedo;
 }
 
+__device__ void TriangleView::print()
+{
+	printf("Index offset: %d", index_array_offset);
+	printf("Index array size: %d", index_array->size());
+}
+
 
 __device__ Triangle TriangleView::construct_triangle() const
 {

@@ -1,7 +1,7 @@
 #include "Mesh.cuh"
 
 
-__host__ __device__ Mesh::Mesh(const Array<vec3>* const vertices, const Array<uint32_t>* const indices, const Material<CUDA_RNG>* const material) : vertices(vertices), indices(indices), material(material)
+__host__ __device__ Mesh::Mesh(const Array<vec3>* const vertices, const Array<uint32_t>* const indices, const Material<CUDA_RNG>* const material) : vertices(vertices), indices(indices), material(material), bbox_triangles(), triangles()
 {
 
 	assert(indices->size() % 3 == 0);
@@ -30,7 +30,7 @@ __host__ __device__ Mesh::Mesh(const Array<vec3>* const vertices, const Array<ui
 	triangles = Array<TriangleView>(size);
 
 	for (int i = 0; i < size; i++)
-		triangles[i] = TriangleView(vertices, indices, i*3, material);
+		triangles[i] = TriangleView(vertices, indices, i * 3, material);
 }
 
 __host__ __device__ Mesh::~Mesh()
@@ -41,7 +41,7 @@ __host__ __device__ Mesh::~Mesh()
 
 	if (indices)
 		delete indices;
-		*/
+	*/
 
 }
 
@@ -55,7 +55,7 @@ __device__ Intersection* Mesh::intersect(const Ray& r, float tmin, float tmax) c
 
 		for (uint32_t i = 0; i < triangles.size(); i++)
 		{
-			
+
 			temp_ixn = triangles[i].intersect(r, tmin, tmax);
 
 			if (temp_ixn)
@@ -112,7 +112,7 @@ __device__ bool Mesh::intersect_bbox(const Ray& r, float tmin, float tmax) const
 __device__ void Mesh::construct_bbox(const vec3& min, const vec3& max)
 {
 
-	vec3 bbox_bounds[2] = { min, max };
+	vec3 bbox_bounds[] = { min, max };
 
 	vec3 bbox_vertices[8];
 
@@ -130,7 +130,7 @@ __device__ void Mesh::construct_bbox(const vec3& min, const vec3& max)
 		}
 	}
 
-	vec3* bbox_tri_vertices[12] = 
+	vec3* bbox_tri_vertices[] = 
 	{
 		new vec3[3]{ bbox_vertices[0], bbox_vertices[2], bbox_vertices[1] }
 		,new vec3[3]{ bbox_vertices[2], bbox_vertices[3], bbox_vertices[1] }

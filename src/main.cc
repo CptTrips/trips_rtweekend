@@ -6,6 +6,8 @@
 #include "CUDAScene.cuh"
 #include "SceneLoader.cuh"
 
+#include "test_kernel.cuh"
+
 #include "float.h"
 
 #include <json.hpp>
@@ -25,7 +27,8 @@ const bool CUDA_ENABLED = false;
 
 SceneLoader host_scene;
 
-enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id };
+enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id, backpack_id,
+	triangle_carpet_id};
 
 std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	{"random_balls", random_balls_id}
@@ -33,6 +36,8 @@ std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	,{"single_triangle", single_triangle_id}
 	,{"single_cube", single_cube_id}
 	,{"n_cubes", n_cubes_id}
+	,{"backpack", backpack_id}
+	,{"triangle_carpet", triangle_carpet_id}
 };
 
 
@@ -64,6 +69,13 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 		case n_cubes_id:
 			scene = n_cubes(j["n_cubes"]["n"]);
 			break;
+		case triangle_carpet_id:
+			scene = triangle_carpet(j["triangle_carpet"]["n"]);
+			break;
+		case backpack_id:
+			host_scene = SceneLoader(std::string(j["backpack_path"]));
+			scene = host_scene.to_device();
+			break;
 		}
 
 	}
@@ -75,6 +87,7 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 
 	return scene;
 }
+
 
 int main()
 {
@@ -89,6 +102,10 @@ int main()
 	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
 
 	std::cout << "Stack limit: " << stack_limit << std::endl;
+
+
+	//test_nested_array();
+
 
 	// read a JSON file
 	std::ifstream i("config.json");

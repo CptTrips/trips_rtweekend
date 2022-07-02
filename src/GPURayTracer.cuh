@@ -23,7 +23,7 @@ struct GPURenderProperties
 class GPURayTracer
 {
 
-	const int threads = 512;
+	const int max_threads = 512;
 
 	// Maximum number of rays to dispatch at once (GPU memory limited)
 	const uint32_t max_rays_per_batch = 22 * 1e6;

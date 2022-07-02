@@ -5,6 +5,8 @@ Assimp::Importer SceneLoader::ai_importer;
 SceneLoader::SceneLoader(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0.5f, 0.5f, 0.5f)))
 {
 
+    checkCudaErrors(cudaDeviceSynchronize());
+
 	ai_scene = ai_importer.ReadFile(scene_path, aiProcess_Triangulate);
 
 	if (!ai_scene || ai_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !ai_scene->mRootNode)

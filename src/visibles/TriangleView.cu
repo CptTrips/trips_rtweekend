@@ -20,6 +20,8 @@ TriangleView::TriangleView(
 __host__ __device__ TriangleView::TriangleView(const TriangleView& tv)
 	: vertex_array(tv.vertex_array), index_array(index_array), index_array_offset(tv.index_array_offset), material(tv.material) 
 {
+	printf("Index array pointer: %p\n", this->index_array);
+	printf("First triangle indices %d %d %d\n", (*this->index_array)[0], (*this->index_array)[1], (*this->index_array)[2]);
 }
 
 __host__ __device__ TriangleView& TriangleView::operator=(const TriangleView& tv)
@@ -52,17 +54,18 @@ __device__ Intersection* TriangleView::intersect(const Ray& r, float tmin, float
 
 	Intersection* ixn = triangle.intersect(r, tmin, tmax);
 
-	Intersection* new_ixn = NULL;
-
 	if (ixn)
 	{
-		new_ixn = new Intersection(ixn->t, this);
+
+		float t = ixn->t;
 
 		delete ixn;
 
+		ixn = new Intersection(t, this);
+
 	}
 
-	return new_ixn;
+	return ixn;
 
 }
 
@@ -87,9 +90,30 @@ __device__ void TriangleView::print()
 
 __device__ Triangle TriangleView::construct_triangle() const
 {
-	const uint32_t indices[3] = { (*index_array)[index_array_offset], (*index_array)[index_array_offset + 1], (*index_array)[index_array_offset + 2] };
+	/*
+	const uint32_t indices[] = { (*index_array)[index_array_offset], (*index_array)[index_array_offset + 1], (*index_array)[index_array_offset + 2] };
 
-	const vec3 points[3] = { (*vertex_array)[indices[0]], (*vertex_array)[indices[1]], (*vertex_array)[indices[2]] };
+	if (indices[2] > vertex_array->size())
+	{
+		printf("Index array pointer: %p\n", this->index_array);
+		printf("First triangle indices %d %d %d\n", (*this->index_array)[0], (*this->index_array)[1], (*this->index_array)[2]);
+		printf("Index array offset: %d\nIndex array size: %d\n", index_array_offset, index_array->size());
+		printf("Vertex array %p\nVertex array index %d\n", vertex_array, indices[2]);
+	}
+	const vec3 points[] = { (*vertex_array)[indices[0]], (*vertex_array)[indices[1]], (*vertex_array)[indices[2]] };
+	*/
 
-	return Triangle(points, material);
+	//printf("Offset %d / Size %d\n", index_array_offset, index_array->size());
+
+	unsigned int index_0 = (*index_array)[index_array_offset];
+	unsigned int index_1 = (*index_array)[index_array_offset + 1];
+	unsigned int index_2 = (*index_array)[index_array_offset + 2];
+
+	//printf("(%d, %d, %d) / %d\n", index_0, index_1, index_2, vertex_array->size());
+
+	const vec3 points[3] = { (*vertex_array)[index_0], (*vertex_array)[index_1], (*vertex_array)[index_2] };
+
+	Triangle t(points, material);
+
+	return t;
 }

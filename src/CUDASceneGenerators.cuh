@@ -48,5 +48,9 @@ CUDAScene* n_cubes(const int& n);
 
 __global__ void gen_n_cubes(CUDAScene* const scene);
 
+CUDAScene* triangle_carpet(const unsigned int& n);
+
+__global__ void gen_carpet(CUDAScene* const scene);
+
 void teardown_scene(CUDAScene* scene);
 

@@ -264,43 +264,19 @@ CUDAScene* n_cubes(const int& n)
 
 	}
 
-	/*
-	Array<CUDAVisible*>* device_visibles = visibles->to_device();
-
-	Array<Array<vec3>*>* device_vertex_arrays = vertex_arrays->to_device();
-
-	Array<Array<uint32_t>*>* device_index_arrays = index_arrays->to_device();
-
-	Array<Material<CUDA_RNG>*>* device_material_array = material_array->to_device();
-	*/
-
 	CUDAScene* scene = new CUDAScene();
 
-	//scene->visibles = device_visibles;
 	scene->visibles = visibles;
 
-	//scene->materials = device_material_array;
 	scene->materials = material_array;
 
-	//scene->vertex_arrays = device_vertex_arrays;
 	scene->vertex_arrays = vertex_arrays;
 
-	//scene->index_arrays = device_index_arrays;
 	scene->index_arrays = index_arrays;
 
 	gen_n_cubes << <1, n >> > (scene);
 
 	checkCudaErrors(cudaDeviceSynchronize());
-
-	/*
-	delete visibles;
-
-	delete vertex_arrays;
-
-	delete index_arrays;
-
-	delete material_array;
-	*/
 
 	return scene;
 
@@ -316,6 +292,82 @@ __global__ void gen_n_cubes(CUDAScene* const scene)
 		(*scene->visibles)[id] = new Mesh((*scene->vertex_arrays)[id], (*scene->index_arrays)[id], (*scene->materials)[id]);
 	}
 
+}
+
+
+CUDAScene* triangle_carpet(const unsigned int& n)
+{
+	CUDAScene* scene = new CUDAScene();
+
+	UnifiedArray<CUDAVisible*>* visibles = new UnifiedArray<CUDAVisible*>(1);
+	UnifiedArray<Array<vec3>*>* vertex_arrays = new UnifiedArray<Array<vec3>*>(1);
+	UnifiedArray<Array<uint32_t>*>* index_arrays = new UnifiedArray<Array<uint32_t>*>(1);
+	UnifiedArray<Material<CUDA_RNG>*>* material_array = new UnifiedArray<Material<CUDA_RNG>*>(1);
+
+	Array<vec3>* vertex_array = new Array<vec3>(n * n);
+
+	Array<uint32_t>* index_array = new Array<uint32_t>(3 * 2 * (n - 1) * (n - 1));
+
+	for (unsigned int i = 0; i < n; i++)
+	{
+		for (unsigned int j = 0; j < n; j++)
+		{
+			unsigned int vertex_index = n * i + j;
+
+			(*vertex_array)[vertex_index] = vec3(1.f * (float)i / (float)n, 1.f * (float)j / (float)n, 0.f);
+
+			if ((i < n - 1) && (j < n - 1))
+			{
+				unsigned int index_index = 6 * (n - 1) * i + 6 * j;
+				(*index_array)[index_index] = vertex_index;
+				(*index_array)[index_index + 1] = vertex_index + 1;
+				(*index_array)[index_index + 2] = vertex_index + n;
+
+				(*index_array)[index_index + 3] = vertex_index + n;
+				(*index_array)[index_index + 4] = vertex_index + 1;
+				(*index_array)[index_index + 5] = vertex_index + n + 1;
+
+			}
+		}
+	}
+
+
+	(*vertex_arrays)[0] = vertex_array->to_device();
+
+	(*index_arrays)[0] = index_array->to_device();
+
+	(*material_array)[0] = Diffuse<CUDA_RNG>(vec3(.5f, .5f, .5f)).to_device();
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	scene->visibles = visibles;
+
+	scene->materials = material_array;
+
+	scene->vertex_arrays = vertex_arrays;
+
+	scene->index_arrays = index_arrays;
+
+	gen_carpet << <1, 1 >> > (scene);
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	delete vertex_array;
+
+	delete index_array;
+
+	return scene;
+}
+
+
+__global__ void gen_carpet(CUDAScene* const scene)
+{
+	unsigned int id = threadIdx.x + blockIdx.x * blockDim.x;
+
+	if (id == 0)
+	{
+		(*scene->visibles)[id] = new Mesh((*scene->vertex_arrays)[0], (*scene->index_arrays)[0], (*scene->materials)[0]);
+	}
 }
 
 

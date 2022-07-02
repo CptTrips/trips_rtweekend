@@ -96,6 +96,7 @@ void GPURayTracer::create_rngs()
 
 	cudaDeviceSynchronize();
 
+	uint32_t threads = max_threads;
 	uint32_t blocks = rays_per_batch / threads + 1;
 
 	cuda_create_rngs << <blocks, threads >> > (rngs, rays_per_batch);
@@ -134,15 +135,16 @@ void GPURayTracer::allocate_rays()
 void GPURayTracer::generate_rays(const uint64_t ray_offset_index)
 {
 
+	uint32_t threads = max_threads;
 	uint32_t blocks = rays_per_batch / threads + 1;
 
 	std::cout << "generate_rays blocks: " << blocks << ", threads: " << threads << std::endl;
 
 	cuda_gen_rays<<<blocks, threads>>>(rays, ray_count, rays_per_batch, ray_offset_index, d_cam, h_fb, rngs, spp);
 
-	checkCudaErrors(cudaGetLastError());
-
 	checkCudaErrors(cudaDeviceSynchronize());
+
+	checkCudaErrors(cudaGetLastError());
 
 }
 
@@ -184,6 +186,8 @@ __global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_
 void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 {
 	
+	uint32_t threads = 256;
+
 	uint32_t blocks = rays_per_batch / threads + 1;
 
 	std::cout << "shade_rays blocks: " << blocks << ", threads: " << threads << std::endl;
@@ -197,7 +201,6 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	checkCudaErrors(cudaGetLastError());
-	//cudaDeviceSynchronize();
 }
 
 __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const visibles, const int max_bounce, CUDA_RNG* const rngs)
@@ -209,8 +212,6 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 
 	if ((ray_id < ray_count) && (thread_id < rays_per_batch))
 	{
-
-		if (DEBUG) printf("Ray id %u\n", ray_id);
 
 		Ray ray = rays[thread_id];
 
@@ -227,29 +228,17 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 
 			ixn_ptr = nearest_intersection(ray, visibles, 1.e-12f, FLT_MAX);
 
-			if (DEBUG) printf("%u: bounce %i intersections computed\n", ray_id, bounce);
-			
 			if (ixn_ptr)
 			{
 				const CUDAVisible* const active_visible = ixn_ptr->visible;
 
-				if (DEBUG) printf("%u: intersection found\n", ray_id);
-
 				const vec3 ixn_p = ray.point_at(ixn_ptr->t);
-
-				if (DEBUG) printf("%u: ixn pt %4.2f %4.2f %4.2f\n", ray_id, ixn_p.x(), ixn_p.y(), ixn_p.z());
 
 				ray = active_visible->bounce(ray.direction(), ixn_p, &rng);
 
-				if (DEBUG) printf("%u: scatter dir %4.2f %4.2f %4.2f\n", ray_id, ray.d.x(), ray.d.y(), ray.d.z());
-
 				ray_colour *= active_visible->albedo(ixn_p);
 
-				if (DEBUG) printf("%u: albedo %4.2f %4.2f %4.2f\n", ray_id, ray_colour.x(), ray_colour.y(), ray_colour.z());
-
 				delete ixn_ptr;
-
-				if (DEBUG) printf("%u: intersection consumed\n", ray_id);
 			}
 
 			else
@@ -312,6 +301,8 @@ __device__ vec3 draw_sky(const Ray& ray)
 void GPURayTracer::render_rays(const uint64_t ray_offset_index)
 {
 
+	uint32_t threads = max_threads;
+
 	int pixel_start_idx = ray_offset_index / (uint64_t)spp;
 
 	int pixel_end_idx = pixel_start_idx + rays_per_batch / spp; // not including this index
@@ -326,10 +317,10 @@ void GPURayTracer::render_rays(const uint64_t ray_offset_index)
 
 	cuda_render_rays << <blocks, threads >> > (pixel_start_idx, pixel_end_idx, ray_colours, h_fb, spp);
 
+	checkCudaErrors(cudaDeviceSynchronize());
+
 	checkCudaErrors(cudaGetLastError());
 
-	checkCudaErrors(cudaDeviceSynchronize());
-	//cudaDeviceSynchronize();
 }
 
 __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, vec3* ray_colours, FrameBuffer* fb, const int spp)

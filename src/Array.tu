@@ -92,9 +92,9 @@ __host__ Array<T>* Array<T>::to_device() const
 
 	uint64_t bytes = _size * sizeof(T);
 
-	cudaMalloc(&device_data, bytes);
+	checkCudaErrors(cudaMalloc(&device_data, bytes));
 
-	cudaMemcpy(device_data, data, bytes, cudaMemcpyHostToDevice);
+	checkCudaErrors(cudaMemcpy(device_data, data, bytes, cudaMemcpyHostToDevice));
 
 	Array<T> device_array = Array<T>();
 
@@ -104,9 +104,9 @@ __host__ Array<T>* Array<T>::to_device() const
 
 	Array<T>* p_device_array;
 
-	cudaMalloc(&p_device_array, sizeof(Array<T>));
+	checkCudaErrors(cudaMalloc(&p_device_array, sizeof(Array<T>)));
 
-	cudaMemcpy(p_device_array, &device_array, sizeof(Array<T>), cudaMemcpyHostToDevice);
+	checkCudaErrors(cudaMemcpy(p_device_array, &device_array, sizeof(Array<T>), cudaMemcpyHostToDevice));
 
 	device_array.data = NULL;
 

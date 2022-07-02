@@ -2,16 +2,20 @@
 
 __host__ __device__ Triangle::Triangle()
 {
-	for (int i = 0; i < 3; i++)
-		points[i] = vec3(0.f, 0.f, 0.f);
+	points = NULL;
 
 	material = NULL;
+
+	normal = vec3();
 }
 
-__host__ __device__ Triangle::Triangle(const vec3 points[3], const Material<CUDA_RNG>* m) : material(m)
+__host__ __device__ Triangle::Triangle(const vec3* points, const Material<CUDA_RNG>* m) : material(m)
 {
+
+	this->points = new Array<vec3>(3);
+
 	for (int i = 0; i < 3; i++)
-		this->points[i] = points[i];
+		(*(this->points))[i] = points[i];
 
 	normal = cross(points[1] - points[0], points[2] - points[1]);
 
@@ -19,33 +23,34 @@ __host__ __device__ Triangle::Triangle(const vec3 points[3], const Material<CUDA
 }
 
 __host__ __device__ Triangle::Triangle(const Triangle& t)
+	: material(t.material),
+	points(NULL),
+	normal(t.normal)
 {
 
-	material = t.material;
-
-	for (int i = 0; i < 3; i++)
+	if (t.points)
 	{
-		points[i] = t.points[i];
-	}
+		points = new Array<vec3>(3);
 
-	normal = t.normal;
+		// Copy assign points
+		*points = *t.points;
+	}
 
 }
 
-__host__ __device__ Triangle& Triangle::operator=(const Triangle& t)
+Triangle::Triangle(Triangle&& t)
+	: Triangle()
+{
+	swap(*this, t);
+}
+
+
+__host__ __device__ Triangle& Triangle::operator=(Triangle t)
 {
 
-	if (this == &t)
-		return *this;
-
-	material = t.material;
-
-	for (int i = 0; i < 3; i++)
-	{
-		points[i] = t.points[i];
-	}
-
-	normal = t.normal;
+	// t is either copy or move-constructed, as determined by the compiler
+	// Using swap ensures that t is in a state to be deleted or assigned (i.e. null-constructed)
+	swap(*this, t);
 
 	return *this;
 
@@ -53,6 +58,8 @@ __host__ __device__ Triangle& Triangle::operator=(const Triangle& t)
 
 __host__ __device__ Triangle::~Triangle()
 {
+	if (points)
+		delete points;
 }
 
 __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tmax) const
@@ -71,7 +78,7 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 		return NULL;
 
 	// Find the point the ray intersects triangle's plane
-	const float t = dot((points[0] - r.o), normal) / dot(r.d, normal);
+	const float t = dot(((*points)[0] - r.o), normal) / dot(r.d, normal);
 
 	if (t < tmin || t > tmax)
 		return NULL;
@@ -89,19 +96,52 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 
 __device__ bool Triangle::point_inside(const vec3& p) const
 {
-	const vec3 outside_point = points[0] - (points[1] - points[0]) - (points[2] - points[0]);
+	const vec3 outside_point = (*points)[0] - ((*points)[1] - (*points)[0]) - ((*points)[2] - (*points)[0]);
 
 	int crosses = 0;
 
 	for (int i = 0; i < 3; i++)
 	{
 		int j = (i + 1) % 3;
-		if (this->lines_cross(p, outside_point, points[i], points[j]))
+		if (this->lines_cross(p, outside_point, (*points)[i], (*points)[j]))
 			crosses++;
 	}
 
 	return (crosses % 2 == 1);
 }
+
+__host__ __device__ void swap(Triangle& a, Triangle& b)
+{
+
+	// Swap members
+	Triangle tmp = Triangle();
+
+	tmp.points = b.points;
+
+	tmp.normal = b.normal;
+
+	tmp.material = b.material;
+
+
+	b.points = a.points;
+
+	b.normal = a.normal;
+
+	b.material = a.material;
+
+
+	a.points = tmp.points;
+
+	a.normal = tmp.normal;
+
+	a.material = tmp.material;
+
+
+	tmp.points = NULL;
+
+	tmp.material = NULL;
+}
+
 
 __device__ bool Triangle::lines_cross(const vec3& a0, const vec3& a1, const vec3& b0, const vec3& b1) const
 {

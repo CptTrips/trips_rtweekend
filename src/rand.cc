@@ -2,6 +2,7 @@
 
 std::mt19937 gen;
 
+
 std::uniform_real_distribution<float> rnd(0., 1.);
 
 
@@ -26,7 +27,7 @@ template __device__ vec3 sample_uniform_sphere<CUDA_RNG>(CUDA_RNG& rng);
 template vec3 sample_uniform_sphere<CPU_RNG>(CPU_RNG& rng);
 
 
-CPU_RNG::CPU_RNG() {}
+CPU_RNG::CPU_RNG() { gen.seed(CPU_SEED); }
 
 float CPU_RNG::sample(){
 

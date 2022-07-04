@@ -5,6 +5,8 @@
 #include <curand_kernel.h>
 #include <random>
 
+#define CPU_SEED 1
+
 class CPU_RNG {
   public:
     CPU_RNG();

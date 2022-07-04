@@ -17,6 +17,130 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 	return scene;
 }
 
+CUDAScene* rtweekend()
+{
+
+	CPU_RNG rng = CPU_RNG();
+
+	std::vector<Material<CUDA_RNG>*> materials;
+
+	std::vector<vec3> centers;
+
+	for (int a = -11; a < 11; a++)
+	{
+		for (int b = -11; b < 11; b++)
+		{
+
+			float material_coin = rng.sample();
+
+			vec3 center(a + 0.9f * rng.sample(), 0.2, 0.9 * rng.sample());
+
+			if ((center - vec3(4, 0.2, 0)).length() > 0.9)
+			{
+				Material<CUDA_RNG>* mat;
+
+				if (material_coin < 0.8)
+				{
+					vec3 albedo(rng.sample() * rng.sample(), rng.sample() * rng.sample(), rng.sample() * rng.sample());
+
+					mat = new Diffuse<CUDA_RNG>(albedo);
+				}
+				else if (material_coin < 0.95)
+				{
+					vec3 albedo(0.5 * (1 + rng.sample()), 0.5 * (1 + rng.sample()), 0.5 * (1 + rng.sample()));
+
+					float roughness = rng.sample();
+
+					mat = new Metal<CUDA_RNG>(albedo, roughness);
+				}
+				else
+				{
+					vec3 albedo(1, 1, 1);
+
+					mat = new Dielectric<CUDA_RNG>(albedo, 1.5);
+				}
+
+				materials.push_back(mat);
+				centers.push_back(center);
+			}
+		}
+	}
+
+	unsigned int random_sphere_count = materials.size();
+
+	CUDAScene* scene = new CUDAScene(random_sphere_count + 4, random_sphere_count + 4);
+
+	UnifiedArray<vec3>* device_centers = new UnifiedArray<vec3>(random_sphere_count);
+
+	for (unsigned int i = 0; i < random_sphere_count; i++)
+	{
+		(*scene->materials)[i] = materials[i]->to_device();
+
+		checkCudaErrors(cudaDeviceSynchronize());
+
+		delete materials[i];
+
+		(*device_centers)[i] = centers[i];
+	}
+
+	materials.clear();
+
+	Material<CUDA_RNG>* ground_mat = new Diffuse<CUDA_RNG>(vec3(0.5, 0.5, 0.5));
+	
+	Material<CUDA_RNG>* dielectric_mat = new Dielectric<CUDA_RNG>(vec3(1., 1., 1.), 1.5);
+
+	Material<CUDA_RNG>* diffuse_mat = new Diffuse<CUDA_RNG>(vec3(0.4, 0.2, 0.1));
+
+	Material<CUDA_RNG>* metal_mat = new Metal<CUDA_RNG>(vec3(0.4, 0.2, 0.1), 0.);
+
+	(*scene->materials)[random_sphere_count] = ground_mat->to_device();
+	(*scene->materials)[random_sphere_count + 1] = dielectric_mat->to_device();
+	(*scene->materials)[random_sphere_count + 2] = diffuse_mat->to_device();
+	(*scene->materials)[random_sphere_count + 3] = metal_mat->to_device();
+
+	delete ground_mat;
+	delete dielectric_mat;
+	delete diffuse_mat;
+	delete metal_mat;
+
+
+	int threads = 1;
+
+	int blocks = 1;
+
+	gen_rtweekend << <blocks, threads >> > (scene, device_centers);
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	return scene;
+}
+
+
+__global__ void gen_rtweekend(CUDAScene* scene, UnifiedArray<vec3>* device_centers)
+{
+	unsigned int id = threadIdx.x + blockIdx.x + blockDim.x;
+
+	if (id == 0)
+	{
+		unsigned int visibles_count = scene->visibles->size();
+		for (unsigned int i = 0; i < visibles_count - 4; i++)
+		{
+			(*scene->visibles)[i] = new CUDASphere((*device_centers)[i], 0.2f, (*scene->materials)[i]);
+		}
+
+		// ground
+		(*scene->visibles)[visibles_count - 4] = new CUDASphere(vec3(0, -1000, 0), 1000, (*scene->materials)[visibles_count - 4]);
+
+		// dielectric
+		(*scene->visibles)[visibles_count - 3] = new CUDASphere(vec3(0, 1, 0), 1.0, (*scene->materials)[visibles_count - 3]);
+
+		// diffuse
+		(*scene->visibles)[visibles_count - 2] = new CUDASphere(vec3(-4, 1, 0), 1.0, (*scene->materials)[visibles_count - 2]);
+
+		// metal
+		(*scene->visibles)[visibles_count - 1] = new CUDASphere(vec3(4, 1, 0), 1.0, (*scene->materials)[visibles_count - 1]);
+	}
+}
 
 CUDAScene* random_balls(const int ball_count)
 {

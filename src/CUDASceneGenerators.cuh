@@ -21,10 +21,14 @@
 
 CUDAScene* scene_factory(const int visible_count, const int material_count);
 
+CUDAScene* rtweekend();
+
 CUDAScene* single_ball();
 
 __global__ void gen_single_ball(CUDAScene* const scene);
 
+
+__global__ void gen_rtweekend(CUDAScene* scene, UnifiedArray<vec3>* device_centers);
 
 CUDAScene* random_balls(const int ball_count);
 

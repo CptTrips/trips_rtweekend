@@ -19,6 +19,7 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 
 CUDAScene* rtweekend()
 {
+	int attempts = 22;
 
 	CPU_RNG rng = CPU_RNG();
 
@@ -26,14 +27,14 @@ CUDAScene* rtweekend()
 
 	std::vector<vec3> centers;
 
-	for (int a = -11; a < 11; a++)
+	for (int a = -attempts/2; a < attempts/2; a++)
 	{
-		for (int b = -11; b < 11; b++)
+		for (int b = -attempts; b < attempts; b++)
 		{
 
 			float material_coin = rng.sample();
 
-			vec3 center(a + 0.9f * rng.sample(), 0.2, 0.9 * rng.sample());
+			vec3 center(a + 0.9f * rng.sample(), 0.2, b + 0.9 * rng.sample());
 
 			if ((center - vec3(4, 0.2, 0)).length() > 0.9)
 			{
@@ -91,7 +92,7 @@ CUDAScene* rtweekend()
 
 	Material<CUDA_RNG>* diffuse_mat = new Diffuse<CUDA_RNG>(vec3(0.4, 0.2, 0.1));
 
-	Material<CUDA_RNG>* metal_mat = new Metal<CUDA_RNG>(vec3(0.4, 0.2, 0.1), 0.);
+	Material<CUDA_RNG>* metal_mat = new Metal<CUDA_RNG>(vec3(0.7, 0.6, 0.5), 0.);
 
 	(*scene->materials)[random_sphere_count] = ground_mat->to_device();
 	(*scene->materials)[random_sphere_count + 1] = dielectric_mat->to_device();
@@ -118,7 +119,7 @@ CUDAScene* rtweekend()
 
 __global__ void gen_rtweekend(CUDAScene* scene, UnifiedArray<vec3>* device_centers)
 {
-	unsigned int id = threadIdx.x + blockIdx.x + blockDim.x;
+	unsigned int id = threadIdx.x + blockIdx.x * blockDim.x;
 
 	if (id == 0)
 	{

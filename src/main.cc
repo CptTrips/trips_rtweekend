@@ -28,7 +28,7 @@ const bool CUDA_ENABLED = false;
 SceneLoader host_scene;
 
 enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id, backpack_id,
-	triangle_carpet_id};
+	triangle_carpet_id, rtweekend_id};
 
 std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	{"random_balls", random_balls_id}
@@ -38,6 +38,7 @@ std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	,{"n_cubes", n_cubes_id}
 	,{"backpack", backpack_id}
 	,{"triangle_carpet", triangle_carpet_id}
+	,{"rtweekend", rtweekend_id}
 };
 
 
@@ -75,6 +76,9 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 		case backpack_id:
 			host_scene = SceneLoader(std::string(j["backpack_path"]));
 			scene = host_scene.to_device();
+			break;
+		case rtweekend_id:
+			scene = rtweekend();
 			break;
 		}
 

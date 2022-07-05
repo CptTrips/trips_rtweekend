@@ -28,7 +28,7 @@ __host__ __device__ Material<RNG_T>::Material(const vec3& a, const float& diffus
 template<typename RNG_T>
 __host__ __device__ bool Material<RNG_T>::is_opaque() const
 {
-	return dielectric == 0;
+	return true;//dielectric == 0;
 }
 
 template<typename RNG_T>
@@ -86,33 +86,28 @@ __host__ __device__ vec3 Material<RNG_T>::bounce_dielectric(const vec3 & k_in, c
 {
 	vec3 k_out;
 
-	// Figure out the index of the incoming/outcoming ray
-	float in_index, out_index;
-	float sign;
+	vec3 unit_k_in = normalise(k_in);
+
+	float cos_in = fmaxf(dot(unit_k_in, n), -1.f);
 
 	// Assume normal points out of material
-	if (dot(k_in, n) < 0.) {
-		in_index = 1.;
-		out_index = refractive_index;
-		sign = -1.;
-	} else {
-		in_index = refractive_index;
-		out_index = 1.;
-		sign = 1.;
-	}
+	bool into_material = (cos_in < 0.f);
+
+	float index_ratio = into_material ? (1.f / refractive_index) : refractive_index;
+
+	float sign = into_material ? -1.f : 1.f;
+
 
 	// Calculate quantities we'll need to determine which case we're in
-	vec3 k_in_normal = dot(k_in, n)*n;
+	vec3 k_in_normal = cos_in*n;
 
-	vec3 k_in_tang = k_in - k_in_normal;
+	vec3 k_in_tang = unit_k_in - k_in_normal;
 
-	vec3 k_out_tang = (in_index / out_index) * k_in_tang;
+	vec3 k_out_tang = index_ratio * k_in_tang;
 
 	float norm2_k_out_tang = dot(k_out_tang, k_out_tang);
 
-	vec3 k_reflected = k_in - 2.f*k_in_normal;
-
-	vec3 k_refracted = sign*sqrt(1.f - norm2_k_out_tang) * n + k_out_tang;
+	vec3 k_reflected = unit_k_in - 2.f*k_in_normal;
 
 	if (norm2_k_out_tang >= 1.f) { // Total internal reflection
 
@@ -120,7 +115,7 @@ __host__ __device__ vec3 Material<RNG_T>::bounce_dielectric(const vec3 & k_in, c
 
 	} else { // Refraction
 
-		float r = reflectance(k_in, k_refracted, n);
+		float r = reflectance(cos_in, index_ratio);
 
 		if (r > rng->sample()) { // Stochastically sample reflected/refracted rays
 
@@ -128,43 +123,26 @@ __host__ __device__ vec3 Material<RNG_T>::bounce_dielectric(const vec3 & k_in, c
 
 		} else { // refract
 
-			k_out = k_refracted;
+			vec3 k_out_normal = sign * sqrt(1.f - norm2_k_out_tang) * n;
+
+			k_out = k_out_normal + k_out_tang;
 
 		}
 
 	}
 
-  return k_out;
+	return k_out;
 }
 
 template<typename RNG_T>
-__host__ __device__ float Material<RNG_T>::reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const
+__host__ __device__ float Material<RNG_T>::reflectance(float cosine_in, float index_ratio) const
 {
 
-	float n_in, n_out;
-
-	float cos_i = -dot(k_in, n);
-
-	if (cos_i < 0.f) {
-		n_in = 1.f;
-		n_out = refractive_index;
-	} else {
-		n_in = refractive_index;
-		n_out = 1.f;
-	}
-
-	return reflectance_formula(cos_i, n_in / n_out);
-}
-
-template<typename RNG_T>
-__host__ __device__ float Material<RNG_T>::reflectance_formula(float cosine_in, float index_ratio) const
-{
-
-	float r0 = (1 - index_ratio) / (1 + index_ratio);
+	float r0 = (1.f - index_ratio) / (1.f + index_ratio);
 
 	r0 *= r0;
 
-	return r0 + (1.f - r0)*powf(1.f - cosine_in, 5);
+	return r0 + (1.f - r0)*powf(1.f + cosine_in, 5.f);
 }
 
 

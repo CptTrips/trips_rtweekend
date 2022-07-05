@@ -12,8 +12,7 @@ class Material
     __host__ __device__ vec3 bounce_diffuse(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
     __host__ __device__ vec3 bounce_metallic(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
     __host__ __device__ vec3 bounce_dielectric(const vec3 & k_in, const vec3& n, RNG_T* const rng) const;
-    __host__ __device__ float reflectance(const vec3& k_in, const vec3& k_out, const vec3& n) const;
-    __host__ __device__ float reflectance_formula(float cosine_in, float index_ratio) const;
+    __host__ __device__ float reflectance(float cosine_in, float index_ratio) const;
 
   public:
     __host__ __device__ Material();

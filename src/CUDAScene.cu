@@ -32,6 +32,17 @@ CUDAScene::CUDAScene(const unsigned int visible_count, const unsigned int materi
 
 }
 
+__host__ CUDAScene::CUDAScene(const std::string& fp) : CUDAScene()
+{
+	std::ifstream i(fp);
+	nlohmann::json j;
+	i >> j;
+
+
+	for (auto x : j)
+		std::cout << x << std::endl;
+}
+
 /*
 __device__ CUDAScene::CUDAScene(const CUDAScene& cs)
 {

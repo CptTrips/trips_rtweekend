@@ -9,6 +9,7 @@
 
 #include "materials\material.h"
 #include "visibles\CUDAVisible.cuh"
+#include "visibles\CUDASphere.cuh"
 #include "rand.h"
 #include "Array.cuh"
 #include "Managed.cuh"
@@ -50,5 +51,7 @@ private:
 	__host__ void delete_index_arrays();
 
 };
+
+__global__ void instantiate_spheres(CUDAScene* const scene, const UnifiedArray<CUDASphere>* const spheres);
 
 __global__ void cuda_delete_visibles(UnifiedArray<CUDAVisible*>* visibles);

@@ -32,15 +32,72 @@ CUDAScene::CUDAScene(const unsigned int visible_count, const unsigned int materi
 
 }
 
-__host__ CUDAScene::CUDAScene(const std::string& fp) : CUDAScene()
+__host__ CUDAScene::CUDAScene(const std::string& fp)
 {
-	std::ifstream i(fp);
+	std::ifstream input_file(fp);
 	nlohmann::json j;
-	i >> j;
+	input_file >> j;
+
+	unsigned int visible_count = j.size();
+
+	visibles = new UnifiedArray<CUDAVisible*>(visible_count);
+
+	materials = new UnifiedArray<Material<CUDA_RNG>*>(visible_count);
+
+	UnifiedArray<CUDASphere>* host_spheres = new UnifiedArray<CUDASphere>(visible_count);
+
+	for (unsigned int i = 0; i < visible_count; i++)
+	{
+		auto json_visible = j[i];
+
+		if (json_visible["type"] == "Sphere")
+		{
+
+			vec3 center = vec3(json_visible["center"][0], json_visible["center"][1], json_visible["center"][2]);
+
+			(*host_spheres)[i] = CUDASphere(center, (float)json_visible["radius"], NULL);
+
+			auto json_material = json_visible["material"];
+
+			vec3 albedo = vec3(json_material["albedo"][0], json_material["albedo"][1], json_material["albedo"][2]);
+
+			(*materials)[i] = Material<CUDA_RNG>(
+				albedo,
+				json_material["diffuse"],
+				json_material["metal"],
+				json_material["dielectric"],
+				json_material["roughness"],
+				json_material["refractive_index"]
+			).to_device();
+		}
+	}
 
 
-	for (auto x : j)
-		std::cout << x << std::endl;
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	int threads = 512;
+
+	int blocks = visible_count / threads + 1;
+
+	instantiate_spheres << <blocks, threads >> > (this, host_spheres);
+
+	checkCudaErrors(cudaDeviceSynchronize());
+
+	delete host_spheres;
+}
+
+__global__ void instantiate_spheres(CUDAScene* const scene, const UnifiedArray<CUDASphere>* const spheres)
+{
+	int id = threadIdx.x + blockDim.x * blockIdx.x;
+
+	if (id < spheres->size())
+	{
+		(*scene->visibles)[id] = new CUDASphere(
+			(*spheres)[id].center,
+			(*spheres)[id].radius,
+			(*scene->materials)[id]
+		);
+	}
 }
 
 /*

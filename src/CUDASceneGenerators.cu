@@ -17,11 +17,10 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 	return scene;
 }
 
-CUDAScene* rtweekend()
-{
-	int attempts = 22;
 
-	CPU_RNG rng = CPU_RNG();
+CUDAScene* rtweekend(int attempts, int seed)
+{
+	CPU_RNG rng = CPU_RNG(seed);
 
 	std::vector<Material<CUDA_RNG>*> materials;
 

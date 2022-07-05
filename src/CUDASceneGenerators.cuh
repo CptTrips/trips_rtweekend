@@ -21,7 +21,7 @@
 
 CUDAScene* scene_factory(const int visible_count, const int material_count);
 
-CUDAScene* rtweekend();
+CUDAScene* rtweekend(int attempts = 22, int seed = 1);
 
 CUDAScene* single_ball();
 

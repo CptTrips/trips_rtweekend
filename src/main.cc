@@ -82,7 +82,7 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 			scene = rtweekend(j["rtweekend"]["attempts"], j["rtweekend"]["seed"]);
 			break;
 		case json_id:
-			scene = new CUDAScene(std::string(j["json_scene"]));
+			scene = new CUDAScene(std::string(j["json"]["scene_path"]));
 			break;
 		}
 
@@ -139,38 +139,32 @@ int main()
 
 	CUDAScene* const scene = load_scene(scene_name, j);
 
-	// CUDAScene* const scene = random_balls(ball_count);
-	// CUDAScene* const scene = single_triangle();
 
+	json camera_json;
 
-	// Place camera
-	// Grid Balls
-	/*
-	vec3 camera_origin = 2.*vec3(1., .5, -3.0);
-	vec3 camera_target = vec3(0., -.3, -2.);
-	vec3 camera_up = vec3(0.0, 1.0, 0.0);
-	*/
+	if (j[scene_name].contains("camera"))
+		camera_json = j[scene_name]["camera"];
+	else
+		camera_json = j["camera"];
 
-
-	// Random Balls
-	std::vector<float> origin_vec = j["camera"]["origin"];
+	std::vector<float> origin_vec = camera_json["origin"];
 	vec3 camera_origin = vec3(origin_vec[0], origin_vec[1], origin_vec[2]);
 
-	std::vector<float> target_vec = j["camera"]["target"];
+	std::vector<float> target_vec = camera_json["target"];
 	vec3 camera_target = vec3(target_vec[0], target_vec[1], target_vec[2]);
 
-	std::vector<float> up_vec = j["camera"]["up"];
+	std::vector<float> up_vec = camera_json["up"];
 	vec3 camera_up = vec3(up_vec[0], up_vec[1], up_vec[2]);
 
 
 	// Right-handed
-	float vfov = j["camera"]["vfov"];
+	float vfov = camera_json["vfov"];
 
 	float aspect_ratio = float(w) / float(h);
 
 	float focus_distance = (camera_target - camera_origin).length();
 
-	float aperture = j["camera"]["aperture"];
+	float aperture = camera_json["aperture"];
 
 	Camera view_cam(camera_origin, camera_target, camera_up, vfov, aspect_ratio, focus_distance, aperture);
 

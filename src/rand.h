@@ -5,11 +5,10 @@
 #include <curand_kernel.h>
 #include <random>
 
-#define CPU_SEED 1
 
 class CPU_RNG {
   public:
-    CPU_RNG();
+    CPU_RNG(int seed = 1);
     float sample();
     vec3 sample_uniform_sphere();
 };

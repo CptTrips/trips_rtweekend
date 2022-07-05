@@ -51,7 +51,7 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
     float disc_4 = b * b - (dot(o_c, o_c) - radius * radius);
 
     // (Real) Intersection solutions exist
-    if (disc_4 > 0) {
+    if (disc_4 > 0.f) {
 
         float sqrt_disc_4 = sqrt(disc_4);
 
@@ -66,7 +66,7 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
         // (earliest intersection is behind ray origin, farthest is ahead of ray origin)
         else if (!material->is_opaque()) {
 
-            t += 2. * sqrt_disc_4;
+            t += 2.f * sqrt_disc_4;
 
             if (t < tmax && t > tmin) {
 				ixn_ptr = new Intersection(t, this);

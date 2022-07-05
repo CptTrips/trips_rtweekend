@@ -27,7 +27,7 @@ template __device__ vec3 sample_uniform_sphere<CUDA_RNG>(CUDA_RNG& rng);
 template vec3 sample_uniform_sphere<CPU_RNG>(CPU_RNG& rng);
 
 
-CPU_RNG::CPU_RNG() { gen.seed(CPU_SEED); }
+CPU_RNG::CPU_RNG(int seed) { gen.seed(seed); }
 
 float CPU_RNG::sample(){
 

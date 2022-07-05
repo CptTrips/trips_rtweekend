@@ -80,4 +80,6 @@ __device__ vec3 draw_sky(const Ray& ray);
 
 __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, vec3* ray_colours, FrameBuffer* const fb, const int spp);
 
+__device__ vec3 gamma_correction(const vec3& col_in);
+
 

@@ -186,7 +186,7 @@ __global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_
 void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 {
 	
-	uint32_t threads = 256;
+	uint32_t threads = 512;
 
 	uint32_t blocks = rays_per_batch / threads + 1;
 
@@ -345,8 +345,16 @@ __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_
 
 		colour /= spp;
 
+		// Gamma correction
+		colour = gamma_correction(colour);
+
 		fb->set_pixel(row, col, colour);
 	}
+}
+
+__device__ vec3 gamma_correction(const vec3& col_in)
+{
+	return vec3(sqrtf(col_in.r()), sqrtf(col_in.g()), sqrtf(col_in.b()));
 }
 
 

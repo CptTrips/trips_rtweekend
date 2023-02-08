@@ -1,0 +1,59 @@
+[
+
+  {
+    "type": "Sphere",
+    "center": [ -5.0, 0.0, 1.5 ],
+    "radius": 0.5,
+    "material": {
+      "diffuse": 1.0,
+      "metal": 0.0,
+      "dielectric": 0.0,
+      "albedo": [ 1.0, 0.0, 0.0 ],
+      "roughness": 0.0,
+      "refractive_index": 1.0
+    }
+  },
+
+  {
+    "type": "Sphere",
+    "center": [ -5.0, 0.0, 0.0 ],
+    "radius": 0.5,
+    "material": {
+      "diffuse": 1.0,
+      "metal": 0.0,
+      "dielectric": 0.0,
+      "albedo": [ 0.7, 0.7, 0.0 ],
+      "roughness": 0.0,
+      "refractive_index": 1.0
+    }
+  },
+
+  {
+    "type": "Sphere",
+    "center": [ -5.0, 0.0, -1.5 ],
+    "radius": 0.5,
+    "material": {
+      "diffuse": 1.0,
+      "metal": 0.0,
+      "dielectric": 0.0,
+      "albedo": [ 0.0, 1.0, 0.0 ],
+      "roughness": 0.0,
+      "refractive_index": 1.0
+    }
+  },
+
+  {
+    "type": "Sphere",
+    "center": [ 0.0, 0.0, 0.0 ],
+    "radius": 1.0,
+    "material": {
+      "diffuse": 0.0,
+      "metal": 0.0,
+      "dielectric": 1.0,
+      "albedo": [ 1.0, 1.0, 1.0 ],
+      "roughness": 0.0,
+      "refractive_index": 1.5
+    }
+  }
+
+]

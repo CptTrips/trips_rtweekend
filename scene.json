@@ -1,0 +1,17 @@
+[
+
+  {
+    "type": "Sphere",
+    "center" : [ 0.0, 0.0, 0.0 ],
+    "radius": 1.0,
+    "material": {
+      "diffuse": 1.0,
+      "metal": 0.0,
+      "dielectric": 0.0,
+      "albedo": [ 0.7, 0.3, 0.5 ],
+      "roughness": 0.0,
+      "refractive_index":  1.0
+    }
+  }
+
+]

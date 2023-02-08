@@ -65,6 +65,8 @@ class GPURayTracer
 
 public:
 
+	GPURayTracer();
+
 	FrameBuffer* render(const GPURenderProperties& render_properies, UnifiedArray<CUDAVisible*>* visibles, const Camera& camera);
 
 };

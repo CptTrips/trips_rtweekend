@@ -2,6 +2,22 @@
 #define my_cuda_seed 1234
 #define DEBUG false
 
+GPURayTracer::GPURayTracer()
+{
+
+	size_t stack_limit;
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
+
+	checkCudaErrors(cudaDeviceSetLimit(cudaLimitStackSize, 8*stack_limit));
+
+	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
+
+	std::cout << "Stack limit: " << stack_limit << std::endl;
+}
+
 FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, UnifiedArray<CUDAVisible*>* visibles, const Camera& camera)
 {
 	this->visibles = visibles;

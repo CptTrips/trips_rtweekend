@@ -130,8 +130,8 @@ int main()
 	// Ray bounce limit
 	const int max_bounce = j["max_bounce"];
 
-	// Arrange scene
-	// 
+	const float min_free_path = j["min_free_path"];
+
 
     const int ball_count = j["random_balls"]["ball_count"];
 
@@ -157,7 +157,6 @@ int main()
 	vec3 camera_up = vec3(up_vec[0], up_vec[1], up_vec[2]);
 
 
-	// Right-handed
 	float vfov = camera_json["vfov"];
 
 	float aspect_ratio = float(w) / float(h);
@@ -174,7 +173,7 @@ int main()
 	//CPURayTracer cpu_ray_tracer(spp, max_bounce);
 	GPURayTracer gpu_ray_tracer;
 
-	GPURenderProperties render_properties{ h, w, spp, max_bounce };
+	GPURenderProperties render_properties{ h, w, spp, max_bounce, min_free_path};
 
 	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene->visibles, view_cam);
 

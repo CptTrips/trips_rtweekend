@@ -42,3 +42,6 @@
 /nsight_compute_output.ncu-rep
 /release build log.txt
 /debug build log.txt
+/models/spot.zip
+/models/low-poly-mccree.zip
+/models/cornell-box.zip

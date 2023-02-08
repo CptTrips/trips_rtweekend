@@ -145,8 +145,6 @@ __host__ __device__ vec3 Material<RNG_T>::bounce_dielectric(const vec3 & k_in, c
 
 	const vec3 k_reflected = unit_k_in - 2.f*k_in_normal;
 
-	const int id = threadIdx.x + blockDim.x + blockIdx.x;
-
 	const float r = reflectance(cos_in, index_ratio);
 
 	vec3 k_out;

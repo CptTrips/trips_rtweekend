@@ -438,7 +438,7 @@ CUDAScene* triangle_carpet(const unsigned int& n)
 		{
 			unsigned int vertex_index = n * i + j;
 
-			(*vertex_array)[vertex_index] = vec3(1.f * (float)i / (float)n, 1.f * (float)j / (float)n, 0.f);
+			(*vertex_array)[vertex_index] = vec3(0.f, 1.f * (float)j / (float)n, 1.f * (float)i / (float)n);
 
 			if ((i < n - 1) && (j < n - 1))
 			{

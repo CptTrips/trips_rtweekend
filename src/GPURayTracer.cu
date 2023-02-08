@@ -12,6 +12,8 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 
 	max_bounce = render_properties.max_bounce;
 
+	min_free_path = render_properties.min_free_path;
+
 	rays_per_batch = std::min(ray_count, (uint64_t)spp * (max_rays_per_batch / spp));
 
 	// Allocate Frame Buffer
@@ -196,14 +198,14 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 
 	checkCudaErrors(cudaThreadGetLimit(&stack_size, cudaLimitStackSize));
 
-	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, visibles, max_bounce, rngs);
+	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, ray_count, rays_per_batch, ray_offset_index, visibles, max_bounce, min_free_path, rngs);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	checkCudaErrors(cudaGetLastError());
 }
 
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const visibles, const int max_bounce, CUDA_RNG* const rngs)
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const visibles, const int max_bounce, const float min_free_path, CUDA_RNG* const rngs)
 {
 
 	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -226,7 +228,7 @@ __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const u
 		while (bounce < max_bounce)
 		{
 
-			ixn_ptr = nearest_intersection(ray, visibles, 1.e-12f, FLT_MAX);
+			ixn_ptr = nearest_intersection(ray, visibles, min_free_path, FLT_MAX);
 
 			if (ixn_ptr)
 			{

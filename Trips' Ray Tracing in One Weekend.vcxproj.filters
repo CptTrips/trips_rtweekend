@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\main.cc">
+    <ClCompile Include="src\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
+    <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,6 +58,7 @@
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\CUDAScene.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />
+    <ClInclude Include="src\test_kernel.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -105,10 +106,10 @@
     <CudaCompile Include="src\CUDAScene.cu" />
     <CudaCompile Include="src\SceneLoader.cu" />
     <CudaCompile Include="src\SceneLoader.cuh" />
+    <CudaCompile Include="src\test_kernel.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />
-    <None Include="src\materials\material.tpp" />
     <None Include="src\UnifiedArray.tu" />
   </ItemGroup>
 </Project>

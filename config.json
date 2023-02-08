@@ -2,29 +2,68 @@
   "x_res": 256,
   "y_res": 144,
   "spp": 1,
-  "max_bounce": 4,
+  "max_bounce": 50,
+  "min_free_path":  0.002,
 
   "random_balls": {
     "ball_count":  64
+  },
+
+  "triangle_carpet": {
+    "n":  8
   },
 
   "n_cubes": {
     "n":  8
   },
 
-  "camera": {
-    "old_origin": [ 0.5, 0.5, -10.0 ],
-    "old_target": [ 0.0, 0.0, 1.0 ],
-    "origin": [ 2.0, 3.0, -5.0 ],
-    "target": [ 0.5, 0.5, 0.5 ],
-    "up": [ 0.0, 1.0, 0.0 ],
-    "old_vfov": 14.0,
-    "vfov": 4.0,
-    "aspect_ratio": 1.778,
-    "focus_distance": 11,
-    "aperture": 0.0001
+  "rtweekend": {
+    "attempts": 22,
+    "seed":  3,
+    "camera": {
+      "origin": [ 13.0, 2.0, 3.0 ],
+      "target": [ 0.0, 0.0, 0.0 ],
+      "up": [ 0.0, 1.0, 0.0 ],
+      "vfov": 4.91,
+      "aspect_ratio": 1.778,
+      "focus_distance": 9,
+      "aperture": 0.045
+    },
+    "zoom_camera": {
+      "origin": [ 13.0, 2.0, 3.0 ],
+      "target": [ 0.0, 1.5, 0.5 ],
+      "up": [ 0.0, 1.0, 0.0 ],
+      "vfov": 1.2,
+      "aspect_ratio": 1.778,
+      "focus_distance": 10,
+      "aperture": 0.0
+    }
   },
 
-  "scene_name":  "n_cubes",
+  "json": {
+    "scene_path": "dielectric_test_scene.json",
+    "camera": {
+      "origin": [ 100.0, 0.0, 0.0 ],
+      "target": [ 0.0, 0.0, 0.0 ],
+      "up": [ 0.0, 1.0, 0.0 ],
+      "vfov": 2.5,
+      "aspect_ratio": 1.778,
+      "focus_distance": 10,
+      "aperture": 0.0
+    }
+  },
+
+  "camera": {
+    "origin": [ 13.0, 2.0, 3.0 ],
+    "target": [ 0.0, 0.0, 0.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "vfov": 4.91,
+    "aspect_ratio": 1.778,
+    "focus_distance": 10,
+    "aperture": 0.05
+  },
+
+  "scene_name":  "random_balls",
   "backpack_scene_name": "models\\backpack\\backpack.obj"
+
 }

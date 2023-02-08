@@ -18,10 +18,13 @@ struct GPURenderProperties
 	int w;
 	int spp;
 	int max_bounce;
+	float min_free_path;
 };
 
 class GPURayTracer
 {
+
+	float min_free_path = 0;
 
 	const int max_threads = 512;
 
@@ -72,7 +75,7 @@ __global__ void cuda_create_rngs(CUDA_RNG* const rngs, const uint32_t ray_count)
 
 __global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_t ray_offset_index, const uint64_t rays_per_batch, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const int spp);
 
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int max_bounce, CUDA_RNG* const rngs);
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int max_bounce, const float min_free_path, CUDA_RNG* const rngs);
 
 __device__ Intersection* nearest_intersection(const Ray& ray, const UnifiedArray<CUDAVisible*>* const scene, const float tmin, const float tmax);
 

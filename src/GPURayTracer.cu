@@ -23,7 +23,7 @@ __global__ void cuda_scatter_rays(
 	if ((*p_triangleIntersectionBuffer)[rayID].id == -1 && (*p_sphereIntersectionBuffer)[rayID].id == -1)
 		return;
 
-	Ray& ray = (*p_rayBuffer)[rayID];
+	Ray* p_ray = &(*p_rayBuffer)[rayID];
 
 	CUDA_RNG& rng = rngs[rayID];
 
@@ -32,10 +32,10 @@ __global__ void cuda_scatter_rays(
 	if (ixn.normal.length() == 0.f)
 		printf("Bad ixn normal %d\n", rayID);
 
-	Material<CUDA_RNG> material(1.f, 0.f, 0.f, 0.f, 1.f);
+	Material<CUDA_RNG> material(1.0f, 0.0f, 0.f, 0.f, 1.f);
 
-	ray.o = ray.point_at(ixn.t);
-	ray.d = material.scatter(ray.d, ixn.normal, &rngs[rayID]);
+	p_ray->o = p_ray->point_at(ixn.t);
+	p_ray->d = material.scatter(p_ray->d, ixn.normal, &rngs[rayID]);
 }
 
 GPURayTracer::GPURayTracer() : ixnEngine()
@@ -71,33 +71,40 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 	// Allocate ray data (Ray, colour, rng)
 	allocate_rays();
 
-	UnifiedArray<vec3>* p_vertexBuffer = new UnifiedArray<vec3>(3);
+	UnifiedArray<vec3>* p_vertexBuffer = new UnifiedArray<vec3>(4);
 
-	UnifiedArray<uint32_t>* p_indexBuffer = new UnifiedArray<uint32_t>(3);
+	UnifiedArray<uint32_t>* p_indexBuffer = new UnifiedArray<uint32_t>(6);
 
-	(*p_vertexBuffer)[0] = vec3(1.0, 0.0, 0.5);
-	(*p_vertexBuffer)[1] = vec3(1.0, -0.5, -0.5);
-	(*p_vertexBuffer)[2] = vec3(1.0, 0.5, -0.5);
+	(*p_vertexBuffer)[0] = vec3(1000.0, -1.0, 1000.0);
+	(*p_vertexBuffer)[1] = vec3(1000.0, -1.0, -1000.0);
+	(*p_vertexBuffer)[2] = vec3(-1000.0, -1.0, 1000.0);
+	(*p_vertexBuffer)[3] = vec3(-1000.0, -1.0, -1000.0);
 
 	(*p_indexBuffer)[0] = 0;
 	(*p_indexBuffer)[1] = 1;
-	(*p_indexBuffer)[2] = 2;
+	(*p_indexBuffer)[2] = 3;
+	(*p_indexBuffer)[3] = 0;
+	(*p_indexBuffer)[4] = 3;
+	(*p_indexBuffer)[5] = 2;
 
 	UnifiedArray<Intersection>* p_triangleIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
 
 	UnifiedArray<vec3>* p_triangleColourBuffer = new UnifiedArray<vec3>(p_indexBuffer->size());
 
-	(*p_triangleColourBuffer)[0] = vec3(1.f, 0.f, 0.f);
+	(*p_triangleColourBuffer)[0] = vec3(.6f, 0.6f, 0.6f);
+	(*p_triangleColourBuffer)[1] = vec3(0.6f, 0.6f, 0.6f);
 
-	UnifiedArray<CUDASphere>* p_sphereBuffer = new UnifiedArray<CUDASphere>(1);
+	UnifiedArray<CUDASphere>* p_sphereBuffer = new UnifiedArray<CUDASphere>(2);
 
-	(*p_sphereBuffer)[0] = CUDASphere{ vec3(2.0, -0.5, 0.5), 1.0, nullptr };
-
-	UnifiedArray<Intersection>* p_sphereIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
+	(*p_sphereBuffer)[0] = CUDASphere{ vec3(-2.0, 0., 1.2), 1.0, nullptr };
+	(*p_sphereBuffer)[1] = CUDASphere{ vec3(-2.0, 0., -1.2), 1.0, nullptr };
 
 	UnifiedArray<vec3>* p_sphereColourBuffer = new UnifiedArray<vec3>(p_sphereBuffer->size());
 
-	(*p_sphereColourBuffer)[0] = vec3(0.f, 0.f, 1.f);
+	(*p_sphereColourBuffer)[0] = vec3(0.4f, 0.8f, 1.f);
+	(*p_sphereColourBuffer)[1] = vec3(0.8f, 0.4f, 1.f);
+
+	UnifiedArray<Intersection>* p_sphereIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
 
 	using milli = std::chrono::milliseconds;
 
@@ -380,7 +387,7 @@ void GPURayTracer::scatterRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint
 {
 
 	
-	uint32_t threads = max_threads / 4;
+	uint32_t threads = max_threads;
 	uint32_t blocks = p_activeRayIndices->size() / threads + 1;
 
 	cuda_scatter_rays << <blocks, threads >> > (
@@ -437,7 +444,7 @@ __host__ __device__ vec3 draw_sky(const Ray& ray)
 
   vec3 unit_dir = normalise(ray.direction());
   float t = 0.5f*(unit_dir.y() + 1.0f);
-  return (1.0 - t)*vec3(1.f, 1.f, 1.f) + t*vec3(0.5f, 0.7f, 1.0f);
+  return (1.0 - t)*vec3(1.f, 1.f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
 
 }
 

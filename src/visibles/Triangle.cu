@@ -93,6 +93,9 @@ __device__ Intersection Triangle::intersect(const Ray& r, float tmin, float tmax
 		return NULL;
 	*/
 
+	if (dot(r.d, normal) > 0.f)
+		return ixn;
+
 	// Find the point the ray intersects triangle's plane
 	const float t = dot(((*points)[0] - r.o), normal) / dot(r.d, normal);
 
@@ -177,7 +180,7 @@ __device__ bool Triangle::lines_cross(const vec3& a0, const vec3& a1, const vec3
 
 __device__ Ray Triangle::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const
 {
-	const vec3 r_out = material->bounce(r_in, normal, rng);
+	const vec3 r_out = material->scatter(r_in, normal, rng);
 
 	return Ray(-1, ixn_p, r_out);
 }
@@ -185,6 +188,6 @@ __device__ Ray Triangle::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* r
 __device__ vec3 Triangle::albedo(const vec3& p) const
 {
 
-	return material->albedo;
+	return vec3(1.f, 0.f, 1.f);
 }
 

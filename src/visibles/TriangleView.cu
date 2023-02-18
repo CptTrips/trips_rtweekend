@@ -64,7 +64,7 @@ __device__ Ray TriangleView::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RN
 
 __device__ vec3 TriangleView::albedo(const vec3& p) const
 {
-	return material->albedo;
+	return vec3(1.f, 0.f, 1.f);
 }
 
 __device__ void TriangleView::print()

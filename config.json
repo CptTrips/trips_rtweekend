@@ -2,7 +2,7 @@
   "x_res": 1920,
   "y_res": 1080,
   "spp": 1,
-  "max_bounce": 50,
+  "max_bounce": 2,
   "min_free_path":  0.002,
 
   "random_balls": {
@@ -60,7 +60,7 @@
     "vfov": 4.91,
     "aspect_ratio": 1.778,
     "focus_distance": 10,
-    "aperture": 0.05
+    "aperture": 0.0
   },
 
   "scene_name":  "random_balls",

@@ -83,12 +83,12 @@ __device__ Ray CUDASphere::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG*
 {
     vec3 normal = normalise(ixn_p - center);
 
-    vec3 out_dir = material->bounce(r_in, normal, rng);
+    vec3 out_dir = material->scatter(r_in, normal, rng);
 
     return Ray(-1, ixn_p, out_dir);
 }
 
 __device__ vec3 CUDASphere::albedo(const vec3& p) const
 {
-    return material->albedo;
+    return vec3(1.f, 0.f, 1.f);
 }

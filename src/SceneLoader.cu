@@ -2,7 +2,7 @@
 
 Assimp::Importer SceneLoader::ai_importer;
 
-SceneLoader::SceneLoader(std::string scene_path) : default_material(Diffuse<CUDA_RNG>(vec3(0.5f, 0.5f, 0.5f)))
+SceneLoader::SceneLoader(std::string scene_path)
 {
 
     checkCudaErrors(cudaDeviceSynchronize());

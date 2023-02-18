@@ -2,9 +2,9 @@
 #include "FrameBuffer.cuh"
 //#include "CPURayTracer.h"
 #include "GPURayTracer.cuh"
-#include "CUDASceneGenerators.cuh"
-#include "CUDAScene.cuh"
-#include "SceneLoader.cuh"
+//#include "CUDASceneGenerators.cuh"
+//#include "CUDAScene.cuh"
+//#include "SceneLoader.cuh"
 
 #include "test_kernel.cuh"
 
@@ -25,7 +25,7 @@ using json = nlohmann::json;
 
 const bool CUDA_ENABLED = false;
 
-SceneLoader host_scene;
+//SceneLoader host_scene;
 
 enum SceneID {random_balls_id, single_ball_id, single_triangle_id, single_cube_id, n_cubes_id, backpack_id,
 	triangle_carpet_id, rtweekend_id, json_id};
@@ -42,7 +42,7 @@ std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	,{"json", json_id}
 };
 
-
+/*
 CUDAScene* load_scene(std::string scene_name, const json& j)
 {
 	CUDAScene* scene;
@@ -95,6 +95,7 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 
 	return scene;
 }
+*/
 
 
 int main()
@@ -122,7 +123,7 @@ int main()
 
 	std::string scene_name = j["scene_name"];
 
-	CUDAScene* const scene = load_scene(scene_name, j);
+	//CUDAScene* const scene = load_scene(scene_name, j);
 
 	json camera_json;
 
@@ -173,7 +174,7 @@ int main()
 	// Delete visibles and materials
 	// cudaFree/Delete arrays
 	// cudaFree scene
-	delete scene;
+	//delete scene;
 
 	return 0;
 

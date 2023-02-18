@@ -21,9 +21,6 @@
     <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RayBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\palette.h">
@@ -48,7 +45,6 @@
     </ClInclude>
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Managed.cuh" />
-    <ClInclude Include="src\CUDASceneGenerators.cuh" />
     <ClInclude Include="src\Scenes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,12 +55,8 @@
     <ClInclude Include="src\visibles\Mesh.cuh" />
     <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\visibles\TriangleView.cuh" />
-    <ClInclude Include="src\CUDAScene.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />
     <ClInclude Include="src\test_kernel.cuh" />
-    <ClInclude Include="RayBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -87,7 +79,6 @@
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="src\Error.cu" />
-    <CudaCompile Include="src\CUDASceneGenerators.cu" />
     <CudaCompile Include="src\materials\material.h">
       <Filter>Header Files</Filter>
     </CudaCompile>
@@ -100,9 +91,6 @@
     <CudaCompile Include="src\visibles\Triangle.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
-    <CudaCompile Include="src\CUDAScene.cu" />
-    <CudaCompile Include="src\SceneLoader.cu" />
-    <CudaCompile Include="src\SceneLoader.cuh" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\CUDAIntersectionEngine.cuh">
       <Filter>Header Files</Filter>
@@ -114,5 +102,6 @@
   <ItemGroup>
     <None Include="src\Array.tu" />
     <None Include="src\UnifiedArray.tu" />
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

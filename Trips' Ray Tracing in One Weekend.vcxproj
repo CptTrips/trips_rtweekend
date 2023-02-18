@@ -140,11 +140,9 @@
     <CudaCompile Include="src\CUDAIntersectionEngine.cu">
       <FileType>Document</FileType>
     </CudaCompile>
-    <ClCompile Include="RayBuffer.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\main.cc" />
-    <CudaCompile Include="src\CUDAScene.cu" />
-    <CudaCompile Include="src\SceneLoader.cu" />
+    <None Include="ClassDiagram.cd" />
     <None Include="src\UnifiedArray.tu">
       <FileType>Document</FileType>
     </None>
@@ -153,7 +151,6 @@
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
     <None Include="src\Array.tu" />
-    <CudaCompile Include="src\CUDASceneGenerators.cu" />
     <CudaCompile Include="src\Error.cu" />
     <CudaCompile Include="src\FrameBuffer.cu">
       <FileType>CppCode</FileType>
@@ -167,15 +164,11 @@
     <CudaCompile Include="src\CUDAIntersectionEngine.cuh" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
-    <ClInclude Include="RayBuffer.h" />
     <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\Camera.h" />
-    <ClInclude Include="src\CUDAScene.cuh" />
-    <ClInclude Include="src\CUDASceneGenerators.cuh" />
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\Managed.cuh" />
-    <CudaCompile Include="src\SceneLoader.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />

@@ -69,12 +69,12 @@ __host__ __device__ vec3 Material<RNG_T>::scatter(const vec3& r_in, const vec3& 
 {
 	float x = rng->sample();
 
-	if (x < diffuse)
+	if (x <= diffuse)
 		return diffuse_scatter(r_in, normal, rng);
-	else if (x < diffuse + metallic)
+	else if (x <= diffuse + metallic)
 		return metallic_scatter(r_in, normal, rng);
 	else
-		return dielectric_scatter(r_in, normal, rng);
+		return diffuse_scatter(r_in, normal, rng);//dielectric_scatter(r_in, normal, rng);
 }
 
 template<typename RNG_T>
@@ -90,16 +90,20 @@ template<typename RNG_T>
 __host__ __device__ vec3 Material<RNG_T>::metallic_scatter(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const
 {
 
-	vec3 specular;
+	vec3 specular, roughNormal;
+
+	if (normal.length() == 0.f)
+		printf("Bad normal\n");
 
 	do
 	{
-		vec3 roughNormal = normalise(normal + (roughness * rng->sample_uniform_sphere()));
+
+		roughNormal = normalise(normal + (roughness * rng->sample_uniform_sphere()));
 
 		specular = r_in - 2 * dot(roughNormal, r_in) * roughNormal;
 	} while (dot(specular, normal) <= 0.f);
 
-	return specular;
+	return normalise(specular);
 }
 
 template<typename RNG_T>

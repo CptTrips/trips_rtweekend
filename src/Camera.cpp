@@ -44,5 +44,5 @@ Ray Camera::cast_ray(const float& u, const float& v, CPU_RNG* rng) const
 
     vec3 ray_dir = orientation.T() * cam_space_ray_dir;
 
-    return Ray(origin + orientation.T()*focus_offset, ray_dir);
+    return Ray(-1, origin + orientation.T()*focus_offset, ray_dir);
 }

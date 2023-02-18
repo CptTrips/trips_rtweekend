@@ -22,6 +22,20 @@ __host__ __device__ Triangle::Triangle(const vec3* points, const Material<CUDA_R
 	normal.normalise();
 }
 
+Triangle::Triangle(const vec3& a, const vec3& b, const vec3& c)
+{
+
+	points = new Array<vec3>(3);
+
+	(*points)[0] = a;
+	(*points)[1] = b;
+	(*points)[2] = c;
+
+	normal = cross((*points)[1] - (*points)[0], (*points)[2] - (*points)[1]);
+
+	normal.normalise();
+}
+
 __host__ __device__ Triangle::Triangle(const Triangle& t)
 	: material(t.material),
 	points(NULL),
@@ -62,10 +76,10 @@ __host__ __device__ Triangle::~Triangle()
 		delete points;
 }
 
-__device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tmax) const
+__device__ Intersection Triangle::intersect(const Ray& r, float tmin, float tmax) const
 {
 
-	Intersection* ixn = NULL;
+	Intersection ixn;
 
 	/*
 	const Material<CUDA_RNG>* local_mat_ptr = material;
@@ -74,21 +88,23 @@ __device__ Intersection* Triangle::intersect(const Ray& r, float tmin, float tma
 	*/
 
 	// Do not scatter from the back side if the material is opaque
+	/*
 	if (material->is_opaque() && dot(r.d, normal) > 0.f)
 		return NULL;
+	*/
 
 	// Find the point the ray intersects triangle's plane
 	const float t = dot(((*points)[0] - r.o), normal) / dot(r.d, normal);
 
 	if (t < tmin || t > tmax)
-		return NULL;
+		return ixn;
 
 	// Determine if this point lies inside the triangle
 	const vec3 p = r.point_at(t);
 
 	if (point_inside(p))
 	{
-		ixn = new Intersection(t, this);
+		ixn = Intersection(t, normal, -1);
 	}
 
 	return ixn;
@@ -163,7 +179,7 @@ __device__ Ray Triangle::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* r
 {
 	const vec3 r_out = material->bounce(r_in, normal, rng);
 
-	return Ray(ixn_p, r_out);
+	return Ray(-1, ixn_p, r_out);
 }
 
 __device__ vec3 Triangle::albedo(const vec3& p) const

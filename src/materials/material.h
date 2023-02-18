@@ -8,22 +8,18 @@ template<typename RNG_T>
 class Material
 {
 
-    __host__ __device__ vec3 bounce_diffuse(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
-    __host__ __device__ vec3 bounce_metallic(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
-    __host__ __device__ vec3 bounce_dielectric(const vec3 & k_in, const vec3& n, RNG_T* const rng) const;
+    __host__ __device__ vec3 diffuse_scatter(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ vec3 metallic_scatter(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ vec3 dielectric_scatter(const vec3 & k_in, const vec3& n, RNG_T* const rng) const;
     __host__ __device__ float reflectance(float cosine_in, float index_ratio) const;
 
   public:
     __host__ __device__ Material();
-    __host__ __device__ Material(const vec3& a, const float& diffuse, const float& metallic, const float& dielectric, const float& roughness, const float& refractive_index);
+    __host__ __device__ Material(const float& diffuse, const float& metallic, const float& dielectric, const float& roughness, const float& refractive_index);
 
-    __host__ __device__ vec3 bounce(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
+    __host__ __device__ vec3 scatter(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const;
     __host__ __device__ bool is_opaque() const;
 
-    __host__ Material<RNG_T>* to_device() const;
-
-
-    vec3 albedo;
 
     float diffuse;
 
@@ -38,13 +34,13 @@ class Material
 
 template<typename RNG_T>
 Material<RNG_T>::Material()
-	: albedo(vec3()), diffuse(0), metallic(0), dielectric(0)
+	: diffuse(1), refractive_index(1)
 {
 }
 
 template<typename RNG_T>
-__host__ __device__ Material<RNG_T>::Material(const vec3& a, const float& diffuse, const float& metallic, const float& dielectric, const float& roughness, const float& refractive_index)
-	: albedo(a), roughness(roughness), refractive_index(refractive_index)
+__host__ __device__ Material<RNG_T>::Material(const float& diffuse, const float& metallic, const float& dielectric, const float& roughness, const float& refractive_index)
+	: roughness(roughness), refractive_index(refractive_index)
 {
 	if (diffuse < 0 || metallic < 0 || dielectric < 0)
 		printf("Invalid material params");
@@ -67,58 +63,47 @@ __host__ __device__ bool Material<RNG_T>::is_opaque() const
 	return dielectric == 0;
 }
 
-template<typename RNG_T>
-__host__ Material<RNG_T>* Material<RNG_T>::to_device() const
-{
-	Material<RNG_T>* device_material;
-
-	checkCudaErrors(cudaMalloc(&device_material, sizeof(*this)));
-
-	checkCudaErrors(cudaMemcpy(device_material, this, sizeof(*this), cudaMemcpyHostToDevice));
-
-	return device_material;
-}
 
 template<typename RNG_T>
-__host__ __device__ vec3 Material<RNG_T>::bounce(const vec3& r_in, const vec3& normal, RNG_T* const rng) const
+__host__ __device__ vec3 Material<RNG_T>::scatter(const vec3& r_in, const vec3& normal, RNG_T* const rng) const
 {
 	float x = rng->sample();
 
 	if (x < diffuse)
-		return bounce_diffuse(r_in, normal, rng);
+		return diffuse_scatter(r_in, normal, rng);
 	else if (x < diffuse + metallic)
-		return bounce_metallic(r_in, normal, rng);
+		return metallic_scatter(r_in, normal, rng);
 	else
-		return bounce_dielectric(r_in, normal, rng);
+		return dielectric_scatter(r_in, normal, rng);
 }
 
 template<typename RNG_T>
-__host__ __device__ vec3 Material<RNG_T>::bounce_diffuse(const vec3& r_in, const vec3& normal, RNG_T* const rng) const
+__host__ __device__ vec3 Material<RNG_T>::diffuse_scatter(const vec3& r_in, const vec3& normal, RNG_T* const rng) const
 {
 
   vec3 scatter_dir = normal + 0.99f * rng->sample_uniform_sphere();
 
-  return scatter_dir;
+  return normalise(scatter_dir);
 }
 
 template<typename RNG_T>
-__host__ __device__ vec3 Material<RNG_T>::bounce_metallic(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const
+__host__ __device__ vec3 Material<RNG_T>::metallic_scatter(const vec3 & r_in, const vec3& normal, RNG_T* const rng) const
 {
-	const vec3 scatter_dir = r_in - 2.f * dot(r_in, normal) * normal;
 
-	const int inside = signbit(dot(scatter_dir, normal));
+	vec3 specular;
 
-	vec3 perturbed_scatter_dir;
+	do
+	{
+		vec3 roughNormal = normalise(normal + (roughness * rng->sample_uniform_sphere()));
 
-	do {
-		perturbed_scatter_dir = scatter_dir + roughness * rng->sample_uniform_sphere();
-	} while (signbit(dot(perturbed_scatter_dir, normal)) != inside);
+		specular = r_in - 2 * dot(roughNormal, r_in) * roughNormal;
+	} while (dot(specular, normal) <= 0.f);
 
-	return  perturbed_scatter_dir;
+	return specular;
 }
 
 template<typename RNG_T>
-__host__ __device__ vec3 Material<RNG_T>::bounce_dielectric(const vec3 & k_in, const vec3& n, RNG_T* const rng) const
+__host__ __device__ vec3 Material<RNG_T>::dielectric_scatter(const vec3 & k_in, const vec3& n, RNG_T* const rng) const
 {
 	const vec3 unit_k_in = normalise(k_in);
 

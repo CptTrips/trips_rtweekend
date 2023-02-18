@@ -8,6 +8,7 @@ class Triangle : public CUDAVisible {
 public:
     __host__ __device__ Triangle();
     __host__ __device__ Triangle(const vec3* points, const Material<CUDA_RNG>* m);
+    __host__ __device__ Triangle(const vec3& a, const vec3& b, const vec3& c);
 
     __host__ __device__ Triangle(const Triangle& t);
     __host__ __device__ Triangle(Triangle&& t);
@@ -15,7 +16,7 @@ public:
 
     __host__ __device__ ~Triangle();
 
-    __device__ virtual Intersection* intersect(const Ray& r, float tmin, float tmax) const;
+    __device__ virtual Intersection intersect(const Ray& r, float tmin, float tmax) const;
     __device__ virtual Ray bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const;
     __device__ virtual vec3 albedo(const vec3& p) const;
 

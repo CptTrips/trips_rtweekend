@@ -21,6 +21,9 @@
     <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RayBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\palette.h">
@@ -59,6 +62,9 @@
     <ClInclude Include="src\CUDAScene.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />
     <ClInclude Include="src\test_kernel.cuh" />
+    <ClInclude Include="RayBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -82,16 +88,7 @@
     </CudaCompile>
     <CudaCompile Include="src\Error.cu" />
     <CudaCompile Include="src\CUDASceneGenerators.cu" />
-    <CudaCompile Include="src\materials\metal.cuh">
-      <Filter>Header Files</Filter>
-    </CudaCompile>
     <CudaCompile Include="src\materials\material.h">
-      <Filter>Header Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="src\materials\dielectric.cuh">
-      <Filter>Header Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="src\materials\diffuse.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="src\rand.cc">
@@ -107,6 +104,12 @@
     <CudaCompile Include="src\SceneLoader.cu" />
     <CudaCompile Include="src\SceneLoader.cuh" />
     <CudaCompile Include="src\test_kernel.cu" />
+    <CudaCompile Include="src\CUDAIntersectionEngine.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\CUDAIntersectionEngine.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />

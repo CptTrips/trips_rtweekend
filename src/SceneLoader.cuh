@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "materials\diffuse.cuh"
 #include "CUDAScene.cuh"
 #include "CUDASceneGenerators.cuh"
 #include "visibles\Mesh.cuh"
@@ -24,7 +23,7 @@ class SceneLoader
 
 	const aiScene* ai_scene = NULL;
 
-	Diffuse<CUDA_RNG> default_material;
+	Material<CUDA_RNG> default_material;
 
 	UnifiedArray<Array<vec3>*>* vertex_library = NULL;
 
@@ -40,7 +39,7 @@ class SceneLoader
 
 
 public:
-	SceneLoader() : default_material(vec3(.5f, .5f, .5f)) {}
+	SceneLoader() {}
 	SceneLoader(const SceneLoader& s) = delete;
 	SceneLoader& SceneLoader::operator=(SceneLoader&& s);
 	SceneLoader& operator=(const SceneLoader& s) = delete;

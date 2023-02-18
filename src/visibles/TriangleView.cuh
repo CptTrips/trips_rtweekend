@@ -17,7 +17,7 @@ public:
 
 	__host__ __device__ ~TriangleView();
 
-    __device__ virtual Intersection* intersect(const Ray& r, float tmin, float tmax) const;
+    __device__ virtual Intersection intersect(const Ray& r, float tmin, float tmax) const;
     __device__ virtual Ray bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const;
     __device__ virtual vec3 albedo(const vec3& p) const;
 

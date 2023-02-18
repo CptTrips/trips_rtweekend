@@ -99,23 +99,8 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 
 int main()
 {
-	size_t stack_limit;
 
-	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
-
-	std::cout << "Stack limit: " << stack_limit << std::endl;
-
-	checkCudaErrors(cudaDeviceSetLimit(cudaLimitStackSize, 8*stack_limit));
-
-	checkCudaErrors(cudaDeviceGetLimit(&stack_limit, cudaLimitStackSize));
-
-	std::cout << "Stack limit: " << stack_limit << std::endl;
-
-
-	//test_nested_array();
-
-
-	// read a JSON file
+	// Get scene configuration
 	std::ifstream i("config.json");
 	json j;
 	i >> j;
@@ -138,7 +123,6 @@ int main()
 	std::string scene_name = j["scene_name"];
 
 	CUDAScene* const scene = load_scene(scene_name, j);
-
 
 	json camera_json;
 
@@ -175,7 +159,7 @@ int main()
 
 	GPURenderProperties render_properties{ h, w, spp, max_bounce, min_free_path};
 
-	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, scene->visibles, view_cam);
+	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, view_cam);
 
 
 	// Write scene

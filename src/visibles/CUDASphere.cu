@@ -38,10 +38,10 @@ CUDASphere::CUDASphere(const Sphere& s)
 __host__ __device__ CUDASphere::~CUDASphere() {
 }
 
-__device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float tmax) const {
+__device__ Intersection CUDASphere::intersect(const Ray& r, float tmin, float tmax) const {
 
     // a is 1 because ray directions should be normalised
-    Intersection* ixn_ptr = NULL;
+    Intersection ixn;
 
     vec3 o_c = r.origin() - center;
 
@@ -59,22 +59,24 @@ __device__ Intersection* CUDASphere::intersect(const Ray& r, float tmin, float t
 
         // Try to find earliest intersection
         if (t < tmax && t > tmin) {
-            ixn_ptr = new Intersection(t, this);
+            ixn = Intersection(t, normalise(r.point_at(t) - center), -1);
         }
 
         // We might be inside the sphere
         // (earliest intersection is behind ray origin, farthest is ahead of ray origin)
+        /*
         else if (!material->is_opaque()) {
 
             t += 2.f * sqrt_disc_4;
 
             if (t < tmax && t > tmin) {
-				ixn_ptr = new Intersection(t, this);
+				ixn_ptr = new Intersection(t, -1);
             }
         }
+        */
     }
 
-    return ixn_ptr;
+    return ixn;
 }
 
 __device__ Ray CUDASphere::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const
@@ -83,7 +85,7 @@ __device__ Ray CUDASphere::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG*
 
     vec3 out_dir = material->bounce(r_in, normal, rng);
 
-    return Ray(ixn_p, out_dir);
+    return Ray(-1, ixn_p, out_dir);
 }
 
 __device__ vec3 CUDASphere::albedo(const vec3& p) const

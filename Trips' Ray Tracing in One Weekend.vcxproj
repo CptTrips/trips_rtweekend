@@ -113,11 +113,13 @@
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Palette.lib;cudart_static.lib;assimp-vc142-mtd.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
       <Include>$(ProjectDir)include</Include>
+      <GenerateLineInfo>true</GenerateLineInfo>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,6 +137,10 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CudaCompile Include="src\CUDAIntersectionEngine.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <ClCompile Include="RayBuffer.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\main.cc" />
     <CudaCompile Include="src\CUDAScene.cu" />
@@ -158,8 +164,10 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="src\CUDAIntersectionEngine.cuh" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
+    <ClInclude Include="RayBuffer.h" />
     <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CUDAScene.cuh" />
@@ -173,12 +181,9 @@
     <ClInclude Include="src\UnifiedArray.cuh" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />
-    <CudaCompile Include="src\materials\dielectric.cuh" />
-    <CudaCompile Include="src\materials\diffuse.cuh" />
     <CudaCompile Include="src\FrameBuffer.cuh" />
     <ClInclude Include="src\mat3.h" />
     <CudaCompile Include="src\materials\material.h" />
-    <CudaCompile Include="src\materials\metal.cuh" />
     <CudaCompile Include="src\rand.h" />
     <CudaCompile Include="src\ray.cuh" />
     <ClInclude Include="src\vec3.cuh" />

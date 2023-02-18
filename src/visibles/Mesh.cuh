@@ -13,7 +13,7 @@ public:
     Mesh() = delete;
     __host__ __device__ Mesh(const Array<vec3>* const vertices, const Array<uint32_t>* const indices, const Material<CUDA_RNG>* const material);
     __host__ __device__ ~Mesh();
-    __device__ virtual Intersection* intersect(const Ray& r, float tmin, float tmax) const;
+    __device__ virtual Intersection intersect(const Ray& r, float tmin, float tmax) const;
     __device__ virtual Ray bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const;
     __device__ virtual vec3 albedo(const vec3& p) const;
 

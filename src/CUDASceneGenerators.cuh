@@ -7,9 +7,6 @@
 #include "visibles/Triangle.cuh"
 #include "visibles/Mesh.cuh"
 #include <curand_kernel.h>
-#include "materials/metal.cuh"
-#include "materials/diffuse.cuh"
-#include "materials/dielectric.cuh"
 #include "rand.h"
 #include "Error.cuh"
 #include "CUDAScene.cuh"

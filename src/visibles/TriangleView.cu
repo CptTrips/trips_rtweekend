@@ -47,26 +47,12 @@ __host__ __device__ TriangleView::~TriangleView()
 
 }
 
-__device__ Intersection* TriangleView::intersect(const Ray& r, float tmin, float tmax) const
+__device__ Intersection TriangleView::intersect(const Ray& r, float tmin, float tmax) const
 {
 
 	Triangle triangle = construct_triangle();
 
-	Intersection* ixn = triangle.intersect(r, tmin, tmax);
-
-	if (ixn)
-	{
-
-		float t = ixn->t;
-
-		delete ixn;
-
-		ixn = new Intersection(t, this);
-
-	}
-
-	return ixn;
-
+	return triangle.intersect(r, tmin, tmax);
 }
 
 __device__ Ray TriangleView::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const

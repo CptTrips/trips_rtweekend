@@ -45,35 +45,10 @@ __host__ __device__ Mesh::~Mesh()
 
 }
 
-__device__ Intersection* Mesh::intersect(const Ray& r, float tmin, float tmax) const
+__device__ Intersection Mesh::intersect(const Ray& r, float tmin, float tmax) const
 {
-	Intersection* ixn = NULL;
 
-	if (intersect_bbox(r, tmin, tmax))
-	{
-		Intersection* temp_ixn;
-
-		for (uint32_t i = 0; i < triangles.size(); i++)
-		{
-
-			temp_ixn = triangles[i].intersect(r, tmin, tmax);
-
-			if (temp_ixn)
-			{
-
-				if (ixn)
-					delete ixn;
-
-				ixn = temp_ixn;
-
-				tmax = ixn->t;
-
-			}
-		}
-	}
-
-
-	return ixn;
+	return Intersection();
 }
 
 __device__ Ray Mesh::bounce(const vec3& r_in, const vec3& ixn_p, CUDA_RNG* rng) const
@@ -92,17 +67,15 @@ __device__ vec3 Mesh::albedo(const vec3& p) const
 __device__ bool Mesh::intersect_bbox(const Ray& r, float tmin, float tmax) const
 {
 
-	Intersection* ixn;
+	Intersection ixn;
 
 	for (int i = 0; i < 12; i++)
 	{
 
 		ixn = bbox_triangles[i].intersect(r, tmin, tmax);
 
-		if (ixn)
-			delete ixn;
+		if (isfinite(ixn.t))
 			return true;
-
 	}
 
 	return false;

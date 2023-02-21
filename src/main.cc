@@ -213,5 +213,4 @@ int main(int argc, char** argv)
 	runRayTracer();
 
 	return doctestResult;
-
 }

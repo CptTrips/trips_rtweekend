@@ -10,6 +10,8 @@
 #include "rand.h"
 #include "UnifiedArray.cuh"
 #include "CUDAIntersectionEngine.cuh"
+#include "CUDAScan.cuh"
+#include "KernelLaunchParams.h"
 
 #include <chrono>
 #include <vector>
@@ -126,6 +128,8 @@ __global__ void cuda_scatter_rays(
 );
 
 __global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activateRayIndices);
+
+__global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
 
 /*
 __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int max_bounce, const float min_free_path, CUDA_RNG* const rngs);

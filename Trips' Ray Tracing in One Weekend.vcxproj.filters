@@ -21,6 +21,9 @@
     <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\KernelLaunchParams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\palette.h">
@@ -57,6 +60,9 @@
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />
     <ClInclude Include="src\test_kernel.cuh" />
+    <ClInclude Include="src\KernelLaunchParams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -98,6 +104,14 @@
     <CudaCompile Include="src\CUDAIntersectionEngine.cu">
       <Filter>Source Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="src\CUDAScan.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\CUDAScan.cu" />
+    <CudaCompile Include="test\CUDAScanTest.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="test\CUDAScanTest.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />

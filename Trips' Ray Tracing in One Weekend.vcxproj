@@ -70,10 +70,10 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -127,7 +127,7 @@
       <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>D:\C Drive Backup\Users\sodai\Projects\palette\x64\Release;$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Palette.lib;cudart_static.lib;assimp-vc142-mtd.lib;assimpd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CudaCompile>
@@ -141,11 +141,13 @@
       <FileType>Document</FileType>
     </CudaCompile>
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\KernelLaunchParams.cpp" />
     <ClCompile Include="src\main.cc" />
     <None Include="ClassDiagram.cd" />
     <None Include="src\UnifiedArray.tu">
       <FileType>Document</FileType>
     </None>
+    <CudaCompile Include="src\CUDAScan.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
@@ -161,13 +163,17 @@
     </CudaCompile>
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="test\CUDAScanTest.cu" />
+    <CudaCompile Include="test\CUDAScanTest.cuh" />
     <CudaCompile Include="src\CUDAIntersectionEngine.cuh" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
     <ClInclude Include="src\Array.cuh" />
     <ClInclude Include="src\Camera.h" />
+    <CudaCompile Include="src\CUDAScan.cuh" />
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
+    <ClInclude Include="src\KernelLaunchParams.h" />
     <ClInclude Include="src\Managed.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />

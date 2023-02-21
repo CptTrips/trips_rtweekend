@@ -49,6 +49,15 @@ __global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray
 	(*p_rayBuffer)[rayID].colour = vec3(0.f, 0.f, 0.f);
 }
 
+__global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
+{
+
+	if (THREAD_ID >= p_triIntersectionBuffer->size())
+		return;
+
+	(*p_mask)[THREAD_ID] = (isinf((*p_sphereIntersectionBuffer)[THREAD_ID].t) && isinf((*p_triIntersectionBuffer)[THREAD_ID].t)) ? 0 : 1;
+}
+
 void GPURayTracer::terminateRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices)
 {
 
@@ -150,14 +159,22 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 		for (uint16_t bounce = 0; bounce < max_bounce; bounce++)
 		{
 
+			cout << endl << "  Bounce " << bounce << endl;
+
 			ixnEngine.run(p_rayBuffer, p_activeRayIndices, p_vertexBuffer, p_indexBuffer, p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 
 			colourRays(p_rayBuffer, p_activeRayIndices, p_triangleColourBuffer, p_sphereColourBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 
 			p_activeRayIndices = gatherActiveRays(p_activeRayIndices, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 
-			if (p_activeRayIndices->size() != 0)
-				scatterRays(p_rayBuffer, p_activeRayIndices, p_vertexBuffer, p_indexBuffer, p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			cout << "  " << p_activeRayIndices->size() << " rays still active" << endl;
+
+			if (p_activeRayIndices->size() == 0)
+				break;
+
+			scatterRays(p_rayBuffer, p_activeRayIndices, p_vertexBuffer, p_indexBuffer, p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+
+			cout << endl;
 		}
 
 		terminateRays(p_rayBuffer, p_activeRayIndices);
@@ -375,24 +392,23 @@ UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p
 	uint32_t length = p_activeRayIndices->size();
 
 	// Create 0, 1 mask for intersections
-	UnifiedArray<uint8_t>* p_mask = new UnifiedArray<uint8_t>(length);
+	UnifiedArray<uint32_t>* p_mask = new UnifiedArray<uint32_t>(length);
 
 	// Create scan of mask
 	UnifiedArray<uint32_t>* p_scan = new UnifiedArray<uint32_t>(length);
 
-	uint32_t activeRayCount = 0;
+	KernelLaunchParams klp(max_threads, length);
 
-	for (uint32_t i = 0; i < length; i++)
-	{
+	cuda_is_active<<<klp.blocks, klp.threads>>>(p_mask, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+	checkCudaErrors(cudaDeviceSynchronize());
 
-		uint8_t isActive = (isinf((*p_sphereIntersectionBuffer)[i].t) && isinf((*p_triangleIntersectionBuffer)[i].t)) ? 0 : 1;
+	cudaScan(p_mask, p_scan);
+	checkCudaErrors(cudaDeviceSynchronize());
 
-		(*p_scan)[i] = activeRayCount;
+	uint32_t activeRayCount = (*p_scan)[length - 1];
 
-		activeRayCount += isActive;
-
-		(*p_mask)[i] = isActive;
-	}
+	if (activeRayCount > length)
+		throw std::runtime_error("Scan failed: more active rays than rays\n");
 
 	// Create new active ray index array
 	UnifiedArray<uint32_t>* p_newActiveRayIndices = new UnifiedArray<uint32_t>(activeRayCount);
@@ -401,7 +417,7 @@ UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p
 	{
 
 		if ((*p_mask)[i] == 1)
-			(*p_newActiveRayIndices)[(*p_scan)[i]] = (*p_activeRayIndices)[i];
+			(*p_newActiveRayIndices)[(*p_scan)[i] - 1] = (*p_activeRayIndices)[i];
 	}
 
 	delete p_mask;
@@ -414,11 +430,9 @@ UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p
 void GPURayTracer::scatterRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexBuffer, UnifiedArray<uint32_t>* p_indexBuffer, UnifiedArray<CUDASphere>* p_sphereBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
 {
 
-	
-	uint32_t threads = max_threads;
-	uint32_t blocks = p_activeRayIndices->size() / threads + 1;
+	KernelLaunchParams klp(max_threads, p_activeRayIndices->size());
 
-	cuda_scatter_rays << <blocks, threads >> > (
+	cuda_scatter_rays << <klp.blocks, klp.threads >> > (
 		p_rayBuffer,
 		p_activeRayIndices,
 		p_vertexBuffer,
@@ -450,6 +464,7 @@ __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_
 		for (uint64_t i = 0; i < spp; i++)
 		{
 			colour += (*p_rayBuffer)[thread_id * spp + i].colour;
+			//colour += 0.5 * (vec3(1.f, 1.f, 1.f) + (*p_rayBuffer)[thread_id * spp + i].d);
 		}
 
 		colour /= spp;
@@ -486,7 +501,7 @@ __global__ void cuda_reset_active_rays(UnifiedArray<uint32_t>* p_activeRayIndice
 __global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColourBuffer, UnifiedArray<vec3>* p_sphereColourBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
 {
 
-	if (THREAD_ID > p_activeRayIndices->size())
+	if (THREAD_ID >= p_activeRayIndices->size())
 		return;
 
 	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];

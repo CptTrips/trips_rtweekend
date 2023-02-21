@@ -1,3 +1,7 @@
+#define DOCTEST_CONFIG_IMPLEMENT
+#include "doctest.h"
+#include "..\test\CUDAScanTest.cuh"
+
 #include "Camera.h"
 #include "FrameBuffer.cuh"
 //#include "CPURayTracer.h"
@@ -6,7 +10,7 @@
 //#include "CUDAScene.cuh"
 //#include "SceneLoader.cuh"
 
-#include "test_kernel.cuh"
+//#include "test_kernel.cuh"
 
 #include "float.h"
 
@@ -19,6 +23,7 @@
 #include <fstream>
 #include <functional>
 #include <algorithm>
+
 
 
 using json = nlohmann::json;
@@ -41,6 +46,30 @@ std::unordered_map<std::string, SceneID> scene_name_to_id = {
 	,{"rtweekend", rtweekend_id}
 	,{"json", json_id}
 };
+
+int doctest_main(int argc, char** argv)
+{
+    doctest::Context context;
+
+    // !!! THIS IS JUST AN EXAMPLE SHOWING HOW DEFAULTS/OVERRIDES ARE SET !!!
+
+    // defaults
+    //context.addFilter("test-case-exclude", "*math*"); // exclude test cases with "math" in their name
+    //context.setOption("abort-after", 5);              // stop test execution after 5 failed assertions
+    context.setOption("order-by", "file");            // sort the test cases by their name
+
+    context.applyCommandLine(argc, argv);
+
+    // overrides
+    //context.setOption("no-breaks", true);             // don't break in the debugger when assertions fail
+
+    int res = context.run(); // run
+
+    if(context.shouldExit()) // important - query flags (and --exit) rely on the user doing this
+        return res;          // propagate the result of the tests
+    
+    return res; // the result from doctest is propagated here as well
+}
 
 /*
 CUDAScene* load_scene(std::string scene_name, const json& j)
@@ -97,8 +126,7 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 }
 */
 
-
-int main()
+void runRayTracer()
 {
 
 	// Get scene configuration
@@ -175,7 +203,15 @@ int main()
 	// cudaFree/Delete arrays
 	// cudaFree scene
 	//delete scene;
+}
 
-	return 0;
+int main(int argc, char** argv)
+{
+
+	int doctestResult = doctest_main(argc, argv);
+
+	runRayTracer();
+
+	return doctestResult;
 
 }

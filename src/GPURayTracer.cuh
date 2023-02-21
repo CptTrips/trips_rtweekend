@@ -89,6 +89,8 @@ class GPURayTracer
 	void shade_rays(const uint64_t ray_offset_index);
 	*/
 
+	void terminateRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices);
+
 public:
 
 	GPURayTracer();
@@ -123,16 +125,8 @@ __global__ void cuda_scatter_rays(
 	CUDA_RNG* const rngs
 );
 
-__device__ vec3 scatter_ray(
-	const Ray& rayIn,
-	const vec3& normal,
-	CUDA_RNG& rng
-	//Material<CUDA_RNG>& material
-);
+__global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activateRayIndices);
 
-__device__ vec3 specular_scatter(const Ray& ray, const vec3& normal, const float& roughness, CUDA_RNG& rng);
-
-__device__ vec3 diffuse_scatter(const Ray& ray, const vec3& normal, CUDA_RNG& rng);
 /*
 __global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int max_bounce, const float min_free_path, CUDA_RNG* const rngs);
 

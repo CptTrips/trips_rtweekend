@@ -32,10 +32,32 @@ __global__ void cuda_scatter_rays(
 	if (ixn.normal.length() == 0.f)
 		printf("Bad ixn normal %d\n", rayID);
 
-	Material<CUDA_RNG> material(1.0f, 0.0f, 0.f, 0.f, 1.f);
+	Material<CUDA_RNG> material(1.0f, 0.0f, 0.f, 0.0f, 1.f);
 
 	p_ray->o = p_ray->point_at(ixn.t);
 	p_ray->d = material.scatter(p_ray->d, ixn.normal, &rngs[rayID]);
+}
+
+__global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activateRayIndices)
+{
+
+	if (THREAD_ID >= p_activateRayIndices->size())
+		return;
+
+	uint32_t rayID = (*p_activateRayIndices)[THREAD_ID];
+
+	(*p_rayBuffer)[rayID].colour = vec3(0.f, 0.f, 0.f);
+}
+
+void GPURayTracer::terminateRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices)
+{
+
+	uint32_t threads = max_threads;
+	uint32_t blocks = p_activeRayIndices->size() / threads + 1;
+
+	cuda_terminate_rays << <blocks, threads >> > (p_rayBuffer, p_activeRayIndices);
+
+	checkCudaErrors(cudaDeviceSynchronize());
 }
 
 GPURayTracer::GPURayTracer() : ixnEngine()
@@ -75,34 +97,40 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 
 	UnifiedArray<uint32_t>* p_indexBuffer = new UnifiedArray<uint32_t>(6);
 
-	(*p_vertexBuffer)[0] = vec3(1000.0, -1.0, 1000.0);
-	(*p_vertexBuffer)[1] = vec3(1000.0, -1.0, -1000.0);
-	(*p_vertexBuffer)[2] = vec3(-1000.0, -1.0, 1000.0);
-	(*p_vertexBuffer)[3] = vec3(-1000.0, -1.0, -1000.0);
+	float floorSize = 1000.0f;
 
-	(*p_indexBuffer)[0] = 0;
-	(*p_indexBuffer)[1] = 1;
+	(*p_vertexBuffer)[0] = vec3(-1.1, floorSize, floorSize);
+	(*p_vertexBuffer)[1] = vec3(-1.1, floorSize, -floorSize);
+	(*p_vertexBuffer)[2] = vec3(-1.1, -floorSize, floorSize);
+	(*p_vertexBuffer)[3] = vec3(-1.1, -floorSize, -floorSize);
+
+	(*p_indexBuffer)[0] = 1;
+	(*p_indexBuffer)[1] = 0;
 	(*p_indexBuffer)[2] = 3;
 	(*p_indexBuffer)[3] = 0;
-	(*p_indexBuffer)[4] = 3;
-	(*p_indexBuffer)[5] = 2;
+	(*p_indexBuffer)[4] = 2;
+	(*p_indexBuffer)[5] = 3;
 
 	UnifiedArray<Intersection>* p_triangleIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
 
 	UnifiedArray<vec3>* p_triangleColourBuffer = new UnifiedArray<vec3>(p_indexBuffer->size());
 
-	(*p_triangleColourBuffer)[0] = vec3(.6f, 0.6f, 0.6f);
-	(*p_triangleColourBuffer)[1] = vec3(0.6f, 0.6f, 0.6f);
+	(*p_triangleColourBuffer)[0] = vec3(.8f, 0.8f, 0.6f);
+	(*p_triangleColourBuffer)[1] = vec3(0.6f, 0.8f, 0.6f);
 
-	UnifiedArray<CUDASphere>* p_sphereBuffer = new UnifiedArray<CUDASphere>(2);
+	UnifiedArray<CUDASphere>* p_sphereBuffer = new UnifiedArray<CUDASphere>(3);
 
-	(*p_sphereBuffer)[0] = CUDASphere{ vec3(-2.0, 0., 1.2), 1.0, nullptr };
-	(*p_sphereBuffer)[1] = CUDASphere{ vec3(-2.0, 0., -1.2), 1.0, nullptr };
+	float bigRadius = 1000.f;
+
+	(*p_sphereBuffer)[0] = CUDASphere{ vec3(0.0, 0., 1.2), 1.0, nullptr };
+	(*p_sphereBuffer)[1] = CUDASphere{ vec3(0.0, 0., -1.2), 1.0, nullptr };
+	(*p_sphereBuffer)[2] = CUDASphere{ vec3(0.0f, -bigRadius - 1.f, 0.f), bigRadius, nullptr };
 
 	UnifiedArray<vec3>* p_sphereColourBuffer = new UnifiedArray<vec3>(p_sphereBuffer->size());
 
 	(*p_sphereColourBuffer)[0] = vec3(0.4f, 0.8f, 1.f);
 	(*p_sphereColourBuffer)[1] = vec3(0.8f, 0.4f, 1.f);
+	(*p_sphereColourBuffer)[2] = vec3(0.8f, 0.8f, 1.f);
 
 	UnifiedArray<Intersection>* p_sphereIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
 
@@ -128,11 +156,11 @@ FrameBuffer* GPURayTracer::render(const GPURenderProperties& render_properties, 
 
 			p_activeRayIndices = gatherActiveRays(p_activeRayIndices, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 
-			if (p_activeRayIndices->size() == 0)
-				break;
-
-			scatterRays(p_rayBuffer, p_activeRayIndices, p_vertexBuffer, p_indexBuffer, p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			if (p_activeRayIndices->size() != 0)
+				scatterRays(p_rayBuffer, p_activeRayIndices, p_vertexBuffer, p_indexBuffer, p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 		}
+
+		terminateRays(p_rayBuffer, p_activeRayIndices);
 
 		delete p_activeRayIndices;
 
@@ -369,7 +397,7 @@ UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p
 	// Create new active ray index array
 	UnifiedArray<uint32_t>* p_newActiveRayIndices = new UnifiedArray<uint32_t>(activeRayCount);
 
-	for (uint32_t i = 0; i < p_scan->size(); i++)
+	for (uint32_t i = 0; i < length; i++)
 	{
 
 		if ((*p_mask)[i] == 1)

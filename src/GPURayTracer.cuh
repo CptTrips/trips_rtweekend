@@ -4,7 +4,7 @@
 #include "curand_kernel.h"
 
 #include "FrameBuffer.cuh"
-#include "Camera.h"
+#include "Camera.cuh"
 #include "ray.cuh"
 #include "Error.cuh"
 #include "rand.h"
@@ -12,6 +12,9 @@
 #include "CUDAIntersectionEngine.cuh"
 #include "CUDAScan.cuh"
 #include "KernelLaunchParams.h"
+#include "RayTracerConfig.h"
+
+#include "Scene.cuh"
 
 #include <chrono>
 #include <vector>
@@ -26,42 +29,31 @@ using std::cout;
 using std::endl;
 
 
-struct GPURenderProperties
-{
-	int h;
-	int w;
-	int spp;
-	int max_bounce;
-	float min_free_path;
-};
-
-
-
 class GPURayTracer
 {
 
-	float min_free_path = 0;
+	unsigned int xRes, yRes;
 
 	const int max_threads = 512;
 
 	// Maximum number of rays to dispatch at once (GPU memory limited)
-	const uint32_t max_rays_per_batch = 22 * 1e6;
+	static constexpr uint32_t max_rays_per_batch = 22 * 1e6;
 
 	uint32_t rays_per_batch = 0;
 
 	int spp = 0;
 
-	int max_bounce = 0;
+	int maxBounce = 0;
 
-	uint64_t ray_count = 0;
+	uint64_t rayCount = 0;
 
-	FrameBuffer* h_fb = NULL;
+	FrameBuffer* h_fb = nullptr;
 
-	Camera* d_cam = NULL;
+	Camera* d_cam = nullptr;
 
 	UnifiedArray<Ray>* p_rayBuffer = nullptr;
 
-	CUDA_RNG* rngs = NULL;
+	CUDA_RNG* rngs = nullptr;
 
 	CUDAIntersectionEngine ixnEngine;
 
@@ -95,15 +87,15 @@ class GPURayTracer
 
 public:
 
-	GPURayTracer();
+	GPURayTracer(RayTracerConfig config);
 
-	FrameBuffer* render(const GPURenderProperties& render_properies, const Camera& camera);
+	FrameBuffer* render(const Scene& scene, const Camera& camera);
 
 };
 
-__global__ void cuda_create_rngs(CUDA_RNG* const rngs, const uint32_t ray_count);
+__global__ void cuda_create_rngs(CUDA_RNG* const rngs, const uint32_t rayCount);
 
-__global__ void cuda_gen_rays(Ray* rays, const uint64_t ray_count, const uint64_t ray_offset_index, const uint64_t rays_per_batch, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const int spp);
+__global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t ray_offset_index, const uint64_t rays_per_batch, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const int spp);
 
 __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayBuffer, FrameBuffer* const fb, const int spp);
 
@@ -131,8 +123,10 @@ __global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray
 
 __global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
 
+__device__ ImagePoint subPixel(const uint64_t rayID, const FrameBuffer* const fb, const int spp, CUDA_RNG& rng);
+
 /*
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t ray_count, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int max_bounce, const float min_free_path, CUDA_RNG* const rngs);
+__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t rayCount, const uint64_t rays_per_batch, uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const scene, const int maxBounce, const float minFreePath, CUDA_RNG* const rngs);
 
 __device__ Intersection* nearest_intersection(const Ray& ray, const UnifiedArray<CUDAVisible*>* const scene, const float tmin, const float tmax);
 */

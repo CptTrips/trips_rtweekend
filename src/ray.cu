@@ -2,6 +2,11 @@
 
 __host__ __device__ Ray::Ray() {}
 
+__host__ __device__ Ray::Ray(const vec3& o, const vec3& d)
+	: Ray(-1, o, d)
+{
+}
+
 __host__ __device__ Ray::Ray(const uint32_t& id, const vec3& o_in, const vec3& d_in) : id(id), colour(1.0f, 1.0f, 1.0f)
 {
 

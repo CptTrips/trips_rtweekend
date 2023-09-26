@@ -2,12 +2,13 @@
 #include "doctest.h"
 #include "..\test\CUDAScanTest.cuh"
 
-#include "Camera.h"
+#include "Camera.cuh"
 #include "FrameBuffer.cuh"
 //#include "CPURayTracer.h"
 #include "GPURayTracer.cuh"
-//#include "CUDASceneGenerators.cuh"
-//#include "CUDAScene.cuh"
+
+#include "Scene.cuh"
+#include "SceneFactories.cuh"
 //#include "SceneLoader.cuh"
 
 //#include "test_kernel.cuh"
@@ -126,78 +127,50 @@ CUDAScene* load_scene(std::string scene_name, const json& j)
 }
 */
 
+json loadConfig(std::string configPath)
+{
+
+	std::ifstream configStream(configPath);
+
+	json configJSON;
+
+	configStream >> configJSON;
+
+	return configJSON;
+}
+
 void runRayTracer()
 {
 
-	// Get scene configuration
-	std::ifstream i("config.json");
-	json j;
-	i >> j;
+	json configJSON = loadConfig("config.json");
 
-	// Resolution
-	const int w = j["x_res"];
-	const int h = j["y_res"];
-
-	// Samples per pixel
-	const int spp = j["spp"];
-
-	// Ray bounce limit
-	const int max_bounce = j["max_bounce"];
-
-	const float min_free_path = j["min_free_path"];
-
-
+	/*
     const int ball_count = j["random_balls"]["ball_count"];
 
 	std::string scene_name = j["scene_name"];
 
-	//CUDAScene* const scene = load_scene(scene_name, j);
+	CUDAScene* const scene = load_scene(scene_name, j);
+	*/
 
-	json camera_json;
+	Camera camera(configJSON);
 
-	if (j[scene_name].contains("camera"))
-		camera_json = j[scene_name]["camera"];
-	else
-		camera_json = j["camera"];
-
-	std::vector<float> origin_vec = camera_json["origin"];
-	vec3 camera_origin = vec3(origin_vec[0], origin_vec[1], origin_vec[2]);
-
-	std::vector<float> target_vec = camera_json["target"];
-	vec3 camera_target = vec3(target_vec[0], target_vec[1], target_vec[2]);
-
-	std::vector<float> up_vec = camera_json["up"];
-	vec3 camera_up = vec3(up_vec[0], up_vec[1], up_vec[2]);
-
-
-	float vfov = camera_json["vfov"];
-
-	float aspect_ratio = float(w) / float(h);
-
-	float focus_distance = (camera_target - camera_origin).length();
-
-	float aperture = camera_json["aperture"];
-
-	Camera view_cam(camera_origin, camera_target, camera_up, vfov, aspect_ratio, focus_distance, aperture);
-
+	Scene scene{ testSceneFactory() };
 
 	// Draw scene
 
 	//CPURayTracer cpu_ray_tracer(spp, max_bounce);
-	GPURayTracer gpu_ray_tracer;
+	GPURayTracer gpu_ray_tracer(configJSON);
 
-	GPURenderProperties render_properties{ h, w, spp, max_bounce, min_free_path};
-
-	FrameBuffer* frame_buffer = gpu_ray_tracer.render(render_properties, view_cam);
+	FrameBuffer* frameBuffer = gpu_ray_tracer.render(scene, camera);
 
 
 	// Write scene
-	bmp_write(frame_buffer->buffer, h, w, "output.bmp");
+	bmp_write(frameBuffer->buffer, frameBuffer->h, frameBuffer->w, "output.bmp");
 
 	cudaDeviceSynchronize();
 
 	// Exit
-	delete frame_buffer;
+	delete frameBuffer;
 
 	// Delete visibles and materials
 	// cudaFree/Delete arrays

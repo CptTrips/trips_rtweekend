@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Scene.cuh"
+/*
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include "visibles/CUDAVisible.cuh"
@@ -13,9 +15,12 @@
 #include "UnifiedArray.cuh"
 
 #define my_cuda_seed 1234
+*/
 
 
+Scene testSceneFactory();
 
+/*
 CUDAScene* scene_factory(const int visible_count, const int material_count);
 
 CUDAScene* rtweekend(int attempts = 22, int seed = 1);
@@ -55,3 +60,4 @@ __global__ void gen_carpet(CUDAScene* const scene);
 
 void teardown_scene(CUDAScene* scene);
 
+*/

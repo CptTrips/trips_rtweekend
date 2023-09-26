@@ -140,7 +140,15 @@
     <CudaCompile Include="src\CUDAIntersectionEngine.cu">
       <FileType>Document</FileType>
     </CudaCompile>
-    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\Config.cpp" />
+    <CudaCompile Include="src\Scene.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <ClCompile Include="src\RayTracerConfig.cpp" />
+    <CudaCompile Include="src\Camera.cu">
+      <FileType>Document</FileType>
+    </CudaCompile>
+    <ClCompile Include="src\CameraConfig.cpp" />
     <ClCompile Include="src\KernelLaunchParams.cpp" />
     <ClCompile Include="src\main.cc" />
     <None Include="ClassDiagram.cd" />
@@ -148,6 +156,7 @@
       <FileType>Document</FileType>
     </None>
     <CudaCompile Include="src\CUDAScan.cu" />
+    <CudaCompile Include="src\SceneFactories.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
@@ -166,15 +175,21 @@
     <CudaCompile Include="test\CUDAScanTest.cu" />
     <CudaCompile Include="test\CUDAScanTest.cuh" />
     <CudaCompile Include="src\CUDAIntersectionEngine.cuh" />
+    <ClInclude Include="src\Config.h" />
+    <ClInclude Include="src\CUDAAllocator.h" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
+    <CudaCompile Include="src\Scene.cuh" />
+    <ClInclude Include="src\RayTracerConfig.h" />
     <ClInclude Include="src\Array.cuh" />
-    <ClInclude Include="src\Camera.h" />
+    <CudaCompile Include="src\Camera.cuh" />
     <CudaCompile Include="src\CUDAScan.cuh" />
+    <ClInclude Include="src\CameraConfig.h" />
     <ClInclude Include="src\Error.cuh" />
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\KernelLaunchParams.h" />
     <ClInclude Include="src\Managed.cuh" />
+    <CudaCompile Include="src\SceneFactories.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />

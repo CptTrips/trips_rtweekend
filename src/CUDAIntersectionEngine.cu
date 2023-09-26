@@ -41,7 +41,7 @@ __device__ Intersection find_triangle_intersections(const Ray& ray, UnifiedArray
 
 	uint32_t i, j, k; // Vertex indices
 
-	Intersection ixn = Intersection();
+	Intersection ixn;
 	Intersection tempIxn;
 
 	for (uint32_t triangleID = 0; triangleID < triangleCount; triangleID++)

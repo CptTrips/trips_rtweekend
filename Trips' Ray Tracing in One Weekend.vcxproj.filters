@@ -15,13 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\main.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\KernelLaunchParams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CameraConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RayTracerConfig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,13 +38,7 @@
     <ClInclude Include="src\mat3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\vec3.cuh">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\visibles\visible.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
@@ -61,6 +61,21 @@
     <ClInclude Include="src\UnifiedArray.cuh" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\KernelLaunchParams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CameraConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RayTracerConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CUDAAllocator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vec3.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,6 +127,20 @@
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="test\CUDAScanTest.cu" />
+    <CudaCompile Include="src\Scene.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\Scene.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\Camera.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\Camera.cuh">
+      <Filter>Header Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="src\SceneFactories.cu" />
+    <CudaCompile Include="src\SceneFactories.cuh" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />

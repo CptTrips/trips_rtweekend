@@ -6,6 +6,7 @@ class Ray
 {
   public:
     __host__ __device__ Ray();
+    __host__ __device__ Ray(const vec3& o, const vec3& d);
     __host__ __device__ Ray(const uint32_t& id, const vec3& o, const vec3& d);
     __host__ __device__ Ray(const uint32_t& id, const vec3& o, const vec3& d, const vec3& colour);
     __host__ __device__ vec3 origin() const;

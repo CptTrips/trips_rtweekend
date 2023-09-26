@@ -57,7 +57,7 @@ FrameBuffer::~FrameBuffer()
 __host__ __device__ void FrameBuffer::set_pixel(const int& r, const int& c, const vec3& col)
 {
 	size_t pixel_index = r * w * 3 + c * 3;
-	buffer[pixel_index] = uint8_t(255.99*col.r());
-	buffer[pixel_index + 1] = uint8_t(255.99*col.g());
-	buffer[pixel_index + 2] = uint8_t(255.99*col.b());
+	buffer[pixel_index] =     static_cast<uint8_t>(255.f*col.r());
+	buffer[pixel_index + 1] = static_cast<uint8_t>(255.f*col.g());
+	buffer[pixel_index + 2] = static_cast<uint8_t>(255.f*col.b());
 }

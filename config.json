@@ -1,9 +1,21 @@
 {
-  "x_res": 480,
-  "y_res": 270,
-  "spp": 16,
-  "max_bounce": 4,
-  "min_free_path":  0.002,
+  "xRes": 480,
+  "yRes": 270,
+
+  "camera": {
+    "origin": [ 10.0, 0.0, 0.0 ],
+    "target": [ 0.0, 0.0, 0.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "verticalFOV": 4.91,
+    "focusDistance": 10,
+    "aperture": 0.0
+  },
+
+  "rayTracer": {
+    "spp": 1,
+    "maxBounce": 8,
+    "minFreePath":  0.002
+  },
 
   "random_balls": {
     "ball_count":  64
@@ -51,16 +63,6 @@
       "focus_distance": 10,
       "aperture": 0.0
     }
-  },
-
-  "camera": {
-    "origin": [ 10.0, 5.0, 0.0 ],
-    "target": [ 0.0, 0.0, 0.0 ],
-    "up": [ 0.0, 1.0, 0.0 ],
-    "vfov": 4.91,
-    "aspect_ratio": 1.778,
-    "focus_distance": 10,
-    "aperture": 0.0
   },
 
   "scene_name":  "random_balls",

@@ -24,11 +24,13 @@ __global__ void find_intersections(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<
 
 	Intersection sphereIntersection = find_sphere_intersections(ray, p_sphereBuffer, minFreePath);
 
+	/*
 	if (
 		(isfinite(triIntersection.t) && triIntersection.normal.length() == 0)
 		|| (isfinite(sphereIntersection.t) && sphereIntersection.normal.length() == 0)
 	)
 		printf("Bad intersection %d", THREAD_ID);
+		*/
 
 	(*p_triangleIntersectionBuffer)[THREAD_ID] = triIntersection;
 	(*p_sphereIntersectionBuffer)[THREAD_ID] = sphereIntersection;
@@ -57,13 +59,9 @@ __device__ Intersection find_triangle_intersections(const Ray& ray, UnifiedArray
 
 		tempIxn = tri.intersect(ray, minFreePath, INFINITY);
 
-		if (tempIxn.t < ixn.t)
-		{
+		tempIxn.id = triangleID;
 
-			ixn = tempIxn;
-
-			ixn.id = triangleID;
-		}
+		ixn = (tempIxn.t < ixn.t) ? tempIxn : ixn;
 	}
 
 	return ixn;
@@ -81,13 +79,9 @@ __device__ Intersection find_sphere_intersections(const Ray& ray, UnifiedArray<C
 
 		tempIxn = tempSphere.intersect(ray, minFreePath, INFINITY);
 
-		if (tempIxn.t < ixn.t)
-		{
+		tempIxn.id = sphereID;
 
-			ixn = tempIxn;
-
-			ixn.id = sphereID;
-		}
+		ixn = (tempIxn.t < ixn.t) ? tempIxn : ixn;
 	}
 
 	return ixn;

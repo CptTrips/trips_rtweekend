@@ -53,7 +53,9 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 	shared_ptr<UnifiedArray<Intersection>> m_triangleIntersectionArray = make_managed<UnifiedArray<Intersection>>(m_rayArray->size());
 	shared_ptr<UnifiedArray<Intersection>> m_sphereIntersectionArray = make_managed<UnifiedArray<Intersection>>(m_rayArray->size());
 
-	auto m_mesh{ scene.getManagedMesh() };
+	auto m_mesh{ scene.m_mesh->getFinder() };
+
+	auto m_rayBundle{ make_managed<RayBundle>(RayBundle{m_rayArray.get(), nullptr, m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get()}) };
 
 	using milli = std::chrono::milliseconds;
 
@@ -68,16 +70,17 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 
 		shared_ptr<UnifiedArray<uint32_t>> m_activeRayIndices{ resetActiveRays(m_rayArray->size()) };
 
-		auto m_rayBundle{ make_managed<RayBundle>(RayBundle{m_rayArray.get(), m_activeRayIndices.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get()}) };
 
 		for (uint16_t bounce = 0; bounce < maxBounce; bounce++)
 		{
 
 			cout << endl << "  Bounce " << bounce << endl;
 
+			m_rayBundle->p_activeRayIndices = m_activeRayIndices.get();
+
 			ixnEngine.run(m_rayBundle.get(), m_mesh.get(), scene.m_sphereArray.get());
 
-			colourRays(m_rayArray.get(), m_activeRayIndices.get(), scene.m_triColourArray.get(), scene.m_sphereColourArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
+			colourRays(m_rayArray.get(), m_activeRayIndices.get(), m_mesh->p_triangleColourArray, scene.m_sphereColourArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
 
 			m_activeRayIndices = gatherActiveRays(m_activeRayIndices.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
 
@@ -86,7 +89,7 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 			if (m_activeRayIndices->size() == 0)
 				break;
 
-			scatterRays(m_rayArray.get(), m_activeRayIndices.get(), scene.m_vertexArray.get(), scene.m_indexArray.get(), scene.m_sphereArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
+			scatterRays(m_rayArray.get(), m_activeRayIndices.get(), m_mesh->p_vertexArray, m_mesh->p_indexArray, scene.m_sphereArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
 
 			cout << endl;
 		}

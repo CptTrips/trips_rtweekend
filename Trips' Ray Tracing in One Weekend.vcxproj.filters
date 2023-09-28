@@ -117,6 +117,7 @@
       <Filter>Header Files</Filter>
     </CudaCompile>
     <CudaCompile Include="src\rendering\TriangleIntersector.cu" />
+    <CudaCompile Include="src\rendering\Mesh.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

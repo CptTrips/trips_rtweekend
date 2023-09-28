@@ -43,7 +43,7 @@ class vec3
       return sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]); }
     __device__ __host__ inline float squared_length() const {
       return e[0]*e[0] + e[1]*e[1] + e[2]*e[2]; }
-    __device__ __host__ inline void normalise();
+    __device__ __host__ inline vec3& normalise();
 
 
     float e[3] = { 0.f, 0.f, 0.f };
@@ -59,9 +59,10 @@ inline std::ostream& operator<<(std::ostream &os, const vec3 &t) {
   return os;
 }
 
-__device__ __host__ inline void vec3::normalise() {
+__device__ __host__ inline vec3& vec3::normalise() {
   float k = 1.f / sqrt(e[0]*e[0] + e[1]*e[1] + e[2]*e[2]);
   e[0] *= k; e[1] *= k; e[2] *= k;
+  return *this;
 }
 
 __device__ __host__ inline vec3 operator+(const vec3 &v1, const vec3 &v2) {

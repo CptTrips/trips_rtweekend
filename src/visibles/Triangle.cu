@@ -2,40 +2,26 @@
 
 __host__ __device__ Triangle::Triangle()
 {
-	points = NULL;
-
-	material = NULL;
-
-	normal = vec3();
 }
 
-__host__ __device__ Triangle::Triangle(const vec3* points, const Material<CUDA_RNG>* m) : material(m)
+__host__ __device__ Triangle::Triangle(const vec3* points, const Material<CUDA_RNG>* m)
+	: Triangle(points[0], points[1], points[2])
 {
-
-	this->points = new Array<vec3>(3);
-
-	for (int i = 0; i < 3; i++)
-		(*(this->points))[i] = points[i];
-
-	normal = cross(points[1] - points[0], points[2] - points[1]);
-
-	normal.normalise();
+	material = m;
 }
 
 Triangle::Triangle(const vec3& a, const vec3& b, const vec3& c)
+	: a(a), b(b), c(c), normal(cross(b - a, c - b).normalise())
 {
-
-	points = new Array<vec3>(3);
-
-	(*points)[0] = a;
-	(*points)[1] = b;
-	(*points)[2] = c;
-
-	normal = cross((*points)[1] - (*points)[0], (*points)[2] - (*points)[1]);
-
-	normal.normalise();
 }
 
+
+Triangle::Triangle(const vec3& a, const vec3& b, const vec3& c, const vec3& n)
+	: a(a), b(b), c(c), normal(n)
+{
+}
+
+/*
 __host__ __device__ Triangle::Triangle(const Triangle& t)
 	: material(t.material),
 	points(NULL),
@@ -75,6 +61,7 @@ __host__ __device__ Triangle::~Triangle()
 	if (points)
 		delete points;
 }
+*/
 
 __device__ Intersection Triangle::intersect(const Ray& r, float tmin, float tmax) const
 {
@@ -97,7 +84,7 @@ __device__ Intersection Triangle::intersect(const Ray& r, float tmin, float tmax
 		return ixn;
 
 	// Find the point the ray intersects triangle's plane
-	const float t = dot(((*points)[0] - r.o), normal) / dot(r.d, normal);
+	const float t = dot((a - r.o), normal) / dot(r.d, normal);
 
 	if (t < tmin || t > tmax)
 		return ixn;
@@ -115,20 +102,23 @@ __device__ Intersection Triangle::intersect(const Ray& r, float tmin, float tmax
 
 __device__ bool Triangle::point_inside(const vec3& p) const
 {
-	const vec3 outside_point = (*points)[0] - ((*points)[1] - (*points)[0]) - ((*points)[2] - (*points)[0]);
+	const vec3 outside_point = a - (b - a) - (c - a);
 
 	int crosses = 0;
+
+	const vec3 vertices[] { a, b, c };
 
 	for (int i = 0; i < 3; i++)
 	{
 		int j = (i + 1) % 3;
-		if (this->lines_cross(p, outside_point, (*points)[i], (*points)[j]))
+		if (this->lines_cross(p, outside_point, vertices[i], vertices[j]))
 			crosses++;
 	}
 
 	return (crosses % 2 == 1);
 }
 
+/*
 __host__ __device__ void swap(Triangle& a, Triangle& b)
 {
 
@@ -160,7 +150,7 @@ __host__ __device__ void swap(Triangle& a, Triangle& b)
 
 	tmp.material = NULL;
 }
-
+*/
 
 __device__ bool Triangle::lines_cross(const vec3& a0, const vec3& a1, const vec3& b0, const vec3& b1) const
 {

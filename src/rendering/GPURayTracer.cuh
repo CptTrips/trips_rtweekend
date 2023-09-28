@@ -58,8 +58,6 @@ class GPURayTracer
 
 	//void send_scene(const std::vector<std::unique_ptr<Visible>>& scene);
 
-	void allocateRenderResources();
-
 	void create_rngs();
 
 	void allocate_rays();

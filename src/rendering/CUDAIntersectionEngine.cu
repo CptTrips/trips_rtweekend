@@ -1,7 +1,7 @@
 #include "rendering/CUDAIntersectionEngine.cuh"
 
 
-void CUDAIntersectionEngine::run(RayBundle* const m_rayBundle, const Mesh* const m_mesh, UnifiedArray<CUDASphere>* sphereArray)
+void CUDAIntersectionEngine::run(RayBundle* const m_rayBundle, const MeshFinder* const m_mesh, UnifiedArray<CUDASphere>* sphereArray)
 {
 
 	checkCudaErrors(cudaDeviceSynchronize());

@@ -35,7 +35,7 @@ public:
 
 	CUDAIntersectionEngine(std::unique_ptr<TriangleIntersector> p_triangleIntersector, const float minFreePath=1e-3) : p_triangleIntersector(std::move(p_triangleIntersector)), minFreePath(minFreePath) {};
 
-	void run(RayBundle* const m_rayBundle, const Mesh* const m_mesh, UnifiedArray<CUDASphere>* sphereArray);
+	void run(RayBundle* const m_rayBundle, const MeshFinder* const m_mesh, UnifiedArray<CUDASphere>* sphereArray);
 };
 
 

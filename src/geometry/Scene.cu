@@ -1,7 +1,8 @@
 #include "geometry/Scene.cuh"
 
-std::shared_ptr<Mesh> Scene::getManagedMesh() const
+
+Scene::Scene(uint64_t vertexCount, uint64_t triangleCount, uint64_t sphereCount)
+	: m_mesh(make_managed<MeshOwner>(vertexCount, triangleCount))
 {
 
-	return make_managed<Mesh>(Mesh{ m_vertexArray.get(), m_indexArray.get(), m_triColourArray.get() });
 }

@@ -156,7 +156,7 @@ void runRayTracer()
 
 	//TestSceneBuilder sceneBuilder(20.f, 2.f);
 
-	GridSceneBuilder sceneBuilder(3, 1.f);
+	GridSceneBuilder sceneBuilder(8, 1.f);
 
 	Scene scene{ sceneBuilder.buildScene() };
 

@@ -10,11 +10,11 @@ constexpr SceneBuilder::SceneBuilder(uint64_t vertexCount, uint64_t triangleCoun
 Scene SceneBuilder::buildScene()
 {
 
-	Scene scene;
+	Scene scene(vertexCount, triangleCount, sphereCount);
 
-	allocateMeshArrays(scene);
+	setMeshArrays(*(scene.m_mesh->getFinder()));
 
-	setMeshArrays(scene);
+	scene.m_mesh->calculateFaceNormals();
 
 	allocateSphereArrays(scene);
 
@@ -23,16 +23,6 @@ Scene SceneBuilder::buildScene()
 	return scene;
 }
 
-void SceneBuilder::allocateMeshArrays(Scene& scene)
-{
-
-	scene.m_vertexArray = make_managed<UnifiedArray<vec3>>(vertexCount);
-
-	scene.m_indexArray = make_managed<UnifiedArray<uint32_t>>(triangleCount * 3);
-
-	scene.m_triColourArray = make_managed<UnifiedArray<vec3>>(scene.m_indexArray->size());
-
-}
 
 void SceneBuilder::allocateSphereArrays(Scene& scene)
 {
@@ -42,23 +32,23 @@ void SceneBuilder::allocateSphereArrays(Scene& scene)
 	scene.m_sphereColourArray = make_managed<UnifiedArray<vec3>>(scene.m_sphereArray->size());
 }
 
-void TestSceneBuilder::setMeshArrays(Scene& scene)
+void TestSceneBuilder::setMeshArrays(MeshFinder& mesh)
 {
 
-	(*scene.m_vertexArray)[0] = vec3(-1.5, floorSize, floorSize);
-	(*scene.m_vertexArray)[1] = vec3(-1.5, floorSize, -floorSize);
-	(*scene.m_vertexArray)[2] = vec3(-1.5, -floorSize, floorSize);
-	(*scene.m_vertexArray)[3] = vec3(-1.5, -floorSize, -floorSize);
+	(*mesh.p_vertexArray)[0] = vec3(-1.5, floorSize, floorSize);
+	(*mesh.p_vertexArray)[1] = vec3(-1.5, floorSize, -floorSize);
+	(*mesh.p_vertexArray)[2] = vec3(-1.5, -floorSize, floorSize);
+	(*mesh.p_vertexArray)[3] = vec3(-1.5, -floorSize, -floorSize);
 
-	(*scene.m_indexArray)[0] = 1;
-	(*scene.m_indexArray)[1] = 0;
-	(*scene.m_indexArray)[2] = 3;
-	(*scene.m_indexArray)[3] = 0;
-	(*scene.m_indexArray)[4] = 2;
-	(*scene.m_indexArray)[5] = 3;
+	(*mesh.p_indexArray)[0] = 1;
+	(*mesh.p_indexArray)[1] = 0;
+	(*mesh.p_indexArray)[2] = 3;
+	(*mesh.p_indexArray)[3] = 0;
+	(*mesh.p_indexArray)[4] = 2;
+	(*mesh.p_indexArray)[5] = 3;
 
-	(*scene.m_triColourArray)[0] = vec3(.8f, 0.8f, 0.6f);
-	(*scene.m_triColourArray)[1] = vec3(0.6f, 0.8f, 0.6f);
+	(*mesh.p_triangleColourArray)[0] = vec3(.8f, 0.8f, 0.6f);
+	(*mesh.p_triangleColourArray)[1] = vec3(0.6f, 0.8f, 0.6f);
 }
 
 void TestSceneBuilder::setSphereArrays(Scene& scene)
@@ -85,7 +75,7 @@ TestSceneBuilder::TestSceneBuilder(float floorSize, float bigRadius)
 {
 }
 
-void GridSceneBuilder::setMeshArrays(Scene& scene)
+void GridSceneBuilder::setMeshArrays(MeshFinder& mesh)
 {
 
 	const vec3 corner{ -scale * gridLength / 2, 0.f, -scale * gridLength / 2 };
@@ -98,7 +88,7 @@ void GridSceneBuilder::setMeshArrays(Scene& scene)
 		uint64_t col = i % verticesPerRow;
 		uint64_t row = i / verticesPerRow;
 
-		(*scene.m_vertexArray)[i] = { corner.x() + col * scale, 0.f, corner.z() + row * scale };
+		(*mesh.p_vertexArray)[i] = { corner.x() + col * scale, 0.f, corner.z() + row * scale };
 	}
 
 	for (uint64_t i = 0; i < sphereCount; i++)
@@ -113,16 +103,16 @@ void GridSceneBuilder::setMeshArrays(Scene& scene)
 			topRighVertexIndex{ (row + 1) * verticesPerRow + col + 1},
 			topLeftVertexIndex{ (row + 1) * verticesPerRow + col };
 
-		(*scene.m_indexArray)[6 * i + 0] = botLeftVertexIndex;
-		(*scene.m_indexArray)[6 * i + 1] = topLeftVertexIndex;
-		(*scene.m_indexArray)[6 * i + 2] = botRighVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 0] = botLeftVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 1] = topLeftVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 2] = botRighVertexIndex;
 
-		(*scene.m_indexArray)[6 * i + 3] = botRighVertexIndex;
-		(*scene.m_indexArray)[6 * i + 4] = topLeftVertexIndex;
-		(*scene.m_indexArray)[6 * i + 5] = topRighVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 3] = botRighVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 4] = topLeftVertexIndex;
+		(*mesh.p_indexArray)[6 * i + 5] = topRighVertexIndex;
 
-		(*scene.m_triColourArray)[2 * i] = { 0.4f, 0.2f, 0.2f };
-		(*scene.m_triColourArray)[2 * i + 1] = { .7f, 1.f, .7f };
+		(*mesh.p_triangleColourArray)[2 * i] = { 0.4f, 0.2f, 0.2f };
+		(*mesh.p_triangleColourArray)[2 * i + 1] = { .7f, 1.f, .7f };
 	}
 }
 

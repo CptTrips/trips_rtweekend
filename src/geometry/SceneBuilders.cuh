@@ -22,11 +22,10 @@
 class SceneBuilder
 {
 
-	virtual void setMeshArrays(Scene& scene) = 0;
+	virtual void setMeshArrays(MeshFinder& mesh) = 0;
 
 	virtual void setSphereArrays(Scene& scene) = 0;
 
-	void allocateMeshArrays(Scene& scene);
 	void allocateSphereArrays(Scene& scene);
 
 protected:
@@ -42,7 +41,7 @@ public:
 class TestSceneBuilder : public SceneBuilder
 {
 
-	virtual void setMeshArrays(Scene& scene) override;
+	virtual void setMeshArrays(MeshFinder& mesh) override;
 
 	virtual void setSphereArrays(Scene& scene) override;
 
@@ -62,7 +61,7 @@ public:
 class GridSceneBuilder : public SceneBuilder
 {
 
-	virtual void setMeshArrays(Scene& scene) override;
+	virtual void setMeshArrays(MeshFinder& mesh) override;
 
 	virtual void setSphereArrays(Scene& scene) override;
 

@@ -103,12 +103,12 @@ __global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t
 
 }
 
-__global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayArray, FrameBuffer* fb, const uint64_t spp)
+__global__ void cuda_render_rays(const uint64_t pixel_start_idx, const uint64_t pixel_end_idx, UnifiedArray<Ray>* p_rayArray, FrameBuffer* fb, const uint64_t spp)
 {
 
 	const uint64_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 
-	const uint32_t pixel_id = pixel_start_idx + thread_id;
+	const uint64_t pixel_id = pixel_start_idx + thread_id;
 
 	// Could dispatch a reduce kernel here
 	if (pixel_id < pixel_end_idx)
@@ -120,8 +120,8 @@ __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_
 
 		for (uint64_t i = 0; i < spp; i++)
 		{
+
 			colour += (*p_rayArray)[thread_id * spp + i].colour;
-			//colour += 0.5 * (vec3(1.f, 1.f, 1.f) + (*p_rayArray)[thread_id * spp + i].d);
 		}
 
 		colour /= spp;

@@ -16,7 +16,7 @@ __global__ void cuda_create_rngs(UnifiedArray<CUDA_RNG>* const rngs);
 
 __global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t ray_offset_index, const uint64_t raysPerBatch, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const uint64_t spp);
 
-__global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayArray, FrameBuffer* const fb, const uint64_t spp);
+__global__ void cuda_render_rays(const uint64_t pixel_start_idx, const uint64_t pixel_end_idx, UnifiedArray<Ray>* p_rayArray, FrameBuffer* const fb, const uint64_t spp);
 
 __device__ vec3 gamma_correction(const vec3& col_in);
 

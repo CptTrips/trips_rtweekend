@@ -207,15 +207,15 @@ void GPURayTracer::renderRays(const uint64_t ray_offset_index, FrameBuffer* m_fb
 
 	uint32_t threads = max_threads;
 
-	int pixel_start_idx = ray_offset_index / (uint64_t)spp;
+	uint64_t pixel_start_idx = ray_offset_index / (uint64_t)spp;
 
-	int pixel_end_idx = pixel_start_idx + raysPerBatch / spp; // not including this index
+	uint64_t pixel_end_idx = pixel_start_idx + raysPerBatch / spp; // not including this index
 
-	pixel_end_idx = std::min(pixel_end_idx, m_fb->h * m_fb->w);
+	pixel_end_idx = std::min(pixel_end_idx, static_cast<uint64_t>(m_fb->h * m_fb->w));
 
-	int pixel_batch_size = pixel_end_idx - pixel_start_idx;
+	uint64_t pixel_batch_size = pixel_end_idx - pixel_start_idx;
 
-	int blocks = pixel_batch_size / threads + 1;
+	uint64_t blocks = pixel_batch_size / threads + 1;
 
 	std::cout << "render_rays blocks: " << blocks << ", threads: " << threads << std::endl;
 

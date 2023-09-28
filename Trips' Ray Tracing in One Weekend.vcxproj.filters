@@ -141,9 +141,9 @@
     <CudaCompile Include="src\Camera.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
-    <CudaCompile Include="src\SceneFactories.cu" />
-    <CudaCompile Include="src\SceneFactories.cuh" />
+    <CudaCompile Include="src\SceneBuilders.cuh" />
     <CudaCompile Include="src\GPURayTracerKernels.cu" />
+    <CudaCompile Include="src\SceneBuilders.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />

@@ -4,22 +4,25 @@
 #include "visibles/CUDASphere.cuh"
 #include "vec3.cuh"
 
+#include <memory>
+#include "ManagedPtr.h"
+
 struct Scene
 {
 
-	UnifiedArray<vec3>* p_vertexBuffer;
-	UnifiedArray<uint32_t>* p_indexBuffer;
-	UnifiedArray<vec3>* p_triColourBuffer;
+	std::shared_ptr<UnifiedArray<vec3>> m_vertexBuffer;
+	std::shared_ptr<UnifiedArray<uint32_t>> m_indexBuffer;
+	std::shared_ptr<UnifiedArray<vec3>> m_triColourBuffer;
 
-	UnifiedArray<CUDASphere>* p_sphereBuffer;
-	UnifiedArray<vec3>* p_sphereColourBuffer;
+	std::shared_ptr<UnifiedArray<CUDASphere>> m_sphereBuffer;
+	std::shared_ptr<UnifiedArray<vec3>> m_sphereColourBuffer;
 
 	Scene()
-		: p_vertexBuffer(nullptr)
-		, p_indexBuffer(nullptr)
-		, p_triColourBuffer(nullptr)
-		, p_sphereBuffer(nullptr)
-		, p_sphereColourBuffer(nullptr)
+		: m_vertexBuffer(nullptr)
+		, m_indexBuffer(nullptr)
+		, m_triColourBuffer(nullptr)
+		, m_sphereBuffer(nullptr)
+		, m_sphereColourBuffer(nullptr)
 	{}
 
 };

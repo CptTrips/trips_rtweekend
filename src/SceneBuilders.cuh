@@ -20,6 +20,19 @@
 
 Scene testSceneFactory();
 
+
+/*
+class SceneBuilder
+{
+
+public:
+	SceneBuilder();
+
+	void setMeshBuffers();
+
+};
+*/
+
 /*
 CUDAScene* scene_factory(const int visible_count, const int material_count);
 

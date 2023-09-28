@@ -71,9 +71,9 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 
 			cout << endl << "  Bounce " << bounce << endl;
 
-			ixnEngine.run(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
+			ixnEngine.run(m_rayBuffer.get(), m_activeRayIndices.get(), scene.m_vertexBuffer.get(), scene.m_indexBuffer.get(), scene.m_sphereBuffer.get(), m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
-			colourRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_triColourBuffer, scene.p_sphereColourBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
+			colourRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.m_triColourBuffer.get(), scene.m_sphereColourBuffer.get(), m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
 			m_activeRayIndices = gatherActiveRays(m_activeRayIndices.get(), m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
@@ -82,7 +82,7 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 			if (m_activeRayIndices->size() == 0)
 				break;
 
-			scatterRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
+			scatterRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.m_vertexBuffer.get(), scene.m_indexBuffer.get(), scene.m_sphereBuffer.get(), m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
 			cout << endl;
 		}

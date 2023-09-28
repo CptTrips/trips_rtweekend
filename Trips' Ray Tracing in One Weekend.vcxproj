@@ -157,7 +157,7 @@
       <FileType>Document</FileType>
     </None>
     <CudaCompile Include="src\CUDAScan.cu" />
-    <CudaCompile Include="src\SceneFactories.cu" />
+    <CudaCompile Include="src\SceneBuilders.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
@@ -192,7 +192,7 @@
     <ClInclude Include="src\Intersection.h" />
     <ClInclude Include="src\KernelLaunchParams.h" />
     <ClInclude Include="src\Managed.cuh" />
-    <CudaCompile Include="src\SceneFactories.cuh" />
+    <CudaCompile Include="src\SceneBuilders.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\UnifiedArray.cuh" />

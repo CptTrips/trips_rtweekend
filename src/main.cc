@@ -8,7 +8,7 @@
 #include "GPURayTracer.cuh"
 
 #include "Scene.cuh"
-#include "SceneFactories.cuh"
+#include "SceneBuilders.cuh"
 //#include "SceneLoader.cuh"
 
 //#include "test_kernel.cuh"

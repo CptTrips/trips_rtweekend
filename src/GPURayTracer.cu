@@ -1,62 +1,12 @@
 #include "GPURayTracer.cuh"
-#define my_cuda_seed 1234
+
+#include "GPURayTracerKernels.cuh"
+
 #define DEBUG false
 
-__global__ void cuda_scatter_rays(
-	UnifiedArray<Ray>* p_rayBuffer,
-	UnifiedArray<uint32_t>* p_activeRayIndices,
-	UnifiedArray<vec3>* p_vertexBuffer,
-	UnifiedArray<uint32_t>* p_indexBuffer,
-	UnifiedArray<CUDASphere>* p_sphereBuffer,
-	UnifiedArray<Intersection>* p_triangleIntersectionBuffer,
-	UnifiedArray<Intersection>* p_sphereIntersectionBuffer,
-	//UnifiedArray<Material<CUDA_RNG>>* p_materialBuffer,
-	CUDA_RNG* const rngs
-)
-{
-
-	if (THREAD_ID >= p_activeRayIndices->size())
-		return;
-
-	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
-
-	if ((*p_triangleIntersectionBuffer)[rayID].id == -1 && (*p_sphereIntersectionBuffer)[rayID].id == -1)
-		return;
-
-	Ray* p_ray = &(*p_rayBuffer)[rayID];
-
-	CUDA_RNG& rng = rngs[rayID];
-
-	Intersection ixn = ((*p_triangleIntersectionBuffer)[rayID].t < (*p_sphereIntersectionBuffer)[rayID].t) ? (*p_triangleIntersectionBuffer)[rayID] : (*p_sphereIntersectionBuffer)[rayID];
-
-	if (ixn.normal.length() == 0.f)
-		printf("Bad ixn normal %d\n", rayID);
-
-	Material<CUDA_RNG> material(1.0f, 0.0f, 0.f, 0.0f, 1.f);
-
-	p_ray->o = p_ray->point_at(ixn.t);
-	p_ray->d = material.scatter(p_ray->d, ixn.normal, &rngs[rayID]);
-}
-
-__global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activateRayIndices)
-{
-
-	if (THREAD_ID >= p_activateRayIndices->size())
-		return;
-
-	uint32_t rayID = (*p_activateRayIndices)[THREAD_ID];
-
-	(*p_rayBuffer)[rayID].colour = vec3(0.f, 0.f, 0.f);
-}
-
-__global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
-{
-
-	if (THREAD_ID >= p_triIntersectionBuffer->size())
-		return;
-
-	(*p_mask)[THREAD_ID] = (isinf((*p_sphereIntersectionBuffer)[THREAD_ID].t) && isinf((*p_triIntersectionBuffer)[THREAD_ID].t)) ? 0 : 1;
-}
+using std::shared_ptr;
+using std::cout;
+using std::endl;
 
 void GPURayTracer::terminateRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices)
 {
@@ -74,8 +24,9 @@ GPURayTracer::GPURayTracer(RayTracerConfig config)
 	, yRes(config.yRes)
 	, spp(config.spp)
 	, maxBounce(config.maxBounce)
-	, ixnEngine(config.minFreePath)
 	, rayCount(spp * xRes * yRes)
+	, raysPerBatch(std::min(rayCount, spp * (maxRaysPerBatch / spp)))
+	, ixnEngine(config.minFreePath)
 {
 
 	showDeviceProperties();
@@ -83,67 +34,62 @@ GPURayTracer::GPURayTracer(RayTracerConfig config)
 	increaseStackLimit();
 }
 
-FrameBuffer* GPURayTracer::render(const Scene& scene, const Camera& camera)
+shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& camera)
 {
 
-	rays_per_batch = std::min(rayCount, (uint64_t)spp * (max_rays_per_batch / spp));
-
 	// Allocate Frame Buffer
-	h_fb = new FrameBuffer(yRes, xRes);
+	shared_ptr<FrameBuffer> m_fb { make_managed<FrameBuffer>(yRes, xRes) };
 
-	// Send Camera
-	checkCudaErrors(cudaMalloc(&d_cam, sizeof(Camera)));
-
-	checkCudaErrors(cudaMemcpy(d_cam, &camera, sizeof(Camera), cudaMemcpyHostToDevice));
-
-	cudaDeviceSynchronize();
+	// Make a copy of the camera in managed memory
+	m_cam =  make_managed<Camera>(camera);
 
 	// Allocate ray data (Ray, colour, rng)
 	allocate_rays();
 
-	UnifiedArray<Intersection>* p_triangleIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
+	// RNG for each ray
+	create_rngs();
 
-	UnifiedArray<Intersection>* p_sphereIntersectionBuffer = new UnifiedArray<Intersection>(p_rayBuffer->size());
+	// Package these in an IntersectionBuffer
+	shared_ptr<UnifiedArray<Intersection>> m_triangleIntersectionBuffer = make_managed<UnifiedArray<Intersection>>(m_rayBuffer->size());
+	shared_ptr<UnifiedArray<Intersection>> m_sphereIntersectionBuffer = make_managed<UnifiedArray<Intersection>>(m_rayBuffer->size());
 
 	using milli = std::chrono::milliseconds;
 
 	auto start = std::chrono::high_resolution_clock::now();
 
-	for (uint64_t rayIDOffset = 0; rayIDOffset < rayCount; rayIDOffset += rays_per_batch)
+	for (uint64_t rayIDOffset = 0; rayIDOffset < rayCount; rayIDOffset += raysPerBatch)
 	{
 
 		std::cout << "Ray progress " << (float)rayIDOffset / (float)rayCount * 100 << "% " << rayIDOffset << " / " << rayCount << std::endl;
 
-		generate_primary_rays(rayIDOffset);
+		generatePrimaryRays(rayIDOffset, m_fb.get());
 
-		UnifiedArray<uint32_t>* p_activeRayIndices = resetActiveRays(p_rayBuffer->size());
+		shared_ptr<UnifiedArray<uint32_t>> m_activeRayIndices{ resetActiveRays(m_rayBuffer->size()) };
 
 		for (uint16_t bounce = 0; bounce < maxBounce; bounce++)
 		{
 
 			cout << endl << "  Bounce " << bounce << endl;
 
-			ixnEngine.run(p_rayBuffer, p_activeRayIndices, scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			ixnEngine.run(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
-			colourRays(p_rayBuffer, p_activeRayIndices, scene.p_triColourBuffer, scene.p_sphereColourBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			colourRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_triColourBuffer, scene.p_sphereColourBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
-			p_activeRayIndices = gatherActiveRays(p_activeRayIndices, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			m_activeRayIndices = gatherActiveRays(m_activeRayIndices.get(), m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
-			cout << "  " << p_activeRayIndices->size() << " rays still active" << endl;
+			cout << "  " << m_activeRayIndices->size() << " rays still active" << endl;
 
-			if (p_activeRayIndices->size() == 0)
+			if (m_activeRayIndices->size() == 0)
 				break;
 
-			scatterRays(p_rayBuffer, p_activeRayIndices, scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
+			scatterRays(m_rayBuffer.get(), m_activeRayIndices.get(), scene.p_vertexBuffer, scene.p_indexBuffer, scene.p_sphereBuffer, m_triangleIntersectionBuffer.get(), m_sphereIntersectionBuffer.get());
 
 			cout << endl;
 		}
 
-		terminateRays(p_rayBuffer, p_activeRayIndices);
+		terminateRays(m_rayBuffer.get(), m_activeRayIndices.get());
 
-		delete p_activeRayIndices;
-
-		render_rays(rayIDOffset);
+		renderRays(rayIDOffset, m_fb.get());
 
 		std::cout << std::endl;
 	}
@@ -156,28 +102,15 @@ FrameBuffer* GPURayTracer::render(const Scene& scene, const Camera& camera)
 		<< std::chrono::duration_cast<milli>(finish - start).count() << "ms"
 		<< std::endl;
 
-	// Free GPU memory
-	// Scene pointers
-	// Scene objects
-	// Camera
-	delete p_rayBuffer;
-	delete p_triangleIntersectionBuffer;
-	delete p_sphereIntersectionBuffer;
-
-	cudaFree(d_cam);
-	cudaFree(rngs);
-
-	return h_fb;
+	return m_fb;
 }
 
 void GPURayTracer::allocate_rays()
 {
 
 	// Allocate rays
-	p_rayBuffer = new UnifiedArray<Ray>(rays_per_batch);
+	m_rayBuffer = make_managed<UnifiedArray<Ray>>(raysPerBatch);
 
-	// RNG for each ray
-	create_rngs();
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -186,41 +119,29 @@ void GPURayTracer::allocate_rays()
 void GPURayTracer::create_rngs()
 {
 
-	checkCudaErrors(cudaMalloc(&rngs, rays_per_batch * sizeof(CUDA_RNG)));
+	m_rngs = make_managed<UnifiedArray<CUDA_RNG>>(raysPerBatch);
 
 	cudaDeviceSynchronize();
 
 	uint32_t threads = max_threads;
-	uint32_t blocks = rays_per_batch / threads + 1;
+	uint32_t blocks = raysPerBatch / threads + 1;
 
-	cuda_create_rngs << <blocks, threads >> > (rngs, rays_per_batch);
+	cuda_create_rngs << <blocks, threads >> > (m_rngs.get());
 
 	checkCudaErrors(cudaGetLastError());
 
 	checkCudaErrors(cudaDeviceSynchronize());
 }
 
-__global__ void cuda_create_rngs(CUDA_RNG* const rngs, const uint32_t rays_per_batch)
-{
-
-	uint32_t id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	if (id < rays_per_batch)
-		rngs[id] = CUDA_RNG(my_cuda_seed, id);
-
-
-}
-
-
-void GPURayTracer::generate_primary_rays(const uint64_t ray_offset_index)
+void GPURayTracer::generatePrimaryRays(const uint64_t ray_offset_index, const FrameBuffer* const m_fb)
 {
 
 	uint32_t threads = max_threads;
-	uint32_t blocks = rays_per_batch / threads + 1;
+	uint32_t blocks = raysPerBatch / threads + 1;
 
-	std::cout << "generate_primary_rays blocks: " << blocks << ", threads: " << threads << std::endl;
+	std::cout << "generatePrimaryRays blocks: " << blocks << ", threads: " << threads << std::endl;
 
-	cuda_gen_rays<<<blocks, threads>>>(&(*p_rayBuffer)[0], rayCount, rays_per_batch, ray_offset_index, d_cam, h_fb, rngs, spp);
+	cuda_gen_rays<<<blocks, threads>>>(m_rayBuffer->data(), rayCount, raysPerBatch, ray_offset_index, m_cam.get(), m_fb, m_rngs->data(), spp);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
@@ -263,60 +184,27 @@ void GPURayTracer::increaseStackLimit()
 }
 
 
-__device__ ImagePoint subPixel(const uint64_t rayID, const FrameBuffer* const fb, const int spp, CUDA_RNG& rng)
-{
-
-	float dx = rng.sample();
-	float dy = rng.sample();
-
-	int row = rayID / (uint64_t)(spp * fb->w);
-
-	float u = (float(row) + dy) / fb->h;
-
-	int col = (rayID / (uint64_t)spp) % fb->w;
-
-	float v = (float(col) + dx) / fb->w;
-}
-
-__global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const int spp)
-{
-	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	uint64_t rayID = thread_id + ray_offset_index;
-
-	if ((rayID < rayCount) && (thread_id < rays_per_batch))
-	{
-		CUDA_RNG rng = rngs[thread_id];
-
-		ImagePoint p { subPixel(rayID, fb, spp, rng) };
-
-		rays[thread_id] = cam->castRay(p, rng);
-	}
-
-}
-
 void GPURayTracer::colourRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColurBuffer, UnifiedArray<vec3>* p_sphereColourBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
 {
 
-
 	uint32_t threads = max_threads;
-	uint32_t blocks = rays_per_batch / threads + 1;
+	uint32_t blocks = raysPerBatch / threads + 1;
 
 	cuda_colour_rays << <blocks, threads >> > (p_rayBuffer, p_activeRayIndices, p_triangleColurBuffer, p_sphereColourBuffer, p_triangleIntersectionBuffer, p_sphereIntersectionBuffer);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 }
 
-void GPURayTracer::render_rays(const uint64_t ray_offset_index)
+void GPURayTracer::renderRays(const uint64_t ray_offset_index, FrameBuffer* m_fb)
 {
 
 	uint32_t threads = max_threads;
 
 	int pixel_start_idx = ray_offset_index / (uint64_t)spp;
 
-	int pixel_end_idx = pixel_start_idx + rays_per_batch / spp; // not including this index
+	int pixel_end_idx = pixel_start_idx + raysPerBatch / spp; // not including this index
 
-	pixel_end_idx = std::min(pixel_end_idx, h_fb->h * h_fb->w);
+	pixel_end_idx = std::min(pixel_end_idx, m_fb->h * m_fb->w);
 
 	int pixel_batch_size = pixel_end_idx - pixel_start_idx;
 
@@ -324,29 +212,29 @@ void GPURayTracer::render_rays(const uint64_t ray_offset_index)
 
 	std::cout << "render_rays blocks: " << blocks << ", threads: " << threads << std::endl;
 
-	cuda_render_rays << <blocks, threads >> > (pixel_start_idx, pixel_end_idx, p_rayBuffer, h_fb, spp);
+	cuda_render_rays << <blocks, threads >> > (pixel_start_idx, pixel_end_idx, m_rayBuffer.get(), m_fb, spp);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	checkCudaErrors(cudaGetLastError());
 }
 
-UnifiedArray<uint32_t>* GPURayTracer::resetActiveRays(const uint32_t& bufferSize)
+shared_ptr<UnifiedArray<uint32_t>> GPURayTracer::resetActiveRays(const uint32_t& bufferSize)
 {
 
-	UnifiedArray<uint32_t>* p_activeRayIndices = new UnifiedArray<uint32_t>(bufferSize);
+	shared_ptr<UnifiedArray<uint32_t>> m_activeRayIndices{ make_managed<UnifiedArray<uint32_t>>(bufferSize) };
 
 	uint32_t threads = max_threads;
-	uint32_t blocks = rays_per_batch / threads + 1;
+	uint32_t blocks = raysPerBatch / threads + 1;
 
-	cuda_reset_active_rays << <blocks, threads >> > (p_activeRayIndices);
+	cuda_reset_active_rays << <blocks, threads >> > (m_activeRayIndices.get());
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
-	return p_activeRayIndices;
+	return m_activeRayIndices;
 }
 
-UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
+std::shared_ptr<UnifiedArray<uint32_t>> GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
 {
 
 	uint32_t length = p_activeRayIndices->size();
@@ -371,20 +259,19 @@ UnifiedArray<uint32_t>* GPURayTracer::gatherActiveRays(UnifiedArray<uint32_t>* p
 		throw std::runtime_error("Scan failed: more active rays than rays\n");
 
 	// Create new active ray index array
-	UnifiedArray<uint32_t>* p_newActiveRayIndices = new UnifiedArray<uint32_t>(activeRayCount);
+	shared_ptr<UnifiedArray<uint32_t>> m_newActiveRayIndices{ make_managed<UnifiedArray<uint32_t>>(activeRayCount) };
 
 	for (uint32_t i = 0; i < length; i++)
 	{
 
 		if ((*p_mask)[i] == 1)
-			(*p_newActiveRayIndices)[(*p_scan)[i] - 1] = (*p_activeRayIndices)[i];
+			(*m_newActiveRayIndices)[(*p_scan)[i] - 1] = (*p_activeRayIndices)[i];
 	}
 
 	delete p_mask;
 	delete p_scan;
-	delete p_activeRayIndices;
 	
-	return p_newActiveRayIndices;
+	return m_newActiveRayIndices;
 }
 
 void GPURayTracer::scatterRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexBuffer, UnifiedArray<uint32_t>* p_indexBuffer, UnifiedArray<CUDASphere>* p_sphereBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
@@ -400,84 +287,10 @@ void GPURayTracer::scatterRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint
 		p_sphereBuffer,
 		p_triangleIntersectionBuffer,
 		p_sphereIntersectionBuffer,
-		rngs
+		m_rngs->data()
 	);
 
 	checkCudaErrors(cudaDeviceSynchronize());
-}
-
-__global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayBuffer, FrameBuffer* fb, const int spp)
-{
-
-	const uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	const uint32_t pixel_id = pixel_start_idx + thread_id;
-
-	// Could dispatch a reduce kernel here
-	if (pixel_id < pixel_end_idx)
-	{
-		const uint32_t row = pixel_id / fb->w;
-		const uint32_t col = pixel_id % fb->w;
-
-		vec3 colour = vec3(0.f, 0.f, 0.f);
-
-		for (uint64_t i = 0; i < spp; i++)
-		{
-			colour += (*p_rayBuffer)[thread_id * spp + i].colour;
-			//colour += 0.5 * (vec3(1.f, 1.f, 1.f) + (*p_rayBuffer)[thread_id * spp + i].d);
-		}
-
-		colour /= spp;
-
-		// Gamma correction
-		colour = gamma_correction(colour);
-
-		fb->set_pixel(row, col, colour);
-	}
-}
-
-__device__ vec3 gamma_correction(const vec3& col_in)
-{
-
-	return vec3(sqrtf(col_in.r()), sqrtf(col_in.g()), sqrtf(col_in.b()));
-}
-
-__host__ __device__ vec3 draw_sky(const Ray& ray)
-{
-
-  vec3 unit_dir = normalise(ray.direction());
-  float t = 0.5f*(unit_dir.y() + 1.0f);
-  return (1.0 - t)*vec3(1.f, 1.f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
-
-}
-
-__global__ void cuda_reset_active_rays(UnifiedArray<uint32_t>* p_activeRayIndices)
-{
-
-	if (THREAD_ID < p_activeRayIndices->size())
-		(*p_activeRayIndices)[THREAD_ID] = THREAD_ID;
-}
-
-__global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColourBuffer, UnifiedArray<vec3>* p_sphereColourBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
-{
-
-	if (THREAD_ID >= p_activeRayIndices->size())
-		return;
-
-	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
-
-	Ray * p_ray = &((*p_rayBuffer)[rayID]);
-
-	Intersection triangleIxn = (*p_triangleIntersectionBuffer)[rayID];
-
-	Intersection sphereIxn = (*p_sphereIntersectionBuffer)[rayID];
-
-	if (triangleIxn.t < sphereIxn.t)
-		p_ray->colour *= (*p_triangleColourBuffer)[triangleIxn.id];
-	else if (sphereIxn.t < triangleIxn.t)
-		p_ray->colour *= (*p_sphereColourBuffer)[sphereIxn.id];
-	else
-		p_ray->colour *= draw_sky(*p_ray);
 }
 
 
@@ -488,7 +301,7 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 	
 	uint32_t threads = 512;
 
-	uint32_t blocks = rays_per_batch / threads + 1;
+	uint32_t blocks = raysPerBatch / threads + 1;
 
 	std::cout << "shade_rays blocks: " << blocks << ", threads: " << threads << std::endl;
 
@@ -496,95 +309,11 @@ void GPURayTracer::shade_rays(const uint64_t ray_offset_index)
 
 	checkCudaErrors(cudaThreadGetLimit(&stack_size, cudaLimitStackSize));
 
-	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, rayCount, rays_per_batch, ray_offset_index, visibles, maxBounce, minFreePath, rngs);
+	cuda_shade_ray << <blocks, threads >> > (rays, ray_colours, rayCount, raysPerBatch, ray_offset_index, visibles, maxBounce, minFreePath, rngs);
 
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	checkCudaErrors(cudaGetLastError());
-}
-
-__global__ void cuda_shade_ray(Ray* const rays, vec3* const ray_colours, const uint64_t rayCount, const uint64_t rays_per_batch, const uint64_t ray_offset_index, const UnifiedArray<CUDAVisible*>* const visibles, const int maxBounce, const float minFreePath, CUDA_RNG* const rngs)
-{
-
-	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
-
-	uint64_t ray_id = thread_id + ray_offset_index;
-
-	if ((ray_id < rayCount) && (thread_id < rays_per_batch))
-	{
-
-		Ray ray = rays[thread_id];
-
-		vec3 ray_colour = vec3(1.f, 1.f, 1.f);
-
-		CUDA_RNG rng = rngs[thread_id];
-
-		int bounce = 0;
-
-		Intersection* ixn_ptr;
-
-		while (bounce < maxBounce)
-		{
-
-			ixn_ptr = nearest_intersection(ray, visibles, minFreePath, FLT_MAX);
-
-			if (ixn_ptr)
-			{
-				const CUDAVisible* const active_visible = ixn_ptr->visible;
-
-				const vec3 ixn_p = ray.point_at(ixn_ptr->t);
-
-				ray = active_visible->bounce(ray.direction(), ixn_p, &rng);
-
-				ray_colour *= active_visible->albedo(ixn_p);
-
-				delete ixn_ptr;
-			}
-
-			else
-			{
-				ray_colour *= draw_sky(ray);
-				break;
-			}
-
-			bounce++;
-		}
-
-
-		if (bounce == maxBounce)
-			ray_colours[thread_id] = vec3(0.f, 0.f, 0.f);
-		else
-			ray_colours[thread_id] = ray_colour;
-
-		if (DEBUG) printf("%u: ray colour assigned %4.2f %4.2f %4.2f\n", ray_id, ray_colours[thread_id].r(), ray_colours[thread_id].g(), ray_colours[thread_id].b());
-	}
-}
-
-__device__ Intersection* nearest_intersection(const Ray& ray, const UnifiedArray<CUDAVisible*>* const visibles, const float tmin, const float tmax)
-{
-	Intersection* temp_ixn;
-
-	Intersection* ixn = NULL;
-
-	float current_closest = tmax;
-
-	for (int i = 0; i < visibles->size(); i++)
-	{
-		
-		temp_ixn = (*visibles)[i]->intersect(ray, tmin, current_closest);
-
-		if (temp_ixn)
-		{
-			current_closest = temp_ixn->t;
-
-			if (ixn)
-				delete ixn;
-
-			ixn = temp_ixn;
-		}
-	}
-
-	return ixn;
 }
 
 

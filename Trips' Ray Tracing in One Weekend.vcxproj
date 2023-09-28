@@ -141,6 +141,7 @@
       <FileType>Document</FileType>
     </CudaCompile>
     <ClCompile Include="src\Config.cpp" />
+    <CudaCompile Include="src\GPURayTracerKernels.cu" />
     <CudaCompile Include="src\Scene.cu">
       <FileType>Document</FileType>
     </CudaCompile>
@@ -180,6 +181,8 @@
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
     <CudaCompile Include="src\Scene.cuh" />
+    <ClInclude Include="src\GPURayTracerKernels.cuh" />
+    <ClInclude Include="src\ManagedPtr.h" />
     <ClInclude Include="src\RayTracerConfig.h" />
     <ClInclude Include="src\Array.cuh" />
     <CudaCompile Include="src\Camera.cuh" />

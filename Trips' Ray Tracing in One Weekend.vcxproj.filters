@@ -78,6 +78,8 @@
     <ClInclude Include="src\vec3.cuh">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ManagedPtr.h" />
+    <ClInclude Include="src\GPURayTracerKernels.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
@@ -141,6 +143,7 @@
     </CudaCompile>
     <CudaCompile Include="src\SceneFactories.cu" />
     <CudaCompile Include="src\SceneFactories.cuh" />
+    <CudaCompile Include="src\GPURayTracerKernels.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Array.tu" />

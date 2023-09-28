@@ -18,12 +18,13 @@ public:
 	__host__ __device__ T& operator[](const uint32_t i);
 	__host__ __device__ const T& operator[](const uint32_t i) const;
 	__host__ __device__ uint32_t size() const;
+	__host__ __device__ T* data() const;
 
 private:
 
 	//__host__ void copy(const UnifiedArray& b);
 
-	T* data;
+	T* _data;
 	uint32_t _size;
 };
 

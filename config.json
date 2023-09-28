@@ -1,9 +1,9 @@
 {
-  "xRes": 480,
-  "yRes": 270,
+  "xRes": 1600,
+  "yRes": 900,
 
   "camera": {
-    "origin": [ 10.0, 0.0, 0.0 ],
+    "origin": [ 10.0, 5.0, 0.0 ],
     "target": [ 0.0, 0.0, 0.0 ],
     "up": [ 0.0, 1.0, 0.0 ],
     "verticalFOV": 4.91,
@@ -12,7 +12,7 @@
   },
 
   "rayTracer": {
-    "spp": 1,
+    "spp": 4,
     "maxBounce": 8,
     "minFreePath":  0.002
   },

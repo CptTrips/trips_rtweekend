@@ -1,7 +1,7 @@
 template<typename T>
 __host__ UnifiedArray<T>::UnifiedArray()
 {
-	data = NULL;
+	_data = NULL;
 
 	_size = 0;
 }
@@ -9,7 +9,7 @@ __host__ UnifiedArray<T>::UnifiedArray()
 template<typename T>
 __host__ UnifiedArray<T>::UnifiedArray(const uint32_t size) : _size(size)
 {
-	checkCudaErrors(cudaMallocManaged(&data, size * sizeof(T)));
+	checkCudaErrors(cudaMallocManaged(&_data, size * sizeof(T)));
 	cudaDeviceSynchronize();
 }
 
@@ -18,23 +18,29 @@ template<typename T>
 __host__ UnifiedArray<T>::~UnifiedArray()
 {
 	cudaDeviceSynchronize();
-	checkCudaErrors(cudaFree(data));
+	checkCudaErrors(cudaFree(_data));
 }
 
 template<typename T>
 __host__ __device__ T& UnifiedArray<T>::operator[](const uint32_t i)
 {
-	return data[i];
+	return _data[i];
 }
 
 template<typename T>
 __host__ __device__ const T& UnifiedArray<T>::operator[](const uint32_t i) const
 {
-	return data[i];
+	return _data[i];
 }
 
 template<typename T>
 __host__ __device__ uint32_t UnifiedArray<T>::size() const
 {
 	return _size;
+}
+
+template<typename T>
+__host__ __device__ T* UnifiedArray<T>::data() const
+{
+	return _data;
 }

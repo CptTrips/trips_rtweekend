@@ -2,7 +2,11 @@
 
 #include <memory>
 
+#include <iostream>
+
 #include <cuda_runtime.h>
+
+#include "Error.cuh"
 
 template<class T>
 class CUDAAllocator
@@ -13,6 +17,17 @@ public:
 
 	static constexpr size_t sizeOfT = sizeof(T);
 
+	CUDAAllocator() = default;
+
+	template<typename U>
+	constexpr CUDAAllocator(const CUDAAllocator<U>& other) noexcept {}
+
+	template<typename U>
+	struct rebind
+	{
+
+		typedef CUDAAllocator<U> other;
+	};
 
 	T* allocate(std::size_t n)
 	{
@@ -22,10 +37,10 @@ public:
 
 		T* p;
 
-		if (cudaSuccess == cudaMallocManaged(static_cast<void**>(&p), sizeOfT * n))
+		if (cudaSuccess == cudaMallocManaged(&p, sizeOfT * n))
 		{
 
-			cudaDeviceSynchronize();
+			checkCudaErrors(cudaDeviceSynchronize());
 
 			return p;
 		}

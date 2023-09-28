@@ -161,21 +161,12 @@ void runRayTracer()
 	//CPURayTracer cpu_ray_tracer(spp, max_bounce);
 	GPURayTracer gpu_ray_tracer(configJSON);
 
-	FrameBuffer* frameBuffer = gpu_ray_tracer.render(scene, camera);
-
+	std::shared_ptr<FrameBuffer> frameBuffer = gpu_ray_tracer.render(scene, camera);
 
 	// Write scene
 	bmp_write(frameBuffer->buffer, frameBuffer->h, frameBuffer->w, "output.bmp");
 
 	cudaDeviceSynchronize();
-
-	// Exit
-	delete frameBuffer;
-
-	// Delete visibles and materials
-	// cudaFree/Delete arrays
-	// cudaFree scene
-	//delete scene;
 }
 
 int main(int argc, char** argv)

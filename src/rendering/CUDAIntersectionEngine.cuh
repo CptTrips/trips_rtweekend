@@ -29,12 +29,12 @@ public:
 
 	CUDAIntersectionEngine(const float& minFreePath=1e-3) : minFreePath(minFreePath) {};
 
-	void run(UnifiedArray<Ray>* rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* vertexBuffer, UnifiedArray<uint32_t>* indexBuffer, UnifiedArray<CUDASphere>* sphereBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
+	void run(UnifiedArray<Ray>* rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* vertexArray, UnifiedArray<uint32_t>* indexArray, UnifiedArray<CUDASphere>* sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
 };
 
-__global__ void find_intersections(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexBuffer, UnifiedArray<uint32_t>* p_indexBuffer, UnifiedArray<CUDASphere>* p_sphereBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer, const float minFreePath);
+__global__ void find_intersections(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray, const float minFreePath);
 
-__device__ Intersection find_triangle_intersections(const Ray& ray, UnifiedArray<vec3>* p_vertexBuffer, UnifiedArray<uint32_t>* p_indexBuffer, const float minFreePath);
+__device__ Intersection find_triangle_intersections(const Ray& ray, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, const float minFreePath);
 
-__device__ Intersection find_sphere_intersections(const Ray& ray, UnifiedArray<CUDASphere>* p_sphereBuffer, const float minFreePath);
+__device__ Intersection find_sphere_intersections(const Ray& ray, UnifiedArray<CUDASphere>* p_sphereArray, const float minFreePath);
 

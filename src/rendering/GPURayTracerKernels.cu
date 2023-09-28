@@ -4,14 +4,14 @@
 #define my_cuda_seed 1234
 
 __global__ void cuda_scatter_rays(
-	UnifiedArray<Ray>* p_rayBuffer,
+	UnifiedArray<Ray>* p_rayArray,
 	UnifiedArray<uint32_t>* p_activeRayIndices,
-	UnifiedArray<vec3>* p_vertexBuffer,
-	UnifiedArray<uint32_t>* p_indexBuffer,
-	UnifiedArray<CUDASphere>* p_sphereBuffer,
-	UnifiedArray<Intersection>* p_triangleIntersectionBuffer,
-	UnifiedArray<Intersection>* p_sphereIntersectionBuffer,
-	//UnifiedArray<Material<CUDA_RNG>>* p_materialBuffer,
+	UnifiedArray<vec3>* p_vertexArray,
+	UnifiedArray<uint32_t>* p_indexArray,
+	UnifiedArray<CUDASphere>* p_sphereArray,
+	UnifiedArray<Intersection>* p_triangleIntersectionArray,
+	UnifiedArray<Intersection>* p_sphereIntersectionArray,
+	//UnifiedArray<Material<CUDA_RNG>>* p_materialArray,
 	CUDA_RNG* const rngs
 )
 {
@@ -21,14 +21,14 @@ __global__ void cuda_scatter_rays(
 
 	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
 
-	if ((*p_triangleIntersectionBuffer)[rayID].id == -1 && (*p_sphereIntersectionBuffer)[rayID].id == -1)
+	if ((*p_triangleIntersectionArray)[rayID].id == -1 && (*p_sphereIntersectionArray)[rayID].id == -1)
 		return;
 
-	Ray* p_ray = &(*p_rayBuffer)[rayID];
+	Ray* p_ray = &(*p_rayArray)[rayID];
 
 	CUDA_RNG& rng = rngs[rayID];
 
-	Intersection ixn = ((*p_triangleIntersectionBuffer)[rayID].t < (*p_sphereIntersectionBuffer)[rayID].t) ? (*p_triangleIntersectionBuffer)[rayID] : (*p_sphereIntersectionBuffer)[rayID];
+	Intersection ixn = ((*p_triangleIntersectionArray)[rayID].t < (*p_sphereIntersectionArray)[rayID].t) ? (*p_triangleIntersectionArray)[rayID] : (*p_sphereIntersectionArray)[rayID];
 
 	if (ixn.normal.length() == 0.f)
 		printf("Bad ixn normal %d\n", rayID);
@@ -39,7 +39,7 @@ __global__ void cuda_scatter_rays(
 	p_ray->d = material.scatter(p_ray->d, ixn.normal, &rngs[rayID]);
 }
 
-__global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activateRayIndices)
+__global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activateRayIndices)
 {
 
 	if (THREAD_ID >= p_activateRayIndices->size())
@@ -47,16 +47,16 @@ __global__ void cuda_terminate_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray
 
 	uint32_t rayID = (*p_activateRayIndices)[THREAD_ID];
 
-	(*p_rayBuffer)[rayID].colour = vec3(0.f, 0.f, 0.f);
+	(*p_rayArray)[rayID].colour = vec3(0.f, 0.f, 0.f);
 }
 
-__global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
+__global__ void cuda_is_active(UnifiedArray<uint32_t>* p_mask, UnifiedArray<Intersection>* p_triIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray)
 {
 
-	if (THREAD_ID >= p_triIntersectionBuffer->size())
+	if (THREAD_ID >= p_triIntersectionArray->size())
 		return;
 
-	(*p_mask)[THREAD_ID] = (isinf((*p_sphereIntersectionBuffer)[THREAD_ID].t) && isinf((*p_triIntersectionBuffer)[THREAD_ID].t)) ? 0 : 1;
+	(*p_mask)[THREAD_ID] = (isinf((*p_sphereIntersectionArray)[THREAD_ID].t) && isinf((*p_triIntersectionArray)[THREAD_ID].t)) ? 0 : 1;
 }
 
 __global__ void cuda_create_rngs(UnifiedArray<CUDA_RNG>* const rngs)
@@ -103,7 +103,7 @@ __global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t
 
 }
 
-__global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayBuffer, FrameBuffer* fb, const uint64_t spp)
+__global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_idx, UnifiedArray<Ray>* p_rayArray, FrameBuffer* fb, const uint64_t spp)
 {
 
 	const uint64_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
@@ -120,8 +120,8 @@ __global__ void cuda_render_rays(const int pixel_start_idx, const int pixel_end_
 
 		for (uint64_t i = 0; i < spp; i++)
 		{
-			colour += (*p_rayBuffer)[thread_id * spp + i].colour;
-			//colour += 0.5 * (vec3(1.f, 1.f, 1.f) + (*p_rayBuffer)[thread_id * spp + i].d);
+			colour += (*p_rayArray)[thread_id * spp + i].colour;
+			//colour += 0.5 * (vec3(1.f, 1.f, 1.f) + (*p_rayArray)[thread_id * spp + i].d);
 		}
 
 		colour /= spp;
@@ -155,7 +155,7 @@ __global__ void cuda_reset_active_rays(UnifiedArray<uint32_t>* p_activeRayIndice
 		(*p_activeRayIndices)[THREAD_ID] = THREAD_ID;
 }
 
-__global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColourBuffer, UnifiedArray<vec3>* p_sphereColourBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer)
+__global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColourArray, UnifiedArray<vec3>* p_sphereColourArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray)
 {
 
 	if (THREAD_ID >= p_activeRayIndices->size())
@@ -163,16 +163,16 @@ __global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<ui
 
 	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
 
-	Ray * p_ray = &((*p_rayBuffer)[rayID]);
+	Ray * p_ray = &((*p_rayArray)[rayID]);
 
-	Intersection triangleIxn = (*p_triangleIntersectionBuffer)[rayID];
+	Intersection triangleIxn = (*p_triangleIntersectionArray)[rayID];
 
-	Intersection sphereIxn = (*p_sphereIntersectionBuffer)[rayID];
+	Intersection sphereIxn = (*p_sphereIntersectionArray)[rayID];
 
 	if (triangleIxn.t < sphereIxn.t)
-		p_ray->colour *= (*p_triangleColourBuffer)[triangleIxn.id];
+		p_ray->colour *= (*p_triangleColourArray)[triangleIxn.id];
 	else if (sphereIxn.t < triangleIxn.t)
-		p_ray->colour *= (*p_sphereColourBuffer)[sphereIxn.id];
+		p_ray->colour *= (*p_sphereColourArray)[sphereIxn.id];
 	else
 		p_ray->colour *= draw_sky(*p_ray);
 }

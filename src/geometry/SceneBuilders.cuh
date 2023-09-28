@@ -22,12 +22,12 @@
 class SceneBuilder
 {
 
-	virtual void setMeshBuffers(Scene& scene) = 0;
+	virtual void setMeshArrays(Scene& scene) = 0;
 
-	virtual void setSphereBuffers(Scene& scene) = 0;
+	virtual void setSphereArrays(Scene& scene) = 0;
 
-	void allocateMeshBuffers(Scene& scene);
-	void allocateSphereBuffers(Scene& scene);
+	void allocateMeshArrays(Scene& scene);
+	void allocateSphereArrays(Scene& scene);
 
 protected:
 	uint64_t vertexCount, triangleCount, sphereCount;
@@ -42,9 +42,9 @@ public:
 class TestSceneBuilder : public SceneBuilder
 {
 
-	virtual void setMeshBuffers(Scene& scene) override;
+	virtual void setMeshArrays(Scene& scene) override;
 
-	virtual void setSphereBuffers(Scene& scene) override;
+	virtual void setSphereArrays(Scene& scene) override;
 
 	float floorSize{ 1000.f };
 
@@ -62,9 +62,9 @@ public:
 class GridSceneBuilder : public SceneBuilder
 {
 
-	virtual void setMeshBuffers(Scene& scene) override;
+	virtual void setMeshArrays(Scene& scene) override;
 
-	virtual void setSphereBuffers(Scene& scene) override;
+	virtual void setSphereArrays(Scene& scene) override;
 
 	inline static uint64_t calculateVertexCount(uint32_t gridLength);
 	inline static uint64_t calculateTriangleCount(uint32_t gridLength);

@@ -21,10 +21,10 @@
 #include <algorithm>
 #include <memory>
 
-struct IntersectionBuffer
+struct IntersectionArray
 {
 
-	std::shared_ptr<UnifiedArray<Intersection>> m_triangleIntersectionBuffer, m_sphereIntersectionBuffer;
+	std::shared_ptr<UnifiedArray<Intersection>> m_triangleIntersectionArray, m_sphereIntersectionArray;
 };
 
 
@@ -46,7 +46,7 @@ class GPURayTracer
 
 	uint64_t raysPerBatch;
 
-	std::shared_ptr<UnifiedArray<Ray>> m_rayBuffer;
+	std::shared_ptr<UnifiedArray<Ray>> m_rayArray;
 
 	std::shared_ptr<UnifiedArray<CUDA_RNG>> m_rngs;
 
@@ -68,21 +68,21 @@ class GPURayTracer
 
 	void increaseStackLimit();
 
-	void colourRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColurBuffer, UnifiedArray<vec3>* p_sphereColourBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
+	void colourRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColurArray, UnifiedArray<vec3>* p_sphereColourArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
 
 	void renderRays(const uint64_t ray_offset_index, FrameBuffer* m_fb);
 
 	std::shared_ptr<UnifiedArray<uint32_t>> resetActiveRays(const uint32_t& bufferSize);
 
-	std::shared_ptr<UnifiedArray<uint32_t>> gatherActiveRays(UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
+	std::shared_ptr<UnifiedArray<uint32_t>> gatherActiveRays(UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
 
-	void scatterRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexBuffer, UnifiedArray<uint32_t>* p_indexBuffer, UnifiedArray<CUDASphere>* p_sphereBuffer, UnifiedArray<Intersection>* p_triangleIntersectionBuffer, UnifiedArray<Intersection>* p_sphereIntersectionBuffer);
+	void scatterRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
 
 	/*
 	void shade_rays(const uint64_t ray_offset_index);
 	*/
 
-	void terminateRays(UnifiedArray<Ray>* p_rayBuffer, UnifiedArray<uint32_t>* p_activeRayIndices);
+	void terminateRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices);
 
 public:
 

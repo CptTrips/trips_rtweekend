@@ -10,19 +10,19 @@
 struct Scene
 {
 
-	std::shared_ptr<UnifiedArray<vec3>> m_vertexBuffer;
-	std::shared_ptr<UnifiedArray<uint32_t>> m_indexBuffer;
-	std::shared_ptr<UnifiedArray<vec3>> m_triColourBuffer;
+	std::shared_ptr<UnifiedArray<vec3>> m_vertexArray;
+	std::shared_ptr<UnifiedArray<uint32_t>> m_indexArray;
+	std::shared_ptr<UnifiedArray<vec3>> m_triColourArray;
 
-	std::shared_ptr<UnifiedArray<CUDASphere>> m_sphereBuffer;
-	std::shared_ptr<UnifiedArray<vec3>> m_sphereColourBuffer;
+	std::shared_ptr<UnifiedArray<CUDASphere>> m_sphereArray;
+	std::shared_ptr<UnifiedArray<vec3>> m_sphereColourArray;
 
 	Scene()
-		: m_vertexBuffer(nullptr)
-		, m_indexBuffer(nullptr)
-		, m_triColourBuffer(nullptr)
-		, m_sphereBuffer(nullptr)
-		, m_sphereColourBuffer(nullptr)
+		: m_vertexArray(nullptr)
+		, m_indexArray(nullptr)
+		, m_triColourArray(nullptr)
+		, m_sphereArray(nullptr)
+		, m_sphereColourArray(nullptr)
 	{}
 
 };

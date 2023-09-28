@@ -165,10 +165,10 @@ void runRayTracer()
 	//CPURayTracer cpu_ray_tracer(spp, max_bounce);
 	GPURayTracer gpu_ray_tracer(configJSON);
 
-	std::shared_ptr<FrameBuffer> frameBuffer = gpu_ray_tracer.render(scene, camera);
+	std::shared_ptr<FrameBuffer> frameArray = gpu_ray_tracer.render(scene, camera);
 
 	// Write scene
-	bmp_write(frameBuffer->buffer, frameBuffer->h, frameBuffer->w, "output.bmp");
+	bmp_write(frameArray->buffer, frameArray->h, frameArray->w, "output.bmp");
 
 	cudaDeviceSynchronize();
 }

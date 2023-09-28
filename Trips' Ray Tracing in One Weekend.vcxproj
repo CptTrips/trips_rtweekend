@@ -155,6 +155,7 @@
     <CudaCompile Include="src\rendering\FrameBuffer.cu" />
     <CudaCompile Include="src\rendering\GPURayTracer.cu" />
     <CudaCompile Include="src\rendering\GPURayTracerKernels.cu" />
+    <CudaCompile Include="src\rendering\TriangleIntersector.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\utility\Error.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />

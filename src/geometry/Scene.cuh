@@ -1,8 +1,12 @@
 #pragma once
 
 #include "memory/UnifiedArray.cuh"
+
 #include "visibles/CUDASphere.cuh"
+
 #include "maths/vec3.cuh"
+
+#include "rendering/Mesh.cuh"
 
 #include <memory>
 #include "memory/ManagedPtr.h"
@@ -24,6 +28,11 @@ struct Scene
 		, m_sphereArray(nullptr)
 		, m_sphereColourArray(nullptr)
 	{}
+
+	/// <summary>
+	/// Get a managed ptr to the mesh (triangle) parts of the scene
+	/// </summary>
+	std::shared_ptr<Mesh> getManagedMesh() const;
 
 };
 

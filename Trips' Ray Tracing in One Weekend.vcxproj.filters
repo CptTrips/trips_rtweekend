@@ -116,6 +116,7 @@
     <CudaCompile Include="src\maths\rand.cuh">
       <Filter>Header Files</Filter>
     </CudaCompile>
+    <CudaCompile Include="src\rendering\TriangleIntersector.cu" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

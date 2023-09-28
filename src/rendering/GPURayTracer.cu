@@ -26,7 +26,7 @@ GPURayTracer::GPURayTracer(RayTracerConfig config)
 	, maxBounce(config.maxBounce)
 	, rayCount(spp * xRes * yRes)
 	, raysPerBatch(std::min(rayCount, spp * (maxRaysPerBatch / spp)))
-	, ixnEngine(config.minFreePath)
+	, ixnEngine(std::make_unique<BranchingTriangleIntersector>(config.minFreePath), config.minFreePath) 
 {
 
 	showDeviceProperties();
@@ -53,6 +53,8 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 	shared_ptr<UnifiedArray<Intersection>> m_triangleIntersectionArray = make_managed<UnifiedArray<Intersection>>(m_rayArray->size());
 	shared_ptr<UnifiedArray<Intersection>> m_sphereIntersectionArray = make_managed<UnifiedArray<Intersection>>(m_rayArray->size());
 
+	auto m_mesh{ scene.getManagedMesh() };
+
 	using milli = std::chrono::milliseconds;
 
 	auto start = std::chrono::high_resolution_clock::now();
@@ -66,12 +68,14 @@ shared_ptr<FrameBuffer> GPURayTracer::render(const Scene& scene, const Camera& c
 
 		shared_ptr<UnifiedArray<uint32_t>> m_activeRayIndices{ resetActiveRays(m_rayArray->size()) };
 
+		auto m_rayBundle{ make_managed<RayBundle>(RayBundle{m_rayArray.get(), m_activeRayIndices.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get()}) };
+
 		for (uint16_t bounce = 0; bounce < maxBounce; bounce++)
 		{
 
 			cout << endl << "  Bounce " << bounce << endl;
 
-			ixnEngine.run(m_rayArray.get(), m_activeRayIndices.get(), scene.m_vertexArray.get(), scene.m_indexArray.get(), scene.m_sphereArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
+			ixnEngine.run(m_rayBundle.get(), m_mesh.get(), scene.m_sphereArray.get());
 
 			colourRays(m_rayArray.get(), m_activeRayIndices.get(), scene.m_triColourArray.get(), scene.m_sphereColourArray.get(), m_triangleIntersectionArray.get(), m_sphereIntersectionArray.get());
 
@@ -245,9 +249,9 @@ std::shared_ptr<UnifiedArray<uint32_t>> GPURayTracer::gatherActiveRays(UnifiedAr
 	// Create scan of mask
 	UnifiedArray<uint32_t>* p_scan = new UnifiedArray<uint32_t>(length);
 
-	KernelLaunchParams klp(max_threads, length);
+	KernelLaunchParams klp(max_threads);
 
-	cuda_is_active<<<klp.blocks, klp.threads>>>(p_mask, p_triangleIntersectionArray, p_sphereIntersectionArray);
+	cuda_is_active<<<klp.blocks(length), klp.maxThreads>>>(p_mask, p_triangleIntersectionArray, p_sphereIntersectionArray);
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	cudaScan(p_mask, p_scan);
@@ -277,9 +281,9 @@ std::shared_ptr<UnifiedArray<uint32_t>> GPURayTracer::gatherActiveRays(UnifiedAr
 void GPURayTracer::scatterRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray)
 {
 
-	KernelLaunchParams klp(max_threads, p_activeRayIndices->size());
+	KernelLaunchParams klp(max_threads);
 
-	cuda_scatter_rays << <klp.blocks, klp.threads >> > (
+	cuda_scatter_rays << <klp.blocks(p_activeRayIndices->size()), klp.maxThreads >> > (
 		p_rayArray,
 		p_activeRayIndices,
 		p_vertexArray,

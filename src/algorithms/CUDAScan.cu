@@ -67,8 +67,8 @@ void cudaScan(UnifiedArray<uint32_t>* p_in, UnifiedArray<uint32_t>* p_out)
 	UnifiedArray<uint32_t>* p_front = p_out; // This is the wrong way round but we will swap them immediately
 	UnifiedArray<uint32_t>* p_back = new UnifiedArray<uint32_t>(p_in->size());
 
-	KernelLaunchParams klp(CUDA_SCAN_THREADS, p_in->size());
-	copy << <klp.blocks, klp.threads >> > (p_in, p_back);
+	KernelLaunchParams klp(CUDA_SCAN_THREADS);
+	copy << <klp.blocks(p_in->size()), klp.maxThreads >> > (p_in, p_back);
 	checkCudaErrors(cudaDeviceSynchronize());
 
 	for (uint32_t i = 0; i <= log2i(p_in->size()); i++)
@@ -77,16 +77,14 @@ void cudaScan(UnifiedArray<uint32_t>* p_in, UnifiedArray<uint32_t>* p_out)
 		if (i != 0)
 			swapPointers(p_front, p_back);
 
-		KernelLaunchParams klp(CUDA_SCAN_THREADS, p_in->size());
-		hills_steele_step<<<klp.blocks, klp.threads>>>(p_back, p_front, exp2i(i));
+		hills_steele_step<<<klp.blocks(p_in->size()), klp.maxThreads >>>(p_back, p_front, exp2i(i));
 		checkCudaErrors(cudaDeviceSynchronize());
 	}
 
 	if (p_out == p_back)
 	{
 
-		KernelLaunchParams klp(CUDA_SCAN_THREADS, p_front->size());
-		copy << <klp.blocks, klp.threads >> > (p_front, p_out);
+		copy << <klp.blocks(p_in->size()), klp.maxThreads >> > (p_front, p_out);
 		checkCudaErrors(cudaDeviceSynchronize());
 
 		swapPointers(p_front, p_back);

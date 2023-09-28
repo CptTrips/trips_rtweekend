@@ -2,14 +2,23 @@
 
 #include <cstdint>
 
+#define THREAD_ID threadIdx.x + blockIdx.x * blockDim.x
+
 struct KernelLaunchParams
 {
 
-	KernelLaunchParams(const uint32_t threads, const uint32_t work)
-		: threads(threads), work(work), blocks(work / threads + 1)
+private:
+	static constexpr uint32_t DEFAULT_MAX_THREADS = 512;
+
+public:
+	KernelLaunchParams(const uint32_t maxThreads=DEFAULT_MAX_THREADS)
+		: maxThreads(maxThreads)
 	{
 		
 	}
 
-	uint32_t threads, work, blocks;
+	uint32_t blocks(const uint32_t work) { return work / maxThreads + 1; }
+	
+
+	uint32_t maxThreads;
 };

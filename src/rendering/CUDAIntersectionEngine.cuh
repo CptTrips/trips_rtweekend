@@ -4,37 +4,40 @@
 #include "curand_kernel.h"
 
 #include "geometry/ray.cuh"
-#include "memory/UnifiedArray.cuh"
 #include "geometry/Intersection.h"
+
+#include "memory/UnifiedArray.cuh"
+
 #include "visibles\Triangle.cuh"
 #include "visibles\CUDASphere.cuh"
 
+#include "utility/KernelLaunchParams.h"
+
+#include "rendering/TriangleIntersector.cuh"
+#include "rendering/RayBundle.cuh"
+#include "rendering/Mesh.cuh"
+
 #include <vector>
 #include <algorithm>
+#include <memory>
 
-using std::vector;
-using std::max;
-
-static const uint16_t MAX_THREAD_COUNT = 512;
-//static const uint16_t MAX_BLOCK_COUNT = 512;
-
-#define THREAD_ID threadIdx.x + blockIdx.x * blockDim.x
 
 class CUDAIntersectionEngine
 {
+
+	KernelLaunchParams klp;
+
+	std::unique_ptr<TriangleIntersector> p_triangleIntersector;
 
 public:
 
 	float minFreePath = 1e-3;
 
-	CUDAIntersectionEngine(const float& minFreePath=1e-3) : minFreePath(minFreePath) {};
+	CUDAIntersectionEngine(std::unique_ptr<TriangleIntersector> p_triangleIntersector, const float minFreePath=1e-3) : p_triangleIntersector(std::move(p_triangleIntersector)), minFreePath(minFreePath) {};
 
-	void run(UnifiedArray<Ray>* rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* vertexArray, UnifiedArray<uint32_t>* indexArray, UnifiedArray<CUDASphere>* sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
+	void run(RayBundle* const m_rayBundle, const Mesh* const m_mesh, UnifiedArray<CUDASphere>* sphereArray);
 };
 
-__global__ void find_intersections(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray, const float minFreePath);
 
-__device__ Intersection find_triangle_intersections(const Ray& ray, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, const float minFreePath);
-
-__device__ Intersection find_sphere_intersections(const Ray& ray, UnifiedArray<CUDASphere>* p_sphereArray, const float minFreePath);
+__global__ void find_sphere_intersections(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_sphereIntersectionArray, const float minFreePath);
 

@@ -14,6 +14,8 @@
 #include "utility/KernelLaunchParams.h"
 #include "utility/RayTracerConfig.h"
 
+#include "rendering/TriangleIntersector.cuh"
+
 #include "geometry/Scene.cuh"
 
 #include <chrono>

@@ -1,8 +1,8 @@
 #pragma once
 #include "CUDAVisible.cuh"
-#include "../materials/material.h"
-#include "../rand.h"
-#include "../Array.cuh"
+#include "materials/material.h"
+#include "maths/rand.cuh"
+#include "memory/Array.cuh"
 
 class Triangle : public CUDAVisible {
 public:

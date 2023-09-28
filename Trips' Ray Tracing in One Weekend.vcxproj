@@ -70,10 +70,10 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)test;$(ProjectDir)src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)include;$(ProjectDir)src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,7 +108,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir)src;$(ProjectDir)test;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -124,7 +124,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir);$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);$(ProjectDir)src;$(ProjectDir)test;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -137,83 +137,74 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CudaCompile Include="src\CUDAIntersectionEngine.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-    <ClCompile Include="src\Config.cpp" />
-    <CudaCompile Include="src\GPURayTracerKernels.cu" />
-    <CudaCompile Include="src\Scene.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-    <ClCompile Include="src\RayTracerConfig.cpp" />
-    <CudaCompile Include="src\Camera.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-    <ClCompile Include="src\CameraConfig.cpp" />
-    <ClCompile Include="src\KernelLaunchParams.cpp" />
     <ClCompile Include="src\main.cc" />
-    <None Include="ClassDiagram.cd" />
-    <None Include="src\UnifiedArray.tu">
+    <CudaCompile Include="src\maths\rand.cu">
       <FileType>Document</FileType>
-    </None>
-    <CudaCompile Include="src\CUDAScan.cu" />
-    <CudaCompile Include="src\SceneBuilders.cu" />
+    </CudaCompile>
+    <ClCompile Include="src\utility\CameraConfig.cpp" />
+    <ClCompile Include="src\utility\Config.cpp" />
+    <ClCompile Include="src\utility\KernelLaunchParams.cpp" />
+    <ClCompile Include="src\utility\RayTracerConfig.cpp" />
+    <None Include="ClassDiagram.cd" />
+    <CudaCompile Include="src\algorithms\CUDAScan.cu" />
+    <CudaCompile Include="src\geometry\Camera.cu" />
+    <CudaCompile Include="src\geometry\ray.cu" />
+    <CudaCompile Include="src\geometry\Scene.cu" />
+    <CudaCompile Include="src\geometry\SceneBuilders.cu" />
+    <CudaCompile Include="src\rendering\CUDAIntersectionEngine.cu" />
+    <CudaCompile Include="src\rendering\FrameBuffer.cu" />
+    <CudaCompile Include="src\rendering\GPURayTracer.cu" />
+    <CudaCompile Include="src\rendering\GPURayTracerKernels.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
+    <CudaCompile Include="src\utility\Error.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
-    <None Include="src\Array.tu" />
-    <CudaCompile Include="src\Error.cu" />
-    <CudaCompile Include="src\FrameBuffer.cu">
-      <FileType>CppCode</FileType>
-    </CudaCompile>
-    <CudaCompile Include="src\rand.cc" />
-    <CudaCompile Include="src\ray.cu">
+    <None Include="src\memory\Array.tu">
       <FileType>Document</FileType>
-    </CudaCompile>
+    </None>
+    <None Include="src\memory\UnifiedArray.tu">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="test\CUDAScanTest.cu" />
     <CudaCompile Include="test\CUDAScanTest.cuh" />
-    <CudaCompile Include="src\CUDAIntersectionEngine.cuh" />
-    <ClInclude Include="src\Config.h" />
-    <ClInclude Include="src\CUDAAllocator.h" />
     <ClInclude Include="include\json.hpp" />
     <ClInclude Include="include\palette.h" />
-    <CudaCompile Include="src\Scene.cuh" />
-    <ClInclude Include="src\GPURayTracerKernels.cuh" />
-    <ClInclude Include="src\ManagedPtr.h" />
-    <ClInclude Include="src\RayTracerConfig.h" />
-    <ClInclude Include="src\Array.cuh" />
-    <CudaCompile Include="src\Camera.cuh" />
-    <CudaCompile Include="src\CUDAScan.cuh" />
-    <ClInclude Include="src\CameraConfig.h" />
-    <ClInclude Include="src\Error.cuh" />
-    <ClInclude Include="src\Intersection.h" />
-    <ClInclude Include="src\KernelLaunchParams.h" />
-    <ClInclude Include="src\Managed.cuh" />
-    <CudaCompile Include="src\SceneBuilders.cuh" />
+    <CudaCompile Include="src\algorithms\CUDAScan.cuh" />
+    <CudaCompile Include="src\geometry\Camera.cuh" />
+    <ClInclude Include="src\geometry\Intersection.h" />
+    <CudaCompile Include="src\geometry\ray.cuh" />
+    <CudaCompile Include="src\geometry\Scene.cuh" />
+    <CudaCompile Include="src\geometry\SceneBuilders.cuh" />
+    <ClInclude Include="src\maths\mat3.h" />
+    <CudaCompile Include="src\maths\rand.cuh" />
+    <CudaCompile Include="src\maths\vec3.cuh">
+      <FileType>CppControl</FileType>
+    </CudaCompile>
+    <CudaCompile Include="src\memory\Array.cuh" />
+    <ClInclude Include="src\memory\CUDAAllocator.h" />
+    <CudaCompile Include="src\memory\Managed.cuh" />
+    <ClInclude Include="src\memory\ManagedPtr.h" />
+    <CudaCompile Include="src\memory\UnifiedArray.cuh" />
+    <CudaCompile Include="src\rendering\CUDAIntersectionEngine.cuh" />
+    <CudaCompile Include="src\rendering\FrameBuffer.cuh" />
+    <CudaCompile Include="src\rendering\GPURayTracer.cuh" />
+    <CudaCompile Include="src\rendering\GPURayTracerKernels.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />
-    <ClInclude Include="src\UnifiedArray.cuh" />
+    <ClInclude Include="src\utility\CameraConfig.h" />
+    <ClInclude Include="src\utility\Config.h" />
+    <CudaCompile Include="src\utility\Error.cuh" />
+    <ClInclude Include="src\utility\KernelLaunchParams.h" />
+    <ClInclude Include="src\utility\RayTracerConfig.h" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />
-    <CudaCompile Include="src\FrameBuffer.cuh" />
-    <ClInclude Include="src\mat3.h" />
-    <CudaCompile Include="src\materials\material.h" />
-    <CudaCompile Include="src\rand.h" />
-    <CudaCompile Include="src\ray.cuh" />
-    <ClInclude Include="src\vec3.cuh" />
     <ClInclude Include="src\visibles\Mesh.cuh" />
     <ClInclude Include="src\visibles\Triangle.cuh" />
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\visibles\visible.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="src\GPURayTracer.cu">
-      <FileType>Document</FileType>
-    </CudaCompile>
-    <CudaCompile Include="src\GPURayTracer.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />

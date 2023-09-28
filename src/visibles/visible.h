@@ -2,7 +2,7 @@
 #define VISIBLE_H
 
 #include <memory>
-#include "../ray.cuh"
+#include "geometry/ray.cuh"
 #include "CUDAVisible.cuh"
 
 

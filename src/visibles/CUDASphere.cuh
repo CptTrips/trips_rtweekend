@@ -1,7 +1,7 @@
 #pragma once
 #include "CUDAVisible.cuh"
-#include "../materials/material.h"
-#include "../rand.h"
+#include "materials/material.h"
+#include "maths/rand.cuh"
 
 class CUDASphere : public CUDAVisible {
 public:

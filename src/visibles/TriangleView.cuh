@@ -1,9 +1,9 @@
 #pragma once
 
 #include "CUDAVisible.cuh"
-#include "../rand.h"
-#include "../Array.cuh"
-#include "../materials/material.h"
+#include "maths/rand.cuh"
+#include "memory/Array.cuh"
+#include "materials/material.h"
 #include "Triangle.cuh"
 
 class TriangleView : public CUDAVisible

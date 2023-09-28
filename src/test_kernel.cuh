@@ -3,8 +3,8 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <cstdint>
-#include "Array.cuh"
-#include "UnifiedArray.cuh"
+#include "memory/Array.cuh"
+#include "memory/UnifiedArray.cuh"
 
 __global__ void output_int_array(UnifiedArray<Array<uint32_t>*>* int_arrays);
 

@@ -1,14 +1,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include "doctest.h"
-#include "..\test\CUDAScanTest.cuh"
+#include "CUDAScanTest.cuh"
 
-#include "Camera.cuh"
-#include "FrameBuffer.cuh"
+#include "geometry/Camera.cuh"
+#include "rendering/FrameBuffer.cuh"
 //#include "CPURayTracer.h"
-#include "GPURayTracer.cuh"
+#include "rendering/GPURayTracer.cuh"
 
-#include "Scene.cuh"
-#include "SceneBuilders.cuh"
+#include "geometry/Scene.cuh"
+#include "geometry/SceneBuilders.cuh"
 //#include "SceneLoader.cuh"
 
 //#include "test_kernel.cuh"

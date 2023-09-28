@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../ray.cuh"
-#include "../Intersection.h"
-#include "../Error.cuh"
+#include "geometry/ray.cuh"
+#include "geometry/Intersection.h"
+#include "utility/Error.cuh"
 
 template<typename RNG_T>
 class Material

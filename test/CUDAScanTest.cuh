@@ -3,9 +3,9 @@
 #include <device_launch_parameters.h>
 #include "curand_kernel.h"
 
-#include "CUDAScan.cuh"
-#include "UnifiedArray.cuh"
-#include "KernelLaunchParams.h"
+#include "algorithms/CUDAScan.cuh"
+#include "memory/UnifiedArray.cuh"
+#include "utility/KernelLaunchParams.h"
 
 
 struct TestContext

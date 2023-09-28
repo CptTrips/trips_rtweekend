@@ -3,7 +3,7 @@
 
 #include "visible.h"
 #include "material.h"
-#include "mat3.h"
+#include "maths/mat3.h"
 
 
 class Quadric : public Visible

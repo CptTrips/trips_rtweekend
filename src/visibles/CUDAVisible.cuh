@@ -1,8 +1,8 @@
 #pragma once
 #include <memory>
-#include "../ray.cuh"
-#include "../Intersection.h"
-#include "../rand.h"
+#include "geometry/ray.cuh"
+#include "geometry/Intersection.h"
+#include "maths/rand.cuh"
 
 class CUDAVisible {
 public:

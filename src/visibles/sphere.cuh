@@ -4,8 +4,8 @@
 #include "CUDASphere.cuh"
 #include "CUDAVisible.cuh"
 #include "visible.h"
-#include "../materials/material.h"
-#include "../rand.h"
+#include "materials/material.h"
+#include "maths/rand.cuh"
 
 class Sphere: public Visible {
   public:

@@ -47,7 +47,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\visibles\Triangle.cuh" />
-    <ClInclude Include="src\visibles\Mesh.cuh" />
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\geometry\Intersection.h">
@@ -82,11 +81,13 @@
     <ClInclude Include="src\rendering\FrameBuffer.cuh" />
     <ClInclude Include="src\rendering\GPURayTracer.cuh" />
     <ClInclude Include="src\rendering\GPURayTracerKernels.cuh" />
+    <ClInclude Include="src\rendering\TriangleIntersector.cuh" />
+    <ClInclude Include="src\rendering\RayBundle.cuh" />
+    <ClInclude Include="src\rendering\Mesh.cuh" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="src\visibles\CUDASphere.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
-    <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="test\CUDAScanTest.cuh">

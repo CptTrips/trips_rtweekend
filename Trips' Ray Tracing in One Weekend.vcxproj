@@ -158,7 +158,6 @@
     <CudaCompile Include="src\test_kernel.cu" />
     <CudaCompile Include="src\utility\Error.cu" />
     <CudaCompile Include="src\visibles\TriangleView.cu" />
-    <CudaCompile Include="src\visibles\Mesh.cu" />
     <CudaCompile Include="src\visibles\Triangle.cu" />
     <None Include="src\memory\Array.tu">
       <FileType>Document</FileType>
@@ -192,6 +191,9 @@
     <CudaCompile Include="src\rendering\FrameBuffer.cuh" />
     <CudaCompile Include="src\rendering\GPURayTracer.cuh" />
     <CudaCompile Include="src\rendering\GPURayTracerKernels.cuh" />
+    <ClInclude Include="src\rendering\Mesh.cuh" />
+    <ClInclude Include="src\rendering\RayBundle.cuh" />
+    <ClInclude Include="src\rendering\TriangleIntersector.cuh" />
     <ClInclude Include="src\Scenes.h" />
     <ClInclude Include="src\test_kernel.cuh" />
     <ClInclude Include="src\utility\CameraConfig.h" />
@@ -201,7 +203,6 @@
     <ClInclude Include="src\utility\RayTracerConfig.h" />
     <ClInclude Include="src\visibles\CUDASphere.cuh" />
     <ClInclude Include="src\visibles\CUDAVisible.cuh" />
-    <ClInclude Include="src\visibles\Mesh.cuh" />
     <ClInclude Include="src\visibles\Triangle.cuh" />
     <ClInclude Include="src\visibles\TriangleView.cuh" />
     <ClInclude Include="src\visibles\visible.h" />

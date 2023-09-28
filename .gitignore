@@ -54,3 +54,4 @@
 /3 bounce.bmp
 /2 bounce.bmp
 /test/x64/Debug
+*.ncu-rep

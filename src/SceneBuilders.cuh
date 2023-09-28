@@ -18,20 +18,67 @@
 */
 
 
-Scene testSceneFactory();
 
-
-/*
 class SceneBuilder
 {
 
-public:
-	SceneBuilder();
+	virtual void setMeshBuffers(Scene& scene) = 0;
 
-	void setMeshBuffers();
+	virtual void setSphereBuffers(Scene& scene) = 0;
+
+	void allocateMeshBuffers(Scene& scene);
+	void allocateSphereBuffers(Scene& scene);
+
+protected:
+	uint64_t vertexCount, triangleCount, sphereCount;
+
+public:
+	constexpr SceneBuilder(uint64_t vertexCount, uint64_t triangleCount, uint64_t sphereCount);
+
+	Scene buildScene();
 
 };
-*/
+
+class TestSceneBuilder : public SceneBuilder
+{
+
+	virtual void setMeshBuffers(Scene& scene) override;
+
+	virtual void setSphereBuffers(Scene& scene) override;
+
+	float floorSize{ 1000.f };
+
+	float bigRadius{ 1000.f };
+
+	static constexpr uint64_t testSceneVertexCount{ 4 };
+	static constexpr uint64_t testSceneTriangleCount{ 2 };
+	static constexpr uint64_t testSceneSphereCount{ 2 };
+
+public:
+	TestSceneBuilder();
+	TestSceneBuilder(float floorSize, float bigRadius);
+};
+
+class GridSceneBuilder : public SceneBuilder
+{
+
+	virtual void setMeshBuffers(Scene& scene) override;
+
+	virtual void setSphereBuffers(Scene& scene) override;
+
+	inline static uint64_t calculateVertexCount(uint32_t gridLength);
+	inline static uint64_t calculateTriangleCount(uint32_t gridLength);
+	inline static uint64_t calculateSphereCount(uint32_t gridLength);
+
+	uint32_t gridLength;
+
+	uint64_t gridLengthLong;
+
+	float scale, radius;
+
+public:
+	GridSceneBuilder(uint32_t gridLength, float scale);
+};
 
 /*
 CUDAScene* scene_factory(const int visible_count, const int material_count);

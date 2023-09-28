@@ -1,51 +1,183 @@
 #include "SceneBuilders.cuh"
 
-Scene testSceneFactory()
+constexpr SceneBuilder::SceneBuilder(uint64_t vertexCount, uint64_t triangleCount, uint64_t sphereCount)
+	: vertexCount{vertexCount}
+	, triangleCount{triangleCount}
+	, sphereCount{sphereCount}
 {
-
-	Scene testScene;
-
-	testScene.m_vertexBuffer = make_managed<UnifiedArray<vec3>>(4);
-
-	testScene.m_indexBuffer = make_managed<UnifiedArray<uint32_t>>(6);
-
-	constexpr float floorSize = 1000.0f;
-
-	(*testScene.m_vertexBuffer)[0] = vec3(-1.5, floorSize, floorSize);
-	(*testScene.m_vertexBuffer)[1] = vec3(-1.5, floorSize, -floorSize);
-	(*testScene.m_vertexBuffer)[2] = vec3(-1.5, -floorSize, floorSize);
-	(*testScene.m_vertexBuffer)[3] = vec3(-1.5, -floorSize, -floorSize);
-
-	(*testScene.m_indexBuffer)[0] = 1;
-	(*testScene.m_indexBuffer)[1] = 0;
-	(*testScene.m_indexBuffer)[2] = 3;
-	(*testScene.m_indexBuffer)[3] = 0;
-	(*testScene.m_indexBuffer)[4] = 2;
-	(*testScene.m_indexBuffer)[5] = 3;
-
-	testScene.m_triColourBuffer = make_managed<UnifiedArray<vec3>>(testScene.m_indexBuffer->size());
-
-	(*testScene.m_triColourBuffer)[0] = vec3(.8f, 0.8f, 0.6f);
-	(*testScene.m_triColourBuffer)[1] = vec3(0.6f, 0.8f, 0.6f);
-
-	testScene.m_sphereBuffer = make_managed<UnifiedArray<CUDASphere>>(2);
-
-	constexpr float bigRadius = 1000.f;
-
-	(*testScene.m_sphereBuffer)[0] = CUDASphere{ vec3(0.0, 0., 1.2), 1.0, nullptr };
-	(*testScene.m_sphereBuffer)[1] = CUDASphere{ vec3(0.0, 0., -1.2), 1.0, nullptr };
-	//(*testScene.m_sphereBuffer)[2] = CUDASphere{ vec3(0.0f, -bigRadius - 1.5f, 0.f), bigRadius, nullptr };
-
-	testScene.m_sphereColourBuffer = make_managed<UnifiedArray<vec3>>(testScene.m_sphereBuffer->size());
-
-	(*testScene.m_sphereColourBuffer)[0] = vec3(0.4f, 0.8f, 1.f);
-	(*testScene.m_sphereColourBuffer)[1] = vec3(0.8f, 0.4f, 1.f);
-	//(*testScene.m_sphereColourBuffer)[2] = vec3(0.8f, 0.8f, 1.f);
-
-	return testScene;
 }
 
+Scene SceneBuilder::buildScene()
+{
 
+	Scene scene;
+
+	allocateMeshBuffers(scene);
+
+	setMeshBuffers(scene);
+
+	allocateSphereBuffers(scene);
+
+	setSphereBuffers(scene);
+
+	return scene;
+}
+
+void SceneBuilder::allocateMeshBuffers(Scene& scene)
+{
+
+	scene.m_vertexBuffer = make_managed<UnifiedArray<vec3>>(vertexCount);
+
+	scene.m_indexBuffer = make_managed<UnifiedArray<uint32_t>>(triangleCount * 3);
+
+	scene.m_triColourBuffer = make_managed<UnifiedArray<vec3>>(scene.m_indexBuffer->size());
+
+}
+
+void SceneBuilder::allocateSphereBuffers(Scene& scene)
+{
+
+	scene.m_sphereBuffer = make_managed<UnifiedArray<CUDASphere>>(sphereCount);
+
+	scene.m_sphereColourBuffer = make_managed<UnifiedArray<vec3>>(scene.m_sphereBuffer->size());
+}
+
+void TestSceneBuilder::setMeshBuffers(Scene& scene)
+{
+
+	(*scene.m_vertexBuffer)[0] = vec3(-1.5, floorSize, floorSize);
+	(*scene.m_vertexBuffer)[1] = vec3(-1.5, floorSize, -floorSize);
+	(*scene.m_vertexBuffer)[2] = vec3(-1.5, -floorSize, floorSize);
+	(*scene.m_vertexBuffer)[3] = vec3(-1.5, -floorSize, -floorSize);
+
+	(*scene.m_indexBuffer)[0] = 1;
+	(*scene.m_indexBuffer)[1] = 0;
+	(*scene.m_indexBuffer)[2] = 3;
+	(*scene.m_indexBuffer)[3] = 0;
+	(*scene.m_indexBuffer)[4] = 2;
+	(*scene.m_indexBuffer)[5] = 3;
+
+	(*scene.m_triColourBuffer)[0] = vec3(.8f, 0.8f, 0.6f);
+	(*scene.m_triColourBuffer)[1] = vec3(0.6f, 0.8f, 0.6f);
+}
+
+void TestSceneBuilder::setSphereBuffers(Scene& scene)
+{
+
+	(*scene.m_sphereBuffer)[0] = CUDASphere{ vec3(0.0, 0., 1.2), 1.0, nullptr };
+	(*scene.m_sphereBuffer)[1] = CUDASphere{ vec3(0.0, 0., -1.2), 1.0, nullptr };
+	//(*scene.m_sphereBuffer)[2] = CUDASphere{ vec3(0.0f, -bigRadius - 1.5f, 0.f), bigRadius, nullptr };
+
+	(*scene.m_sphereColourBuffer)[0] = vec3(0.4f, 0.8f, 1.f);
+	(*scene.m_sphereColourBuffer)[1] = vec3(0.8f, 0.4f, 1.f);
+	//(*scene.m_sphereColourBuffer)[2] = vec3(0.8f, 0.8f, 1.f);
+}
+
+TestSceneBuilder::TestSceneBuilder()
+	: TestSceneBuilder(floorSize, bigRadius)
+{
+}
+
+TestSceneBuilder::TestSceneBuilder(float floorSize, float bigRadius)
+	: SceneBuilder(testSceneVertexCount, testSceneTriangleCount, testSceneSphereCount)
+	, floorSize(floorSize)
+	, bigRadius(bigRadius)
+{
+}
+
+void GridSceneBuilder::setMeshBuffers(Scene& scene)
+{
+
+	const vec3 corner{ -scale * gridLength / 2, 0.f, -scale * gridLength / 2 };
+
+	const uint64_t verticesPerRow{ gridLengthLong + 1 };
+
+	for (uint64_t i = 0; i < vertexCount; i++)
+	{
+
+		uint64_t col = i % verticesPerRow;
+		uint64_t row = i / verticesPerRow;
+
+		(*scene.m_vertexBuffer)[i] = { corner.x() + col * scale, 0.f, corner.z() + row * scale };
+	}
+
+	for (uint64_t i = 0; i < sphereCount; i++)
+	{
+
+		uint64_t col = i % gridLengthLong;
+		uint64_t row = i / gridLengthLong;
+
+		uint64_t
+			botLeftVertexIndex{ row * verticesPerRow + col },
+			botRighVertexIndex{ row * verticesPerRow + col + 1 },
+			topRighVertexIndex{ (row + 1) * verticesPerRow + col + 1},
+			topLeftVertexIndex{ (row + 1) * verticesPerRow + col };
+
+		(*scene.m_indexBuffer)[6 * i + 0] = botLeftVertexIndex;
+		(*scene.m_indexBuffer)[6 * i + 1] = topLeftVertexIndex;
+		(*scene.m_indexBuffer)[6 * i + 2] = botRighVertexIndex;
+
+		(*scene.m_indexBuffer)[6 * i + 3] = botRighVertexIndex;
+		(*scene.m_indexBuffer)[6 * i + 4] = topLeftVertexIndex;
+		(*scene.m_indexBuffer)[6 * i + 5] = topRighVertexIndex;
+
+		(*scene.m_triColourBuffer)[2 * i] = { 0.4f, 0.2f, 0.2f };
+		(*scene.m_triColourBuffer)[2 * i + 1] = { .7f, 1.f, .7f };
+	}
+}
+
+void GridSceneBuilder::setSphereBuffers(Scene& scene)
+{
+
+	const vec3 corner{ -scale * gridLength / 2, 0.f, -scale * gridLength / 2 };
+
+	const vec3 cornerToCenter{ scale / 2, radius, scale / 2 };
+
+	const vec3 firstCenter = corner + cornerToCenter;
+
+	for (uint64_t i = 0; i < sphereCount; i++)
+	{
+
+		uint64_t col = i % gridLengthLong;
+		uint64_t row = i / gridLengthLong;
+
+		vec3 offset{ col * scale, 0.f, row * scale };
+
+		(*scene.m_sphereBuffer)[i] = CUDASphere(firstCenter + offset, radius, nullptr);
+
+		(*scene.m_sphereColourBuffer)[i] = { 0.4f, 0.7f, 0.8f };
+	}
+}
+
+inline uint64_t GridSceneBuilder::calculateVertexCount(uint32_t gridLength)
+{
+	return calculateSphereCount(gridLength + 1);
+}
+
+inline uint64_t GridSceneBuilder::calculateTriangleCount(uint32_t gridLength)
+{
+
+	return calculateSphereCount(gridLength) * 2;
+}
+
+inline uint64_t GridSceneBuilder::calculateSphereCount(uint32_t gridLength)
+{
+
+	return static_cast<uint64_t>(gridLength) * static_cast<uint64_t>(gridLength); 
+}
+
+GridSceneBuilder::GridSceneBuilder(uint32_t gridLength, float scale)
+	: scale(scale)
+	, radius(scale * 0.4f)
+	, gridLength(gridLength)
+	, gridLengthLong(gridLength)
+	, SceneBuilder(
+		calculateVertexCount(gridLength),
+		calculateTriangleCount(gridLength),
+		calculateSphereCount(gridLength)
+	)
+{
+}
 
 /*
 CUDAScene* scene_factory(const int visible_count, const int material_count)
@@ -53,9 +185,9 @@ CUDAScene* scene_factory(const int visible_count, const int material_count)
 
 	CUDAScene* scene = new CUDAScene();
 
-	testScene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(visible_count);
+	scene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(visible_count);
 
-	testScene.materials = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(material_count);
+	scene.materials = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(material_count);
 
 	scene->visibles = visibles;
 
@@ -117,7 +249,7 @@ CUDAScene* rtweekend(int attempts, int seed)
 
 	CUDAScene* scene = new CUDAScene(random_sphere_count + 4, random_sphere_count + 4);
 
-	testScene.device_centers = make_managed<UnifiedArray<vec3>>(random_sphere_count);
+	scene.device_centers = make_managed<UnifiedArray<vec3>>(random_sphere_count);
 
 	for (unsigned int i = 0; i < random_sphere_count; i++)
 	{
@@ -163,7 +295,7 @@ CUDAScene* rtweekend(int attempts, int seed)
 }
 
 
-__global__ void gen_rtweekend(CUDAScene* scene, testScene.device_centers)
+__global__ void gen_rtweekend(CUDAScene* scene, scene.device_centers)
 {
 	unsigned int id = threadIdx.x + blockIdx.x * blockDim.x;
 
@@ -412,10 +544,10 @@ __host__ T* move_to_device(T* const obj)
 CUDAScene* n_cubes(const int& n)
 {
 
-	testScene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(n);
-	testScene.vertex_arrays = make_managed<UnifiedArray<Array<vec3>>*>(n);
-	testScene.index_arrays = make_managed<UnifiedArray<Array<uint32_t>>*>(n);
-	testScene.material_array = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(n);
+	scene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(n);
+	scene.vertex_arrays = make_managed<UnifiedArray<Array<vec3>>*>(n);
+	scene.index_arrays = make_managed<UnifiedArray<Array<uint32_t>>*>(n);
+	scene.material_array = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(n);
 
 	for (int i = 0; i < n; i++)
 	{
@@ -470,10 +602,10 @@ CUDAScene* triangle_carpet(const unsigned int& n)
 {
 	CUDAScene* scene = new CUDAScene();
 
-	testScene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(1);
-	testScene.vertex_arrays = make_managed<UnifiedArray<Array<vec3>>*>(1);
-	testScene.index_arrays = make_managed<UnifiedArray<Array<uint32_t>>*>(1);
-	testScene.material_array = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(1);
+	scene.visibles = make_managed<UnifiedArray<CUDAVisible*>>(1);
+	scene.vertex_arrays = make_managed<UnifiedArray<Array<vec3>>*>(1);
+	scene.index_arrays = make_managed<UnifiedArray<Array<uint32_t>>*>(1);
+	scene.material_array = make_managed<UnifiedArray<Material<CUDA_RNG>>*>(1);
 
 	Array<vec3>* vertex_array = new Array<vec3>(n * n);
 

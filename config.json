@@ -1,6 +1,6 @@
 {
-  "xRes": 1600,
-  "yRes": 900,
+  "xRes": 160,
+  "yRes": 90,
 
   "camera": {
     "origin": [ 10.0, 5.0, 0.0 ],
@@ -13,7 +13,7 @@
 
   "rayTracer": {
     "spp": 4,
-    "maxBounce": 8,
+    "maxBounce": 3,
     "minFreePath":  0.002
   },
 

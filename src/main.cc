@@ -154,7 +154,11 @@ void runRayTracer()
 
 	Camera camera(configJSON);
 
-	Scene scene{ testSceneFactory() };
+	//TestSceneBuilder sceneBuilder(20.f, 2.f);
+
+	GridSceneBuilder sceneBuilder(3, 1.f);
+
+	Scene scene{ sceneBuilder.buildScene() };
 
 	// Draw scene
 

@@ -19,7 +19,7 @@ Camera::Camera(
 
 	vec3 cameraZ = normalise(target - origin);
 	vec3 cameraY = normalise(cross(cameraZ, up));
-	vec3 cameraX = normalise(cross(cameraY, cameraX));
+	vec3 cameraX = normalise(cross(cameraY, cameraZ));
 
 	orientation = mat3(
 	  cameraX[0], cameraX[1], cameraX[2],

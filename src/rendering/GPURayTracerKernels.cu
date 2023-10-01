@@ -142,9 +142,18 @@ __device__ vec3 gamma_correction(const vec3& col_in)
 __host__ __device__ vec3 draw_sky(const Ray& ray)
 {
 
-  vec3 unit_dir = normalise(ray.direction());
-  float t = 0.5f*(unit_dir.y() + 1.0f);
-  return (1.0 - t)*vec3(1.f, 1.f, 1.0f) + t*vec3(0.5f, 0.7f, 1.0f);
+  const vec3 unit_dir = normalise(ray.direction());
+
+  // Preferred sky direction
+  const vec3 skyDir(normalise(vec3{ 1.f, 1.f, 0.f }));
+
+  const vec3 baseColour{ 0.1f, 0.1f, 0.1f };
+
+  const vec3 skyColour{ 0.5f, 0.7f, 1.f };
+
+  const float t = 0.5f * (dot(unit_dir, skyDir) + 1.0f);
+
+  return (1.0 - t) * baseColour + t * skyColour;
 
 }
 
@@ -161,13 +170,15 @@ __global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uin
 	if (THREAD_ID >= p_activeRayIndices->size())
 		return;
 
-	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
+	const uint64_t activeRayIndex{ THREAD_ID };
 
-	Ray * p_ray = &((*p_rayArray)[rayID]);
+	const uint64_t rayIndex = (*p_activeRayIndices)[activeRayIndex];
 
-	Intersection triangleIxn = (*p_triangleIntersectionArray)[rayID];
+	Ray * p_ray = &((*p_rayArray)[rayIndex]);
 
-	Intersection sphereIxn = (*p_sphereIntersectionArray)[rayID];
+	Intersection triangleIxn = (*p_triangleIntersectionArray)[activeRayIndex];
+
+	Intersection sphereIxn = (*p_sphereIntersectionArray)[activeRayIndex];
 
 	if ((triangleIxn.id != -1) && (triangleIxn.t < sphereIxn.t))
 		p_ray->colour *= (*p_triangleColourArray)[triangleIxn.id];

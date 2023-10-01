@@ -61,6 +61,8 @@ public:
 class GridSceneBuilder : public SceneBuilder
 {
 
+	static constexpr float height{ 1.f };
+
 	virtual void setMeshArrays(MeshFinder& mesh) override;
 
 	virtual void setSphereArrays(Scene& scene) override;

@@ -78,7 +78,7 @@ TestSceneBuilder::TestSceneBuilder(float floorSize, float bigRadius)
 void GridSceneBuilder::setMeshArrays(MeshFinder& mesh)
 {
 
-	const vec3 corner{ -scale * gridLength / 2, 0.f, -scale * gridLength / 2 };
+	const vec3 corner{ -scale * gridLength / 2, height, -scale * gridLength / 2 };
 
 	const uint64_t verticesPerRow{ gridLengthLong + 1 };
 
@@ -88,7 +88,7 @@ void GridSceneBuilder::setMeshArrays(MeshFinder& mesh)
 		uint64_t col = i % verticesPerRow;
 		uint64_t row = i / verticesPerRow;
 
-		(*mesh.p_vertexArray)[i] = { corner.x() + col * scale, 0.f, corner.z() + row * scale };
+		(*mesh.p_vertexArray)[i] = { corner.x() + col * scale, corner.y(), corner.z() + row * scale };
 	}
 
 	for (uint64_t i = 0; i < sphereCount; i++)
@@ -119,7 +119,7 @@ void GridSceneBuilder::setMeshArrays(MeshFinder& mesh)
 void GridSceneBuilder::setSphereArrays(Scene& scene)
 {
 
-	const vec3 corner{ -scale * gridLength / 2, 0.f, -scale * gridLength / 2 };
+	const vec3 corner{ -scale * gridLength / 2, height, -scale * gridLength / 2 };
 
 	const vec3 cornerToCenter{ scale / 2, radius, scale / 2 };
 

@@ -48,8 +48,6 @@ class GPURayTracer
 
 	uint64_t raysPerBatch;
 
-	std::shared_ptr<UnifiedArray<Ray>> m_rayArray;
-
 	std::shared_ptr<UnifiedArray<CUDA_RNG>> m_rngs;
 
 	std::shared_ptr<Camera> m_cam;
@@ -58,31 +56,32 @@ class GPURayTracer
 
 	//void send_scene(const std::vector<std::unique_ptr<Visible>>& scene);
 
-	void create_rngs();
+	void createRNGs();
 
-	void allocate_rays();
-
-	void generatePrimaryRays(const uint64_t ray_offset_index, const FrameBuffer* const m_fb);
+	void generatePrimaryRays(const RayBundle& rayBundle, const uint64_t ray_offset_index, const FrameBuffer* const m_fb);
 
 	void showDeviceProperties();
 
 	void increaseStackLimit();
 
-	void colourRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_triangleColurArray, UnifiedArray<vec3>* p_sphereColourArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
+	void colourRays(
+		const RayBundle& rayBundle,
+		const Scene& scene
+	);
 
-	void renderRays(const uint64_t ray_offset_index, FrameBuffer* m_fb);
+	void renderRays(const RayBundle& rayBundle, const uint64_t ray_offset_index, FrameBuffer* m_fb);
 
 	std::shared_ptr<UnifiedArray<uint32_t>> resetActiveRays(const uint32_t& bufferSize);
 
-	std::shared_ptr<UnifiedArray<uint32_t>> gatherActiveRays(UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
+	std::shared_ptr<UnifiedArray<uint32_t>> gatherActiveRays(const RayBundle& rayBundle);
 
-	void scatterRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices, UnifiedArray<vec3>* p_vertexArray, UnifiedArray<uint32_t>* p_indexArray, UnifiedArray<CUDASphere>* p_sphereArray, UnifiedArray<Intersection>* p_triangleIntersectionArray, UnifiedArray<Intersection>* p_sphereIntersectionArray);
+	void scatterRays(const RayBundle& rayBundle, const Scene& scene);
 
 	/*
 	void shade_rays(const uint64_t ray_offset_index);
 	*/
 
-	void terminateRays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uint32_t>* p_activeRayIndices);
+	void terminateRays(const RayBundle& rayBundle);
 
 public:
 

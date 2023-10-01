@@ -1,7 +1,7 @@
 #include "rendering/GPURayTracerKernels.cuh"
 
 #define THREAD_ID threadIdx.x + blockIdx.x * blockDim.x
-#define my_cuda_seed 1234
+#define my_cuda_seed 4561
 
 __global__ void cuda_scatter_rays(
 	UnifiedArray<Ray>* p_rayArray,
@@ -21,7 +21,7 @@ __global__ void cuda_scatter_rays(
 
 	uint32_t rayID = (*p_activeRayIndices)[THREAD_ID];
 
-	if ((*p_triangleIntersectionArray)[rayID].id == -1 && (*p_sphereIntersectionArray)[rayID].id == -1)
+	if (((*p_triangleIntersectionArray)[rayID].id == -1) && ((*p_sphereIntersectionArray)[rayID].id == -1))
 		return;
 
 	Ray* p_ray = &(*p_rayArray)[rayID];
@@ -75,30 +75,30 @@ __device__ ImagePoint subPixel(const uint64_t rayID, const FrameBuffer* const fb
 	float dx = rng.sample();
 	float dy = rng.sample();
 
-	int row = rayID / (uint64_t)(spp * fb->w);
+	uint64_t row = rayID / (spp * fb->w);
 
-	float u = (float(row) + dy) / fb->h;
+	float u = (static_cast<float>(row) / fb->h) + (dy / fb->h);
 
-	int col = (rayID / (uint64_t)spp) % fb->w;
+	uint64_t col = (rayID / spp) % fb->w;
 
-	float v = (float(col) + dx) / fb->w;
+	float v = (static_cast<float>(col) / fb->w) + (dx / fb->w);
 
 	return { u, v };
 }
 
-__global__ void cuda_gen_rays(Ray* rays, const uint64_t rayCount, const uint64_t raysPerBatch, const uint64_t ray_offset_index, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const uint64_t spp)
+__global__ void cuda_gen_rays(UnifiedArray<Ray>* p_rays, const uint64_t rayCount, const uint64_t ray_offset_index, const Camera* const cam, const FrameBuffer* const fb, CUDA_RNG* const rngs, const uint64_t spp)
 {
 	uint32_t thread_id = threadIdx.x + blockIdx.x * blockDim.x;
 
 	uint64_t rayID = thread_id + ray_offset_index;
 
-	if ((rayID < rayCount) && (thread_id < raysPerBatch))
+	if ((rayID < rayCount) && (thread_id < p_rays->size()))
 	{
 		CUDA_RNG rng = rngs[thread_id];
 
 		ImagePoint p { subPixel(rayID, fb, spp, rng) };
 
-		rays[thread_id] = cam->castRay(p, rng);
+		(*p_rays)[thread_id] = cam->castRay(p, rng);
 	}
 
 }
@@ -169,9 +169,9 @@ __global__ void cuda_colour_rays(UnifiedArray<Ray>* p_rayArray, UnifiedArray<uin
 
 	Intersection sphereIxn = (*p_sphereIntersectionArray)[rayID];
 
-	if (triangleIxn.t < sphereIxn.t)
+	if ((triangleIxn.id != -1) && (triangleIxn.t < sphereIxn.t))
 		p_ray->colour *= (*p_triangleColourArray)[triangleIxn.id];
-	else if (sphereIxn.t < triangleIxn.t)
+	else if ((sphereIxn.id != -1) && (sphereIxn.t < triangleIxn.t))
 		p_ray->colour *= (*p_sphereColourArray)[sphereIxn.id];
 	else
 		p_ray->colour *= draw_sky(*p_ray);

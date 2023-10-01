@@ -49,6 +49,10 @@ __device__ CUDA_RNG::CUDA_RNG(const int seed, const int seq)
 
 }
 
+/// <summary>
+/// Random sample between 0.f and 1.f
+/// </summary>
+/// <returns></returns>
 __device__ float CUDA_RNG::sample()
 {
     return curand_uniform(&r);

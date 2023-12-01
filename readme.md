@@ -1,6 +1,9 @@
 A personal ray tracing project, thanks to Peter Shirley's "Ray Tracing in a Weekend".
 
-Depends on 'palette', a personal bitmap writer for Windows. (I will make its repo public soon.)
+# Dependencies
+- CUDA 12.3
+- palette
+- assimp
 
 # Features
  - GPU acceleration (CUDA)

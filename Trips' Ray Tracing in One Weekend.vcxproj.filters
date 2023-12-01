@@ -73,14 +73,6 @@
     <ClInclude Include="src\utility\RayTracerConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\geometry\ray.cuh" />
-    <ClInclude Include="src\geometry\Scene.cuh" />
-    <ClInclude Include="src\geometry\SceneBuilders.cuh" />
-    <ClInclude Include="src\memory\Managed.cuh" />
-    <ClInclude Include="src\memory\UnifiedArray.cuh" />
-    <ClInclude Include="src\rendering\FrameBuffer.cuh" />
-    <ClInclude Include="src\rendering\GPURayTracer.cuh" />
-    <ClInclude Include="src\rendering\GPURayTracerKernels.cuh" />
     <ClInclude Include="src\rendering\TriangleIntersector.cuh" />
     <ClInclude Include="src\rendering\RayBundle.cuh" />
     <ClInclude Include="src\rendering\Mesh.cuh" />
@@ -118,6 +110,14 @@
     </CudaCompile>
     <CudaCompile Include="src\rendering\TriangleIntersector.cu" />
     <CudaCompile Include="src\rendering\Mesh.cu" />
+    <CudaCompile Include="src\geometry\ray.cuh" />
+    <CudaCompile Include="src\geometry\Scene.cuh" />
+    <CudaCompile Include="src\geometry\SceneBuilders.cuh" />
+    <CudaCompile Include="src\memory\Managed.cuh" />
+    <CudaCompile Include="src\memory\UnifiedArray.cuh" />
+    <CudaCompile Include="src\rendering\FrameBuffer.cuh" />
+    <CudaCompile Include="src\rendering\GPURayTracer.cuh" />
+    <CudaCompile Include="src\rendering\GPURayTracerKernels.cuh" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
